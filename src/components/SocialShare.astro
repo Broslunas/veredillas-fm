@@ -1,0 +1,149 @@
+---
+interface Props {
+  title: string;
+  url?: URL | string;
+}
+
+const { title, url = Astro.url } = Astro.props;
+const shareUrl = encodeURIComponent(url.toString());
+const shareTitle = encodeURIComponent(title);
+---
+
+<aside class="social-share-floating">
+  <div class="share-buttons">
+    <!-- WhatsApp -->
+    <a href={`https://wa.me/?text=${shareTitle}%20${shareUrl}`} target="_blank" rel="noopener noreferrer" class="share-btn whatsapp" aria-label="Compartir en WhatsApp">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+    </a>
+
+    <!-- Telegram -->
+    <a href={`https://t.me/share/url?url=${shareUrl}&text=${shareTitle}`} target="_blank" rel="noopener noreferrer" class="share-btn telegram" aria-label="Compartir en Telegram">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+    </a>
+
+    <!-- Facebook -->
+    <a href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`} target="_blank" rel="noopener noreferrer" class="share-btn facebook" aria-label="Compartir en Facebook">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+    </a>
+
+    <!-- X (Twitter) -->
+    <a href={`https://twitter.com/intent/tweet?text=${shareTitle}&url=${shareUrl}`} target="_blank" rel="noopener noreferrer" class="share-btn twitter" aria-label="Compartir en X">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>
+    </a>
+
+    <!-- Copy Link -->
+    <button class="share-btn copy-link" id="copy-link-btn" aria-label="Copiar enlace">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+    </button>
+  </div>
+</aside>
+
+<script>
+  const copyBtn = document.getElementById('copy-link-btn');
+  copyBtn?.addEventListener('click', () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        // Simple feedback
+        const original = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        setTimeout(() => {
+            copyBtn.innerHTML = original;
+        }, 2000);
+    });
+  });
+</script>
+
+<style>
+  /* Mobile Layout (Default - Before Comments) */
+  .social-share-floating {
+      margin: 2rem 0;
+      padding: 1.5rem 0;
+      border-top: 1px dashed rgba(255,255,255,0.1);
+      border-bottom: 1px dashed rgba(255,255,255,0.1);
+      display: flex;
+      justify-content: center;
+  }
+
+  .share-buttons {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+  }
+
+  .share-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px; /* Squircle */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+  }
+
+  .share-btn:hover {
+      transform: translateY(-5px) scale(1.1);
+  }
+
+  /* Specific Colors on Hover and Desktop */
+  .whatsapp:hover { background: #25D366; border-color: #25D366; }
+  .telegram:hover { background: #0088cc; border-color: #0088cc; }
+  .facebook:hover { background: #1877F2; border-color: #1877F2; }
+  .twitter:hover { background: #000; border-color: #333; }
+  .copy-link:hover { background: var(--color-primary); border-color: var(--color-primary); }
+
+  /* Desktop Sticky Layout */
+  @media (min-width: 1200px) {
+      .social-share-floating {
+          position: fixed;
+          top: 50%;
+          left: 2rem; /* Stick to left edge */
+          transform: translateY(-50%);
+          flex-direction: column;
+          margin: 0;
+          padding: 0;
+          border: none;
+          z-index: 100;
+          width: auto;
+      }
+
+      .share-buttons {
+          flex-direction: column;
+          gap: 0.75rem;
+          /* Remove pill container styles */
+          background: transparent;
+          padding: 0;
+          border: none;
+          backdrop-filter: none;
+      }
+      
+      .share-btn {
+          width: 50px;
+          height: 50px;
+          border-radius: 14px; /* Squircle */
+          background: rgba(10, 10, 10, 0.8);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: rgba(255,255,255,0.8);
+          backdrop-filter: blur(5px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      }
+      
+      .share-btn:hover {
+          transform: translateX(5px); /* Slide out slightly */
+          background: rgba(255,255,255,0.1);
+          color: white;
+          border-color: rgba(255,255,255,0.3);
+      }
+
+      /* Specific colors on hover */
+      .whatsapp:hover { background: #25D366; border-color: #25D366; }
+      .telegram:hover { background: #0088cc; border-color: #0088cc; }
+      .facebook:hover { background: #1877F2; border-color: #1877F2; }
+      .twitter:hover { background: #000; border-color: #333; }
+      .copy-link:hover { background: var(--color-primary); border-color: var(--color-primary); }
+  }
+</style>

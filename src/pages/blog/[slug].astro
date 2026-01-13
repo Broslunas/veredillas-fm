@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
+import SocialShare from '../../components/SocialShare.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -47,6 +48,8 @@ const formattedDate = entry.data.pubDate.toLocaleDateString('es-ES', {
         <div class="post-content">
             <Content />
         </div>
+
+        <SocialShare title={entry.data.title} />
     </article>
 </Layout>
 
