@@ -230,109 +230,127 @@ const recentPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pu
 
     gsap.registerPlugin(ScrollTrigger);
 
-    // Hero Animations
-    const tl = gsap.timeline();
+    function initPage() {
+        // Hero Animations
+        if (document.querySelector(".gs-reveal")) {
+            const tl = gsap.timeline();
 
-    tl.from(".gs-reveal", {
-        y: 50,
-        opacity: 0,
-        duration: 1,
-        stagger: 0.2,
-        ease: "power3.out"
-    })
-    .from(".hero-visual", {
-        x: 50,
-        opacity: 0,
-        duration: 1,
-        ease: "back.out(1.7)"
-    }, "-=0.5");
+            tl.from(".gs-reveal", {
+                y: 50,
+                opacity: 0,
+                duration: 1,
+                stagger: 0.2,
+                ease: "power3.out"
+            })
+            .from(".hero-visual", {
+                x: 50,
+                opacity: 0,
+                duration: 1,
+                ease: "back.out(1.7)"
+            }, "-=0.5");
+        }
 
-    // Vinyl Rotation
-    gsap.to(".vinyl-record", {
-        rotation: 360,
-        duration: 10,
-        repeat: -1,
-        ease: "linear"
-    });
+        // Vinyl Rotation
+        if (document.querySelector(".vinyl-record")) {
+            gsap.to(".vinyl-record", {
+                rotation: 360,
+                duration: 10,
+                repeat: -1,
+                ease: "linear"
+            });
+        }
 
-    // Stats Counter
-    const stats = document.querySelectorAll('.stat-num');
-    stats.forEach(stat => {
-        const target = parseInt(stat.getAttribute('data-count') || "0");
-        gsap.to(stat, {
-            innerText: target,
-            duration: 2,
-            snap: { innerText: 1 },
-            ease: "power2.out"
+        // Stats Counter
+        const stats = document.querySelectorAll('.stat-num');
+        if (stats.length > 0) {
+            stats.forEach(stat => {
+                const target = parseInt(stat.getAttribute('data-count') || "0");
+                gsap.to(stat, {
+                    innerText: target,
+                    duration: 2,
+                    snap: { innerText: 1 },
+                    ease: "power2.out"
+                });
+            });
+        }
+
+        // Scroll Animations
+        gsap.utils.toArray('.gs-fade-up').forEach((elem: any) => {
+            gsap.from(elem, {
+                scrollTrigger: {
+                    trigger: elem,
+                    start: "top 85%",
+                },
+                y: 50,
+                opacity: 0,
+                duration: 0.8,
+                ease: "power2.out"
+            });
         });
-    });
 
-    // Scroll Animations
-    gsap.utils.toArray('.gs-fade-up').forEach((elem: any) => {
-        gsap.from(elem, {
-            scrollTrigger: {
-                trigger: elem,
-                start: "top 85%",
-            },
-            y: 50,
-            opacity: 0,
-            duration: 0.8,
-            ease: "power2.out"
-        });
-    });
+        if (document.querySelector(".info-grid")) {
+            gsap.from(".gs-scroll-left", {
+                scrollTrigger: { trigger: ".info-grid", start: "top 80%" },
+                x: -50, opacity: 0, duration: 0.8
+            });
+            
+            gsap.from(".gs-scroll-up", {
+                scrollTrigger: { trigger: ".info-grid", start: "top 80%" },
+                y: 50, opacity: 0, duration: 0.8, delay: 0.2
+            });
 
-    gsap.from(".gs-scroll-left", {
-        scrollTrigger: { trigger: ".info-grid", start: "top 80%" },
-        x: -50, opacity: 0, duration: 0.8
-    });
-    
-    gsap.from(".gs-scroll-up", {
-        scrollTrigger: { trigger: ".info-grid", start: "top 80%" },
-        y: 50, opacity: 0, duration: 0.8, delay: 0.2
-    });
+            gsap.from(".gs-scroll-right", {
+                scrollTrigger: { trigger: ".info-grid", start: "top 80%" },
+                x: 50, opacity: 0, duration: 0.8, delay: 0.4
+            });
+        }
 
-    gsap.from(".gs-scroll-right", {
-        scrollTrigger: { trigger: ".info-grid", start: "top 80%" },
-        x: 50, opacity: 0, duration: 0.8, delay: 0.4
-    });
+        if (document.querySelector(".final-cta")) {
+            gsap.from(".cta-inner", {
+                scrollTrigger: { trigger: ".final-cta", start: "top 85%" },
+                scale: 0.9,
+                opacity: 0,
+                duration: 0.6,
+                ease: "back.out(1.7)"
+            });
+        }
 
-    gsap.from(".cta-inner", {
-        scrollTrigger: { trigger: ".final-cta", start: "top 85%" },
-        scale: 0.9,
-        opacity: 0,
-        duration: 0.6,
-        ease: "back.out(1.7)"
-    });
-
-    // Swiper Init
-    const swiper = new Swiper('.episodes-swiper', {
-        modules: [Navigation, Pagination, Autoplay],
-        slidesPerView: 1,
-        spaceBetween: 20,
-        loop: true,
-        autoplay: {
-            delay: 5000,
-            disableOnInteraction: false,
-        },
-        pagination: {
-            el: '.swiper-pagination',
-            clickable: true,
-        },
-        navigation: {
-            nextEl: '.swiper-button-next-custom',
-            prevEl: '.swiper-button-prev-custom',
-        },
-        breakpoints: {
-            640: {
-                slidesPerView: 2,
+        // Swiper Init
+        if (document.querySelector('.episodes-swiper')) {
+            new Swiper('.episodes-swiper', {
+                modules: [Navigation, Pagination, Autoplay],
+                observer: true,
+                observeParents: true,
+                slidesPerView: 1,
                 spaceBetween: 20,
-            },
-            1024: {
-                slidesPerView: 3,
-                spaceBetween: 30,
-            },
-        },
-    });
+                loop: true,
+                autoplay: {
+                    delay: 5000,
+                    disableOnInteraction: false,
+                },
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.swiper-button-next-custom',
+                    prevEl: '.swiper-button-prev-custom',
+                },
+                breakpoints: {
+                    640: {
+                        slidesPerView: 2,
+                        spaceBetween: 20,
+                    },
+                    1024: {
+                        slidesPerView: 3,
+                        spaceBetween: 30,
+                    },
+                },
+            });
+        }
+    }
+
+    document.addEventListener('astro:page-load', initPage);
 </script>
 
 <style>

@@ -46,30 +46,40 @@ const featuredEpisodes = allEpisodes
     import Swiper from 'swiper';
     import { Navigation, Pagination, EffectFade, Autoplay } from 'swiper/modules';
 
-    const swiper = new Swiper('.featured-swiper', {
-        modules: [Navigation, Pagination, EffectFade, Autoplay],
-        effect: 'fade',
-        fadeEffect: {
-            crossFade: true
-        },
-        loop: true,
-        autoplay: {
-            delay: 6000,
-            disableOnInteraction: false,
-        },
-        speed: 800,
-        navigation: {
-            nextEl: '.next-btn',
-            prevEl: '.prev-btn',
-        },
-        pagination: {
-            el: '.custom-pagination',
-            clickable: true,
-            renderBullet: function (index, className) {
-                return '<span class="' + className + '"></span>';
+    const initSwiper = () => {
+        const swiperEl = document.querySelector('.featured-swiper');
+        if (!swiperEl) return;
+
+        new Swiper('.featured-swiper', {
+            modules: [Navigation, Pagination, EffectFade, Autoplay],
+            observer: true,
+            observeParents: true,
+            effect: 'fade',
+            fadeEffect: {
+                crossFade: true
             },
-        },
-    });
+            loop: true,
+            autoplay: {
+                delay: 6000,
+                disableOnInteraction: false,
+            },
+            speed: 800,
+            navigation: {
+                nextEl: '.next-btn',
+                prevEl: '.prev-btn',
+            },
+            pagination: {
+                el: '.custom-pagination',
+                clickable: true,
+                renderBullet: function (index, className) {
+                    return '<span class="' + className + '"></span>';
+                },
+            },
+        });
+    };
+
+    // Run on initial load and after every navigation
+    document.addEventListener('astro:page-load', initSwiper);
 </script>
 
 <style>

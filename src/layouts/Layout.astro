@@ -211,8 +211,23 @@ const fullTitle = title === "Inicio" ? "Veredillas FM - El Podcast del IES Vered
                                 document.head.appendChild(s);
                             }
                         } else {
-                            // Inline head scripts - careful with duplicates, maybe ignore or check content?
-                            // For now, let's assume inline head scripts (like theme init) don't need re-running or we skip
+                            // Inline head scripts
+                            // Check if this script content already exists to avoid duplicates
+                            const currentScripts = document.head.querySelectorAll('script');
+                            let isDuplicate = false;
+                            for (const script of currentScripts) {
+                                if (!script.src && script.innerHTML === newScript.innerHTML) {
+                                    isDuplicate = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (!isDuplicate) {
+                                const s = document.createElement('script');
+                                Array.from(newScript.attributes).forEach(attr => s.setAttribute(attr.name, attr.value));
+                                s.appendChild(document.createTextNode(newScript.innerHTML));
+                                document.head.appendChild(s);
+                            }
                         }
                     });
                     
