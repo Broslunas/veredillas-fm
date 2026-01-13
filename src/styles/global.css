@@ -87,9 +87,15 @@ img {
 /* Utilities */
 .container {
   width: 100%;
-  max-width: 1280px;
+  max-width: 1400px; /* Slightly wider to accommodate larger padding */
   margin: 0 auto;
-  padding: 0 var(--spacing-md);
+  padding: 0 var(--spacing-lg);
+}
+
+@media (min-width: 768px) {
+  .container {
+      padding: 0 var(--spacing-xl);
+  }
 }
 
 .text-gradient {
@@ -180,15 +186,16 @@ img {
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-    width: 10px;
+    width: 12px;
 }
 ::-webkit-scrollbar-track {
     background: var(--color-bg); 
 }
 ::-webkit-scrollbar-thumb {
-    background: var(--color-border); 
-    border-radius: 5px;
+    background-color: var(--color-primary);
+    border: 3px solid var(--color-bg); /* Creates a floating effect */
+    border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-text-dim); 
+    background-color: var(--color-secondary); 
 }
