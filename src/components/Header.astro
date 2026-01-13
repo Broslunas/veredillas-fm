@@ -2,7 +2,6 @@
 import ThemeToggle from './ThemeToggle.astro';
 
 const navItems = [
-  { label: 'Inicio', href: '/', icon: '🏠' },
   { label: 'Blog', href: '/blog', icon: '📰' },
   { label: 'EP', href: '/ep', icon: '🎙️' },
   { label: 'Equipo', href: '/about', icon: '👥' },
@@ -14,7 +13,7 @@ const navItems = [
     <!-- Left Pill: Logo -->
     <a href="/" class="pill logo-pill">
       <div class="logo-icon-wrapper">
-        <span class="logo-icon">📻</span>
+        <img src="/logo.png" alt="Veredillas FM" class="logo-image" />
       </div>
       <span class="logo-text">Veredillas<span class="highlight">FM</span></span>
     </a>
@@ -103,16 +102,19 @@ const navItems = [
   }
 
   .logo-icon-wrapper {
-      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
-      font-size: 1.1rem;
-      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
+      border-radius: 50%;
+      overflow: hidden;
+  }
+
+  .logo-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
   }
 
   .logo-text {

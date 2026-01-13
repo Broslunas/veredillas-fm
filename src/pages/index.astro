@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import EpisodeCard from '../components/EpisodeCard.astro';
+import FeaturedSlider from '../components/FeaturedSlider.astro';
 import { getCollection } from 'astro:content';
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -66,7 +67,7 @@ const recentEpisodes = allEpisodes.sort((a, b) => b.data.pubDate.valueOf() - a.d
                     <div class="vinyl-container">
                         <div class="vinyl-record">
                             <div class="vinyl-label">
-                                <span class="logo-text">VFM</span>
+                                <img src="/logo.png" alt="VFM" class="vinyl-logo-img" />
                             </div>
                         </div>
                         <div class="vinyl-cover">
@@ -81,6 +82,11 @@ const recentEpisodes = allEpisodes.sort((a, b) => b.data.pubDate.valueOf() - a.d
                 </div>
             </div>
         </div>
+    </section>
+
+    <!-- Featured Slider Widget -->
+    <section class="container gs-fade-up" style="margin-top: -4rem; margin-bottom: 6rem; position: relative; z-index: 20;">
+        <FeaturedSlider />
     </section>
 
     <!-- Latest Episodes Slider -->
@@ -273,7 +279,7 @@ const recentEpisodes = allEpisodes.sort((a, b) => b.data.pubDate.valueOf() - a.d
 <style>
     /* Section Layouts */
     .hero-section {
-        padding: 8rem 0 6rem;
+        padding: 2rem 0 6rem;
         position: relative;
         overflow: hidden;
     }
@@ -451,12 +457,19 @@ const recentEpisodes = allEpisodes.sort((a, b) => b.data.pubDate.valueOf() - a.d
     .vinyl-label {
         width: 140px;
         height: 140px;
-        background: var(--color-primary);
+        background: black;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         border: 4px solid #fff;
+        overflow: hidden;
+    }
+
+    .vinyl-logo-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     .logo-text {
