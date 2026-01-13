@@ -1,0 +1,71 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Política de Privacidad | Veredillas FM">
+  <main class="page-container">
+    <div class="content-wrapper">
+      <h1>Política de Privacidad</h1>
+      <p class="updated-date">Última actualización: {new Date().toLocaleDateString('es-ES')}</p>
+      
+      <section>
+        <h2>1. Información que recopilamos</h2>
+        <p>En Veredillas FM, respetamos su privacidad y nos comprometemos a proteger sus datos personales. Esta política explica cómo recopilamos, usamos y protegemos su información cuando visita nuestro sitio web.</p>
+      </section>
+
+      <section>
+        <h2>2. Uso de la información</h2>
+        <p>La información recopilada se utiliza para mejorar el contenido de nuestro sitio, personalizar el contenido y el diseño de nuestra página para cada visitante individual y notificar a los consumidores sobre las actualizaciones de nuestro sitio web.</p>
+      </section>
+
+      <section>
+        <h2>3. Cookies</h2>
+        <p>Utilizamos cookies para almacenar las preferencias de los visitantes, registrar información específica del usuario sobre las páginas a las que el usuario accede o visita, y personalizar el contenido de la página web según el tipo de navegador del visitante u otra información que el visitante envía.</p>
+      </section>
+
+      <section>
+        <h2>4. Contacto</h2>
+        <p>Si tiene alguna pregunta sobre nuestra política de privacidad, no dude en contactarnos a través de los canales proporcionados en nuestro sitio web.</p>
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .page-container {
+    padding: var(--spacing-4xl) var(--spacing-lg);
+    min-height: 80vh;
+  }
+  
+  .content-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--color-text-heading);
+  }
+  
+  .updated-date {
+    color: var(--color-text-muted);
+    margin-bottom: 3rem;
+  }
+  
+  section {
+    margin-bottom: 2.5rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--color-text-heading);
+  }
+  
+  p {
+    color: var(--color-text-body);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+</style>

@@ -1,0 +1,81 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Política de Cookies | Veredillas FM">
+  <main class="page-container">
+    <div class="content-wrapper">
+      <h1>Política de Cookies</h1>
+      <p class="updated-date">Última actualización: {new Date().toLocaleDateString('es-ES')}</p>
+      
+      <section>
+        <h2>¿Qué son las cookies?</h2>
+        <p>Las cookies son archivos de texto que contienen pequeñas cantidades de información que se descargan en su dispositivo cuando visita un sitio web. Las cookies permiten que un sitio web reconozca el dispositivo de un usuario.</p>
+      </section>
+
+      <section>
+        <h2>¿Cómo utilizamos las cookies?</h2>
+        <p>Utilizamos cookies para:</p>
+        <ul>
+          <li>Entender y guardar las preferencias del usuario para futuras visitas.</li>
+          <li>Recopilar datos agregados sobre el tráfico del sitio y las interacciones del sitio para ofrecer mejores experiencias y herramientas en el futuro.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Gestión de cookies</h2>
+        <p>Puede elegir que su ordenador le avise cada vez que se envíe una cookie, o puede elegir desactivar todas las cookies. Esto se hace a través de la configuración de su navegador.</p>
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .page-container {
+    padding: var(--spacing-4xl) var(--spacing-lg);
+    min-height: 80vh;
+  }
+  
+  .content-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--color-text-heading);
+  }
+  
+  .updated-date {
+    color: var(--color-text-muted);
+    margin-bottom: 3rem;
+  }
+  
+  section {
+    margin-bottom: 2.5rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--color-text-heading);
+  }
+  
+  p {
+    color: var(--color-text-body);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+  
+  ul {
+    color: var(--color-text-body);
+    line-height: 1.7;
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  li {
+    margin-bottom: 0.5rem;
+  }
+</style>

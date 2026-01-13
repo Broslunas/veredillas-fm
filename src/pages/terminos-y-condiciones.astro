@@ -1,0 +1,71 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Términos y Condiciones | Veredillas FM">
+  <main class="page-container">
+    <div class="content-wrapper">
+      <h1>Términos y Condiciones</h1>
+      <p class="updated-date">Última actualización: {new Date().toLocaleDateString('es-ES')}</p>
+      
+      <section>
+        <h2>1. Introducción</h2>
+        <p>Bienvenido a Veredillas FM. Al acceder a nuestro sitio web, aceptas estar sujeto a estos términos y condiciones, todas las leyes y regulaciones aplicables, y aceptas que eres responsable del cumplimiento de las leyes locales aplicables.</p>
+      </section>
+
+      <section>
+        <h2>2. Uso de Licencia</h2>
+        <p>Se concede permiso para descargar temporalmente una copia de los materiales (información o software) en el sitio web de Veredillas FM solo para visualización transitoria personal y no comercial.</p>
+      </section>
+
+      <section>
+        <h2>3. Renuncia</h2>
+        <p>Los materiales en el sitio web de Veredillas FM se proporcionan "tal cual". Veredillas FM no ofrece garantías, expresas o implícitas, y por la presente renuncia y niega todas las otras garantías, incluyendo, sin limitación, garantías implícitas o condiciones de comerciabilidad, idoneidad para un propósito particular, o no infracción de propiedad intelectual u otra violación de derechos.</p>
+      </section>
+
+      <section>
+        <h2>4. Limitaciones</h2>
+        <p>En ningún caso Veredillas FM o sus proveedores serán responsables de ningún daño (incluyendo, sin limitación, daños por pérdida de datos o beneficios, o debido a la interrupción del negocio) que surjan del uso o la imposibilidad de usar los materiales en el sitio web de Veredillas FM.</p>
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .page-container {
+    padding: var(--spacing-4xl) var(--spacing-lg);
+    min-height: 80vh;
+  }
+  
+  .content-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--color-text-heading);
+  }
+  
+  .updated-date {
+    color: var(--color-text-muted);
+    margin-bottom: 3rem;
+  }
+  
+  section {
+    margin-bottom: 2.5rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--color-text-heading);
+  }
+  
+  p {
+    color: var(--color-text-body);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+</style>
