@@ -1,0 +1,44 @@
+{
+  "name": "Veredillas FM - El Podcast del IES Veredillas",
+  "short_name": "Veredillas FM",
+  "description": "El podcast oficial del IES Veredillas. Escucha entrevistas exclusivas, noticias del instituto, cultura estudiantil y mucho más. Una radio hecha por alumnos, para alumnos.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "education",
+    "entertainment",
+    "news",
+    "music"
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Episodios",
+      "short_name": "Episodios",
+      "description": "Ver todos los episodios",
+      "url": "/ep",
+      "icons": []
+    },
+    {
+      "name": "Blog",
+      "short_name": "Blog",
+      "description": "Leer el blog",
+      "url": "/blog",
+      "icons": []
+    }
+  ]
+}

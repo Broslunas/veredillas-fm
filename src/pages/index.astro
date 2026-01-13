@@ -16,7 +16,13 @@ const allPosts = await getCollection('blog');
 const recentPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
 ---
 
-<Layout title="Inicio">
+<Layout 
+	title="Inicio"
+	description="Veredillas FM es el podcast oficial del IES Veredillas. Escucha entrevistas exclusivas, noticias del instituto, deportes, cultura y tecnología. Una radio estudiantil hecha por alumnos, para alumnos."
+	image="/logo.png"
+	imageAlt="Veredillas FM - El podcast oficial del IES Veredillas donde los alumnos tienen voz"
+	tags={['podcast', 'radio escolar', 'IES Veredillas', 'estudiantes', 'educación', 'entrevistas', 'noticias escolares']}
+>
     <!-- Background Decor -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         <div class="blob blob-1"></div>
