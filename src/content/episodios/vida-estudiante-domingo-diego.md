@@ -2,7 +2,7 @@
 title: "La vida del estudiante ft. Domingo y Diego"
 description: "Hoy, vamos a dejar los exámenes y las materias a un lado para hablar de la vida, de lo que les apasiona y de lo que les preocupa mientras afrontan un curso tan decisivo."
 pubDate: 2025-12-03
-image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgYWUYmG6HthDnH1e1q0zqYhteiOygsbncud519Fvb44XYo7P7E5VezBwvdNgydBuKNEtGYMHR6Xevq67Ms6G9sn1YyRlSO8sFwqWroh-rEYSDqht3weKPbmGO-KyW2pudUDPfsQjJEkW-oZ71kdj2eU1gBNRFOn4VTjip-gjaWb8yu29Va1Kl5_WGyofI/w640-h480/Imagen%20de%20WhatsApp%202025-12-03%20a%20las%2014.40.36_dca825df.jpg"
+image: "https://radio.broslunas.com/img/004.webp"
 spotifyUrl: "https://open.spotify.com/embed/episode/3WQF20Rsg7LYlbuS2E5ogD?utm_source=generator"
 season: 1
 episode: 4

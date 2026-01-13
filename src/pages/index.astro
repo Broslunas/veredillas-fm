@@ -2,531 +2,697 @@
 import Layout from '../layouts/Layout.astro';
 import EpisodeCard from '../components/EpisodeCard.astro';
 import { getCollection } from 'astro:content';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 const allEpisodes = await getCollection('episodios');
-// Get latest 3 episodes
-const recentEpisodes = allEpisodes.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
+// Get latest 6 episodes for the slider
+const recentEpisodes = allEpisodes.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 6);
 ---
 
 <Layout title="Inicio">
-    <!-- Background Decor Elements -->
+    <!-- Background Decor -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600/20 blur-[120px] rounded-full mix-blend-screen opacity-50 animate-pulse-slow"></div>
-        <div class="absolute top-[20%] right-[-5%] w-[400px] h-[400px] bg-blue-500/10 blur-[100px] rounded-full mix-blend-screen opacity-40"></div>
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="grid-overlay"></div>
     </div>
 
     <!-- Hero Section -->
-    <section class="hero">
-        <div class="container hero-content">
-            <div class="hero-text">
-                <div class="badge fade-in-up">
-                    <span class="pulse-dot"></span>
-                    En vivo desde el instituto
-                </div>
-                <h1 class="fade-in-up delay-100">
-                    Tu voz, tu música, <br />
-                    <span class="text-gradient">Veredillas FM</span>
-                </h1>
-                <p class="hero-description fade-in-up delay-200">
-                    Descubre el talento de nuestros estudiantes. Historias fascinantes, entrevistas exclusivas y la mejor música, creada 100% en el Instituto Veredillas.
-                </p>
-                <div class="hero-actions fade-in-up delay-300">
-                    <a href="/episodios" class="btn btn-primary btn-lg">
-                        <span class="icon">▶</span> Escuchar ahora
-                    </a>
-                    <a href="/about" class="btn btn-outline btn-lg">
-                        Conoce el equipo
-                    </a>
-                </div>
-                
-                <div class="stats fade-in-up delay-300">
-                    <div class="stat-item">
-                        <span class="stat-val">{allEpisodes.length}+</span>
-                        <span class="stat-label">Episodios</span>
+    <section class="hero-section">
+        <div class="container relative z-10">
+            <div class="hero-grid">
+                <div class="hero-content">
+                    <div class="hero-badge gs-reveal">
+                        <span class="live-dot"></span>
+                        <span>En vivo desde el instituto</span>
                     </div>
-                    <div class="stat-divider"></div>
-                    <div class="stat-item">
-                        <span class="stat-val">100%</span>
-                        <span class="stat-label">Alumnos</span>
+                    
+                    <h1 class="hero-title gs-reveal">
+                        <span class="block">Tu voz,</span>
+                        <span class="block">Tu música,</span>
+                        <span class="text-gradient block">Veredillas FM</span>
+                    </h1>
+                    
+                    <p class="hero-desc gs-reveal">
+                        La plataforma definitiva para el talento estudiantil. 
+                        Entrevistas, música en directo y las historias que realmente importan.
+                    </p>
+                    
+                    <div class="hero-actions gs-reveal">
+                        <a href="#latest-episodes" class="btn btn-primary btn-lg shine-effect">
+                            <span class="icon">▶</span> Escuchar Ahora
+                        </a>
+                        <a href="/about" class="btn btn-outline btn-lg">
+                            Conocer Más
+                        </a>
                     </div>
-                </div>
-            </div>
-            
-            <div class="hero-visual fade-in-up delay-200">
-                <div class="floating-cards">
-                    <div class="glass-card card-1 animate-float">
-                        <div class="card-icon">🎙️</div>
-                        <h3>Entrevistas</h3>
-                        <div class="wave-visual">
-                            <span></span><span></span><span></span><span></span>
+
+                    <div class="hero-stats gs-reveal">
+                        <div class="stat">
+                            <span class="stat-num" data-count={allEpisodes.length}>0</span>
+                            <span class="stat-label">Episodios</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat">
+                            <span class="stat-num" data-count="100">0</span>%
+                            <span class="stat-label">Talento Escolar</span>
                         </div>
                     </div>
-                    <div class="glass-card card-2 animate-float delay-1000">
-                        <div class="card-icon">🎸</div>
-                        <h3>Música</h3>
-                        <div class="album-art"></div>
-                    </div>
-                    <div class="glass-card card-3 animate-float delay-2000">
-                        <div class="card-icon">📻</div>
-                        <h3>Actualidad</h3>
+                </div>
+
+                <div class="hero-visual gs-visual">
+                    <div class="vinyl-container">
+                        <div class="vinyl-record">
+                            <div class="vinyl-label">
+                                <span class="logo-text">VFM</span>
+                            </div>
+                        </div>
+                        <div class="vinyl-cover">
+                            <div class="cover-art">
+                                <div class="spectrum-bars">
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="glow-bg"></div>
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features container">
-        <div class="section-badge">¿Por qué escucharnos?</div>
-        <h2>La voz de una <span class="text-gradient">nueva generación</span></h2>
-        
-        <div class="features-grid">
-            <div class="feature-card glass-panel">
-                <div class="feature-icon">🎓</div>
-                <h3>Hecho por Alumnos</h3>
-                <p>Todo el contenido es producido, grabado y editado por los estudiantes del centro.</p>
-            </div>
-            <div class="feature-card glass-panel">
-                <div class="feature-icon">🌍</div>
-                <h3>Temas Diversos</h3>
-                <p>Desde cultura y ciencia hasta deportes y entretenimiento. Hay algo para todos.</p>
-            </div>
-            <div class="feature-card glass-panel">
-                <div class="feature-icon">🚀</div>
-                <h3>Innovación</h3>
-                <p>Utilizamos las últimas tecnologías para llevar la radio escolar al siguiente nivel.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Latest Episodes -->
-    <section class="recent-episodes container">
-        <div class="section-header">
-            <div>
-                <h2>Últimos Episodios</h2>
-                <p class="section-subtitle">No te pierdas lo más reciente</p>
-            </div>
-            <a href="/episodios" class="view-all-btn">
-                Ver todos los episodios 
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-        </div>
-        
-        <div class="episodes-grid">
-            {recentEpisodes.map((post, index) => (
-                <div class={`fade-in-up delay-${(index + 1) * 100}`}>
-                    <EpisodeCard post={post} />
-                </div>
-            ))}
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta-section">
+    <!-- Latest Episodes Slider -->
+    <section id="latest-episodes" class="episodes-section">
         <div class="container">
-            <div class="cta-box glass-panel">
-                <div class="cta-content">
-                    <h2>¿Quieres participar?</h2>
-                    <p>Si eres alumno del Veredillas y tienes algo que contar, ¡te esperamos!</p>
-                    <a href="/contact" class="btn btn-primary">Únete al equipo</a>
+            <div class="section-header gs-fade-up">
+                <div>
+                    <h2 class="section-title">En Tendencia</h2>
+                    <p class="section-subtitle">Lo último que está sonando en los pasillos</p>
                 </div>
-                <div class="cta-visual">
-                    <span class="giant-emoji">👋</span>
+                <div class="slider-nav">
+                    <button class="swiper-button-prev-custom" aria-label="Previous slide">←</button>
+                    <button class="swiper-button-next-custom" aria-label="Next slide">→</button>
                 </div>
+            </div>
+
+            <div class="swiper episodes-swiper gs-fade-up">
+                <div class="swiper-wrapper">
+                    {recentEpisodes.map((post) => (
+                        <div class="swiper-slide">
+                            <EpisodeCard post={post} />
+                        </div>
+                    ))}
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+            
+            <div class="center-action gs-fade-up">
+                <a href="/ep" class="btn btn-outline">Ver todos los episodios</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Marquee Text -->
+    <div class="marquee-container">
+        <div class="marquee-content">
+            <span>• ENTREVISTAS EXCLUSIVAS • MÚSICA EN VIVO • NOTICIAS DEL INSTITUTO • DEPORTES • CULTURA •</span>
+            <span>• ENTREVISTAS EXCLUSIVAS • MÚSICA EN VIVO • NOTICIAS DEL INSTITUTO • DEPORTES • CULTURA •</span>
+        </div>
+    </div>
+
+    <!-- About Feature -->
+    <section class="info-section">
+        <div class="container">
+            <div class="info-grid">
+                <div class="info-card glass-panel gs-scroll-left">
+                    <span class="info-icon">🎙️</span>
+                    <h3>Hecho por alumnos</h3>
+                    <p>Todo el contenido es producido, grabado y editado por nosotros. Aprendemos haciendo.</p>
+                </div>
+                <div class="info-card glass-panel gs-scroll-up">
+                    <span class="info-icon">⚡</span>
+                    <h3>Tecnología Punta</h3>
+                    <p>Utilizamos las últimas herramientas para llevar la radio escolar al siglo XXI.</p>
+                </div>
+                <div class="info-card glass-panel gs-scroll-right">
+                    <span class="info-icon">🌍</span>
+                    <h3>Sin Fronteras</h3>
+                    <p>Llevamos la voz del Veredillas a todo el mundo a través del streaming digital.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section class="final-cta">
+        <div class="container">
+            <div class="cta-inner gs-scale-up">
+                <h2>¿Tienes algo que contar?</h2>
+                <p>El micrófono está abierto para ti. Únete al equipo de Veredillas FM.</p>
+                <a href="/contact" class="btn btn-primary btn-xl">Participar</a>
             </div>
         </div>
     </section>
 </Layout>
 
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+    import Swiper from 'swiper';
+    import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Hero Animations
+    const tl = gsap.timeline();
+
+    tl.from(".gs-reveal", {
+        y: 50,
+        opacity: 0,
+        duration: 1,
+        stagger: 0.2,
+        ease: "power3.out"
+    })
+    .from(".hero-visual", {
+        x: 50,
+        opacity: 0,
+        duration: 1,
+        ease: "back.out(1.7)"
+    }, "-=0.5");
+
+    // Vinyl Rotation
+    gsap.to(".vinyl-record", {
+        rotation: 360,
+        duration: 10,
+        repeat: -1,
+        ease: "linear"
+    });
+
+    // Stats Counter
+    const stats = document.querySelectorAll('.stat-num');
+    stats.forEach(stat => {
+        const target = parseInt(stat.getAttribute('data-count') || "0");
+        gsap.to(stat, {
+            innerText: target,
+            duration: 2,
+            snap: { innerText: 1 },
+            ease: "power2.out"
+        });
+    });
+
+    // Scroll Animations
+    gsap.utils.toArray('.gs-fade-up').forEach((elem: any) => {
+        gsap.from(elem, {
+            scrollTrigger: {
+                trigger: elem,
+                start: "top 85%",
+            },
+            y: 50,
+            opacity: 0,
+            duration: 0.8,
+            ease: "power2.out"
+        });
+    });
+
+    gsap.from(".gs-scroll-left", {
+        scrollTrigger: { trigger: ".info-grid", start: "top 80%" },
+        x: -50, opacity: 0, duration: 0.8
+    });
+    
+    gsap.from(".gs-scroll-up", {
+        scrollTrigger: { trigger: ".info-grid", start: "top 80%" },
+        y: 50, opacity: 0, duration: 0.8, delay: 0.2
+    });
+
+    gsap.from(".gs-scroll-right", {
+        scrollTrigger: { trigger: ".info-grid", start: "top 80%" },
+        x: 50, opacity: 0, duration: 0.8, delay: 0.4
+    });
+
+    gsap.from(".cta-inner", {
+        scrollTrigger: { trigger: ".final-cta", start: "top 85%" },
+        scale: 0.9,
+        opacity: 0,
+        duration: 0.6,
+        ease: "back.out(1.7)"
+    });
+
+    // Swiper Init
+    const swiper = new Swiper('.episodes-swiper', {
+        modules: [Navigation, Pagination, Autoplay],
+        slidesPerView: 1,
+        spaceBetween: 20,
+        loop: true,
+        autoplay: {
+            delay: 5000,
+            disableOnInteraction: false,
+        },
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+        },
+        navigation: {
+            nextEl: '.swiper-button-next-custom',
+            prevEl: '.swiper-button-prev-custom',
+        },
+        breakpoints: {
+            640: {
+                slidesPerView: 2,
+                spaceBetween: 20,
+            },
+            1024: {
+                slidesPerView: 3,
+                spaceBetween: 30,
+            },
+        },
+    });
+</script>
+
 <style>
-    /* Hero */
-    .hero {
+    /* Section Layouts */
+    .hero-section {
+        padding: 8rem 0 6rem;
         position: relative;
-        padding: 8rem 0 4rem;
-        overflow: visible;
+        overflow: hidden;
     }
 
-    .hero-content {
+    .hero-grid {
         display: grid;
-        grid-template-columns: 1.2fr 0.8fr;
-        gap: var(--spacing-2xl);
+        grid-template-columns: 1.2fr 1fr;
+        gap: 4rem;
         align-items: center;
     }
 
-    .badge {
+    /* Background blobs */
+    .blob {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.4;
+    }
+    
+    .blob-1 {
+        top: -100px;
+        left: -100px;
+        background: radial-gradient(circle, var(--color-primary), transparent);
+        animation: blob-float 10s infinite alternate;
+    }
+    
+    .blob-2 {
+        bottom: -100px;
+        right: -100px;
+        background: radial-gradient(circle, var(--color-secondary), transparent);
+        animation: blob-float 12s infinite alternate-reverse;
+    }
+
+    .grid-overlay {
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    }
+
+    @keyframes blob-float {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(50px, 50px); }
+    }
+
+    /* Hero Content */
+    .hero-badge {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
         padding: 0.5rem 1rem;
-        background: rgba(139, 92, 246, 0.1);
-        border: 1px solid rgba(139, 92, 246, 0.2);
-        border-radius: var(--radius-full);
-        color: var(--color-primary);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 100px;
+        margin-bottom: 2rem;
+        font-size: 0.9rem;
         font-weight: 600;
-        font-size: 0.875rem;
-        margin-bottom: var(--spacing-md);
+        color: var(--color-primary);
     }
 
-    .pulse-dot {
+    .live-dot {
         width: 8px;
         height: 8px;
-        background: var(--color-primary);
+        background: #ef4444;
         border-radius: 50%;
-        box-shadow: 0 0 0 rgba(139, 92, 246, 0.4);
-        animation: pulse-dot 2s infinite;
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        animation: pulse-red 2s infinite;
     }
 
-    @keyframes pulse-dot {
-        0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
-        70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+    @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
     }
 
-    h1 {
-        font-size: clamp(3.5rem, 6vw, 5rem);
-        line-height: 1.1;
-        margin-bottom: var(--spacing-lg);
-        letter-spacing: -0.03em;
+    .hero-title {
+        font-size: clamp(3rem, 6vw, 5.5rem);
+        line-height: 1;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.04em;
     }
 
-    .hero-description {
+    .hero-desc {
         font-size: 1.25rem;
         color: var(--color-text-muted);
-        margin-bottom: var(--spacing-xl);
-        max-width: 540px;
+        max-width: 500px;
+        margin-bottom: 2.5rem;
         line-height: 1.6;
     }
 
     .hero-actions {
         display: flex;
-        gap: var(--spacing-md);
-        margin-bottom: var(--spacing-xl);
+        gap: 1rem;
+        margin-bottom: 3rem;
     }
-    
+
     .btn-lg {
         padding: 1rem 2rem;
-        font-size: 1.1rem;
+        font-size: 1.125rem;
     }
-    
-    .icon { margin-right: 0.5rem; font-size: 0.9em; }
 
-    .stats {
+    .hero-stats {
         display: flex;
         align-items: center;
-        gap: var(--spacing-lg);
-        padding-top: var(--spacing-lg);
-        border-top: 1px solid rgba(255,255,255,0.05);
+        gap: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .stat-item {
+    .stat {
         display: flex;
         flex-direction: column;
+        line-height: 1.2;
     }
 
-    .stat-val {
-        font-family: var(--font-display);
+    .stat-num {
+        font-size: 2rem;
         font-weight: 700;
-        font-size: 1.5rem;
-        color: var(--color-text-main);
+        font-family: var(--font-display);
     }
 
     .stat-label {
         font-size: 0.875rem;
         color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
-    
+
     .stat-divider {
         width: 1px;
         height: 40px;
-        background: rgba(255,255,255,0.1);
+        background: rgba(255, 255, 255, 0.1);
     }
 
-    /* Hero Visual */
+    /* Vinyl Visual */
     .hero-visual {
-        position: relative;
-        height: 500px;
         display: flex;
-        align-items: center;
         justify-content: center;
+        align-items: center;
         perspective: 1000px;
     }
 
-    .floating-cards {
+    .vinyl-container {
         position: relative;
-        width: 100%;
-        height: 100%;
+        width: 400px;
+        height: 400px;
     }
 
-    .glass-card {
+    .vinyl-record {
         position: absolute;
-        background: rgba(20, 20, 25, 0.7);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: var(--radius-lg);
-        padding: 1.5rem;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        top: 0;
+        right: 0;
+        width: 380px;
+        height: 380px;
+        background: #111;
+        border-radius: 50%;
+        background: repeating-radial-gradient(
+          #111 0, 
+          #111 2px, 
+          #222 3px, 
+          #222 4px
+        );
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        z-index: 1;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 1rem;
-    }
-    
-    [data-theme="light"] .glass-card {
-        background: rgba(255, 255, 255, 0.8);
-        border-color: rgba(0, 0, 0, 0.05);
-        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
     }
 
-    .card-1 {
-        top: 10%;
-        right: 10%;
-        width: 220px;
-        height: 280px;
-        z-index: 2;
-        transform: rotate(-5deg);
-    }
-
-    .card-2 {
-        bottom: 15%;
-        left: 5%;
-        width: 200px;
-        height: 240px;
-        z-index: 3;
-        transform: rotate(3deg);
-        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(20, 20, 25, 0.8));
-    }
-
-    .card-3 {
-        top: 40%;
-        right: -5%;
-        width: 180px;
-        height: 180px;
-        z-index: 1;
-        transform: rotate(10deg);
-        filter: blur(1px);
-        opacity: 0.8;
-    }
-
-    .card-icon {
-        font-size: 3rem;
-        background: rgba(255,255,255,0.05);
-        width: 80px;
-        height: 80px;
+    .vinyl-label {
+        width: 140px;
+        height: 140px;
+        background: var(--color-primary);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
+        border: 4px solid #fff;
     }
 
-    .wave-visual {
+    .logo-text {
+        font-weight: 900;
+        font-size: 1.5rem;
+        color: white;
+        letter-spacing: -1px;
+    }
+
+    .vinyl-cover {
+        position: absolute;
+        top: 20px;
+        left: -40px;
+        width: 400px;
+        height: 400px;
+        background: linear-gradient(135deg, var(--color-surface), #000);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 2;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        transform: rotate(-5deg);
+        overflow: hidden;
         display: flex;
-        gap: 4px;
-        align-items: flex-end;
-        height: 30px;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.5s ease;
     }
     
-    .wave-visual span {
-        width: 4px;
-        background: var(--color-primary);
-        border-radius: 2px;
-        animation: wave 1s infinite ease-in-out;
-    }
-    .wave-visual span:nth-child(1) { height: 15px; animation-delay: 0s; }
-    .wave-visual span:nth-child(2) { height: 30px; animation-delay: 0.1s; }
-    .wave-visual span:nth-child(3) { height: 20px; animation-delay: 0.2s; }
-    .wave-visual span:nth-child(4) { height: 25px; animation-delay: 0.3s; }
-
-    @keyframes wave {
-        0%, 100% { transform: scaleY(1); }
-        50% { transform: scaleY(0.5); }
+    .vinyl-container:hover .vinyl-cover {
+        transform: rotate(-5deg) translateX(-150px);
     }
 
-    .glow-bg {
-        position: absolute;
+    .cover-art {
         width: 100%;
         height: 100%;
-        background: radial-gradient(circle at center, var(--color-primary-glow) 0%, transparent 70%);
-        filter: blur(60px);
-        z-index: 0;
-        opacity: 0.3;
+        background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+        opacity: 0.2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    /* Features */
-    .features {
-        padding: var(--spacing-2xl) var(--spacing-md);
-        text-align: center;
+    .spectrum-bars {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        height: 60px;
     }
-    
-    .section-badge {
-        font-size: 0.875rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: var(--color-primary);
-        margin-bottom: var(--spacing-sm);
+
+    .spectrum-bars span {
+        width: 8px;
+        background: white;
+        border-radius: 20px;
+        animation: spectrum 1s infinite ease-in-out;
     }
+
+    .spectrum-bars span:nth-child(odd) { animation-duration: 0.8s; }
+    .spectrum-bars span:nth-child(even) { animation-duration: 1.2s; }
     
-    .features h2 {
+    @keyframes spectrum {
+        0%, 100% { height: 10px; opacity: 0.5; }
+        50% { height: 60px; opacity: 1; }
+    }
+
+    /* Episodes Section */
+    .episodes-section {
+        padding: 6rem 0;
+        overflow: hidden;
+    }
+
+    .section-title {
         font-size: 2.5rem;
-        margin-bottom: var(--spacing-2xl);
+        margin-bottom: 0.5rem;
     }
 
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: var(--spacing-lg);
-    }
-
-    .feature-card {
-        padding: var(--spacing-xl) var(--spacing-lg);
-        border-radius: var(--radius-lg);
-        transition: transform 0.3s ease;
-    }
-    
-    .feature-card:hover {
-        transform: translateY(-5px);
-    }
-
-    .feature-icon {
-        font-size: 3rem;
-        margin-bottom: var(--spacing-md);
-    }
-
-    .feature-card h3 {
-        margin-bottom: var(--spacing-sm);
-        font-size: 1.5rem;
-    }
-    
-    .feature-card p {
+    .section-subtitle {
         color: var(--color-text-muted);
-    }
-
-    /* Recent Episodes */
-    .recent-episodes {
-        padding: var(--spacing-2xl) var(--spacing-md);
+        font-size: 1.1rem;
     }
 
     .section-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
-        margin-bottom: var(--spacing-xl);
-    }
-    
-    .section-subtitle {
-        color: var(--color-text-muted);
-        margin-top: 0.5rem;
+        margin-bottom: 3rem;
     }
 
-    .view-all-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
+    .slider-nav {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .swiper-button-prev-custom,
+    .swiper-button-next-custom {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 1px solid var(--color-border);
+        background: var(--color-surface);
         color: var(--color-text-main);
-        font-weight: 600;
-        transition: gap 0.2s ease;
-    }
-    
-    .view-all-btn:hover {
-        gap: 0.75rem;
-        color: var(--color-primary);
-    }
-
-    .episodes-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: var(--spacing-lg);
-    }
-
-    /* CTA Section */
-    .cta-section {
-        padding: var(--spacing-2xl) 0;
-    }
-
-    .cta-box {
-        display: grid;
-        grid-template-columns: 1fr 300px;
-        background: linear-gradient(135deg, rgba(20, 20, 25, 0.9), rgba(139, 92, 246, 0.1));
-        border-radius: var(--radius-lg);
-        padding: var(--spacing-2xl);
-        overflow: hidden;
-        position: relative;
-    }
-
-    .cta-content {
-        z-index: 2;
-    }
-    
-    .cta-content h2 {
-        font-size: 2.5rem;
-        margin-bottom: var(--spacing-md);
-    }
-    
-    .cta-content p {
-        color: var(--color-text-muted);
-        font-size: 1.25rem;
-        margin-bottom: var(--spacing-lg);
-    }
-
-    .cta-visual {
         display: flex;
         align-items: center;
         justify-content: center;
-        position: relative;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1.2rem;
     }
-    
-    .giant-emoji {
-        font-size: 10rem;
-        position: absolute;
-        right: -20px;
-        transform: rotate(15deg);
-        filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+
+    .swiper-button-prev-custom:hover,
+    .swiper-button-next-custom:hover {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+    }
+
+    .center-action {
+        text-align: center;
+        margin-top: 3rem;
+    }
+
+    /* Info Grid */
+    .info-section {
+        padding: 6rem 0;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .info-card {
+        padding: 2.5rem;
+        border-radius: var(--radius-lg);
+        text-align: left;
         transition: transform 0.3s ease;
     }
+
+    .info-card:hover {
+        transform: translateY(-10px);
+    }
+
+    .info-icon {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .info-card p {
+        color: var(--color-text-muted);
+        line-height: 1.6;
+    }
+
+    /* Marquee */
+    .marquee-container {
+        padding: 2rem 0;
+        background: var(--color-primary);
+        overflow: hidden;
+        transform: rotate(-2deg) scale(1.05);
+        margin: 4rem 0;
+    }
+
+    .marquee-content {
+        white-space: nowrap;
+        display: flex;
+        animation: marquee 20s linear infinite;
+    }
+
+    .marquee-content span {
+        font-size: 2rem;
+        font-weight: 900;
+        color: black;
+        padding-right: 2rem;
+        text-transform: uppercase;
+        font-family: var(--font-display);
+    }
+
+    @keyframes marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+
+    /* Final CTA */
+    .final-cta {
+        padding: 8rem 0;
+        text-align: center;
+        background: linear-gradient(to top, rgba(139, 92, 246, 0.1), transparent);
+    }
+
+    .cta-inner h2 {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+    }
     
-    .cta-box:hover .giant-emoji {
-        transform: rotate(25deg) scale(1.1);
+    .cta-inner p {
+        font-size: 1.25rem;
+        color: var(--color-text-muted);
+        margin-bottom: 2rem;
+    }
+    
+    .btn-xl {
+        padding: 1.25rem 3rem;
+        font-size: 1.25rem;
     }
 
     @media (max-width: 960px) {
-        .hero-content {
+        .hero-grid {
             grid-template-columns: 1fr;
             text-align: center;
         }
 
-        .hero-text {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .hero-content {
+            margin-bottom: 4rem;
         }
 
-        .hero-actions {
-            justify-content: center;
-        }
-        
-        .stats {
+        .hero-actions, .hero-stats {
             justify-content: center;
         }
 
         .hero-visual {
-            margin-top: var(--spacing-xl);
-            height: 400px;
+            transform: scale(0.8);
+        }
+
+        .vinyl-container:hover .vinyl-cover {
+            transform: rotate(-5deg) translateX(-50px) translateY(50px);
         }
         
-        .card-1 { right: 50%; transform: translateX(50%) rotate(-5deg); top: 0; }
-        .card-2 { left: 50%; transform: translateX(-80%) rotate(5deg); bottom: 10%; }
-        .card-3 { display: none; }
-        
-        .cta-box {
-            grid-template-columns: 1fr;
-            text-align: center;
-        }
-        
-        .cta-visual {
-            display: none;
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
         }
     }
 </style>
