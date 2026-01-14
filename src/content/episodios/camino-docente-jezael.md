@@ -7,6 +7,8 @@ spotifyUrl: "https://open.spotify.com/embed/episode/4j57TLbg8OvHXnL8BLwPKW?utm_s
 season: 1
 episode: 3
 duration: "42 min"
+participants: ["Prof. Jezael"]
+tags: ["Profesorado", "Matemáticas", "Bachillerato"]
 ---
 
 **¡Hola! ¡Bienvenido a Veredillas FM, dónde lo mejor del I.E.S. Las Veredillas es Veredillas FM!**

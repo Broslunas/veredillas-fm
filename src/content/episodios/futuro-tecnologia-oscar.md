@@ -6,6 +6,8 @@ image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgiP6d_QHHf95W
 season: 1
 episode: 1
 duration: "32 min"
+participants: ["Prof. Oscar"]
+tags: ["Profesorado", "Tecnología", "Innovación", "Profesorado"]
 ---
 
 ¡Hola a todos y bienvenidos de nuevo al blog de **Veredillas FM**!

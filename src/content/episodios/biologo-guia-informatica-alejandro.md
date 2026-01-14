@@ -7,6 +7,8 @@ spotifyUrl: "https://open.spotify.com/embed/episode/0bqs58DI9MH6wD72Opoj8T?utm_s
 season: 1
 episode: 2
 duration: "37 min"
+participants: ["Prof. Alejandro"]
+tags: ["Profesorado", "Informática", "Ciencia", "Profesorado"]
 ---
 
 **¡Hola! ¡Bienvenido a Veredillas FM, dónde lo mejor del I.E.S. Las Veredillas es Veredillas FM!**

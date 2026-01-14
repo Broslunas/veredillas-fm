@@ -26,7 +26,9 @@ const formattedDate = post.data.pubDate.toLocaleDateString('es-ES', {
             </div>
         ) : (
             <div class="card-image-placeholder">
-                <span class="placeholder-icon">🎙️</span>
+                <span class="placeholder-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/><line x1="8" x2="16" y1="22" y2="22"/></svg>
+                </span>
                  <div class="play-overlay">
                     <span class="play-icon">▶</span>
                 </div>
@@ -41,12 +43,24 @@ const formattedDate = post.data.pubDate.toLocaleDateString('es-ES', {
             
 			<h3 class="title group-hover:text-primary transition-colors">{post.data.title}</h3>
             
+            {post.data.participants && post.data.participants.length > 0 && (
+                <div class="participants">
+                    <span class="participants-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </span>
+                    <span class="participants-list">{post.data.participants.join(', ')}</span>
+                </div>
+            )}
+            
             <p class="description">
                 {post.data.description}
             </p>
             
             <div class="footer-meta">
-                <span class="duration">⏱️ {post.data.duration || 'N/A'}</span>
+                <span class="duration">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    {post.data.duration || 'N/A'}
+                </span>
                 <span class="listen-text">Escuchar</span>
             </div>
 		</div>
@@ -178,6 +192,19 @@ const formattedDate = post.data.pubDate.toLocaleDateString('es-ES', {
         color: var(--color-text-main);
         font-weight: 700;
 	}
+
+    .participants {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--color-text-dim);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .participants-icon {
+        opacity: 0.7;
+    }
 
     .description {
         color: var(--color-text-muted);

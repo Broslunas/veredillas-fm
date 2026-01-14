@@ -4,6 +4,9 @@ import { getCollection } from 'astro:content';
 
 const posts = await getCollection('blog');
 const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// Get unique tags
+const allTags = ['Todos', ...new Set(posts.flatMap(post => post.data.tags || []))];
 ---
 
 <Layout 
@@ -16,30 +19,105 @@ const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDa
     <div class="container page-header">
         <h1>Blog Veredillas</h1>
         <p class="subtitle">Noticias, historias y el día a día de nuestro instituto.</p>
+
+        <!-- Filter System -->
+        <div class="filter-container fade-in-up">
+            {allTags.map(tag => (
+                <button 
+                    class={`filter-btn ${tag === 'Todos' ? 'active' : ''}`} 
+                    data-filter={tag}
+                >
+                    {tag}
+                </button>
+            ))}
+        </div>
     </div>
 
-    <div class="container blog-grid">
-        {sortedPosts.map(post => (
-            <article class="blog-card glass-panel">
-                <a href={`/blog/${post.slug}`} class="card-link">
-                    {post.data.image && (
-                         <div class="card-image-wrapper">
-                            <img src={post.data.image} alt={post.data.title} loading="lazy" />
+    <div class="container">
+        <div class="blog-grid" id="blog-grid">
+            {sortedPosts.map(post => (
+                <article 
+                    class="blog-card glass-panel post-item" 
+                    data-tags={post.data.tags?.join(',') || ''}
+                >
+                    <a href={`/blog/${post.slug}`} class="card-link">
+                        {post.data.image && (
+                             <div class="card-image-wrapper">
+                                <img src={post.data.image} alt={post.data.title} loading="lazy" />
+                            </div>
+                        )}
+                        <div class="card-content">
+                            <div class="meta">
+                                <time>{post.data.pubDate.toLocaleDateString('es-ES', { dateStyle: 'long' })}</time>
+                            </div>
+                            <h2>{post.data.title}</h2>
+                            <p>{post.data.description}</p>
+                            <span class="read-more">Leer más &rarr;</span>
                         </div>
-                    )}
-                    <div class="card-content">
-                        <div class="meta">
-                            <time>{post.data.pubDate.toLocaleDateString('es-ES', { dateStyle: 'long' })}</time>
-                        </div>
-                        <h2>{post.data.title}</h2>
-                        <p>{post.data.description}</p>
-                        <span class="read-more">Leer más &rarr;</span>
-                    </div>
-                </a>
-            </article>
-        ))}
+                    </a>
+                </article>
+            ))}
+        </div>
+        
+        <div id="no-results" class="no-results hidden">
+            <p>No se encontraron artículos en esta categoría.</p>
+            <button id="reset-filter" class="btn btn-outline btn-sm">Ver todos</button>
+        </div>
     </div>
 </Layout>
+
+<script>
+    document.addEventListener('astro:page-load', () => {
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const items = document.querySelectorAll('.post-item');
+        const noResults = document.getElementById('no-results');
+        const resetBtn = document.getElementById('reset-filter');
+
+        function filterItems(category: string) {
+            let visibleCount = 0;
+
+            // Update Active State
+            filterBtns.forEach(btn => {
+                if (btn.getAttribute('data-filter') === category) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Show/Hide Items
+            items.forEach((item) => {
+                const itemEl = item as HTMLElement;
+                const tags = itemEl.getAttribute('data-tags')?.split(',') || [];
+                
+                if (category === 'Todos' || tags.includes(category)) {
+                    itemEl.style.display = '';
+                    visibleCount++;
+                } else {
+                    itemEl.style.display = 'none';
+                }
+            });
+
+            // Empty State
+            if (visibleCount === 0) {
+                noResults?.classList.remove('hidden');
+            } else {
+                noResults?.classList.add('hidden');
+            }
+        }
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const category = btn.getAttribute('data-filter') || 'Todos';
+                filterItems(category);
+            });
+        });
+        
+        resetBtn?.addEventListener('click', () => {
+            filterItems('Todos');
+        });
+    });
+</script>
 
 <style>
     .page-header {
@@ -130,5 +208,58 @@ const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDa
         color: var(--color-primary);
         font-weight: 600;
         font-size: 0.9rem;
+    }
+
+    /* Filter Styles */
+    .filter-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 2rem;
+    }
+
+    .filter-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--color-text-muted);
+        padding: 0.5rem 1.25rem;
+        border-radius: 100px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--color-text-main);
+        transform: translateY(-2px);
+    }
+
+    .filter-btn.active {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    /* No Results */
+    .no-results {
+        text-align: center;
+        padding: 4rem 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .no-results p {
+        color: var(--color-text-muted);
+        font-size: 1.2rem;
+    }
+
+    .hidden {
+        display: none !important;
     }
 </style>

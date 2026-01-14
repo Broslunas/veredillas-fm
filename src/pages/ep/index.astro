@@ -5,6 +5,9 @@ import { getCollection } from 'astro:content';
 
 const allEpisodes = await getCollection('episodios');
 const sortedEpisodes = allEpisodes.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// Get unique tags
+const allTags = ['Todos', ...new Set(allEpisodes.flatMap(episode => episode.data.tags || []))];
 ---
 
 <Layout 
@@ -15,24 +18,139 @@ const sortedEpisodes = allEpisodes.sort((a, b) => b.data.pubDate.valueOf() - a.d
   tags={['podcast', 'episodios', 'IES Veredillas', 'audio', 'entrevistas', 'contenido estudiantil']}
 >
     <div class="container page-header">
-        <h1>Episodios de Veredillas FM</h1>
         <p class="subtitle">Nuestros episodios y podcasts</p>
+        
+        <!-- Filter System -->
+        <div class="filter-wrapper fade-in-up">
+            <!-- Search Bar -->
+            <div class="search-bar-container">
+                <span class="search-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </span>
+                <input 
+                    type="text" 
+                    id="episode-search" 
+                    class="search-input" 
+                    placeholder="Buscar por título, temática o participantes..." 
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Tags -->
+            <div class="filter-container">
+                {allTags.map(tag => (
+                    <button 
+                        class={`filter-btn ${tag === 'Todos' ? 'active' : ''}`} 
+                        data-filter={tag}
+                    >
+                        {tag}
+                    </button>
+                ))}
+            </div>
+        </div>
     </div>
 
     <div class="container">
-        <div class="episodes-grid">
-            {sortedEpisodes.map((post, index) => (
-                <div class={`fade-in-up delay-${(index % 3 + 1) * 100}`}>
-                     <EpisodeCard post={post} />
-                </div>
-            ))}
+        <div class="episodes-grid" id="episodes-grid">
+            {sortedEpisodes.map((post, index) => {
+                 const searchContent = `${post.data.title} ${post.data.description} ${post.data.participants?.join(' ') || ''}`.toLowerCase();
+                 return (
+                    <div 
+                        class={`episode-item fade-in-up delay-${(index % 3 + 1) * 100}`}
+                        data-tags={post.data.tags?.join(',') || ''}
+                        data-search-content={searchContent}
+                    >
+                         <EpisodeCard post={post} />
+                    </div>
+                );
+            })}
+        </div>
+        
+        <div id="no-results" class="no-results hidden">
+            <span class="no-results-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </span>
+            <p>No encontramos episodios que coincidan con tu búsqueda.</p>
+            <button id="reset-filter" class="btn btn-outline btn-sm">Ver todos</button>
         </div>
     </div>
 </Layout>
 
+<script>
+    document.addEventListener('astro:page-load', () => {
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const searchInput = document.getElementById('episode-search') as HTMLInputElement;
+        const items = document.querySelectorAll('.episode-item');
+        const noResults = document.getElementById('no-results');
+        const resetBtn = document.getElementById('reset-filter');
+
+        let currentCategory = 'Todos';
+        let currentSearch = '';
+
+        function filterItems() {
+            let visibleCount = 0;
+
+            // Update Active State for Buttons
+            filterBtns.forEach(btn => {
+                if (btn.getAttribute('data-filter') === currentCategory) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Show/Hide Items based on BOTH criteria
+            items.forEach((item) => {
+                const itemEl = item as HTMLElement;
+                const tags = itemEl.getAttribute('data-tags')?.split(',') || [];
+                const searchContent = itemEl.getAttribute('data-search-content') || '';
+                
+                const matchesCategory = currentCategory === 'Todos' || tags.includes(currentCategory);
+                const matchesSearch = currentSearch === '' || searchContent.includes(currentSearch);
+
+                if (matchesCategory && matchesSearch) {
+                    itemEl.style.display = '';
+                    visibleCount++;
+                } else {
+                    itemEl.style.display = 'none';
+                }
+            });
+
+            // Empty State
+            if (visibleCount === 0) {
+                noResults?.classList.remove('hidden');
+            } else {
+                noResults?.classList.add('hidden');
+            }
+        }
+
+        // Tag Click Handler
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentCategory = btn.getAttribute('data-filter') || 'Todos';
+                filterItems();
+            });
+        });
+
+        // Search Input Handler
+        searchInput?.addEventListener('input', (e) => {
+            currentSearch = (e.target as HTMLInputElement).value.toLowerCase();
+            filterItems();
+        });
+        
+        // Reset Handler
+        resetBtn?.addEventListener('click', () => {
+            currentCategory = 'Todos';
+            currentSearch = '';
+            if(searchInput) searchInput.value = '';
+            filterItems();
+        });
+    });
+</script>
+
 <style>
     .page-header {
-        padding: var(--spacing-2xl) var(--spacing-md);
+        padding: var(--spacing-lg) var(--spacing-md);
         text-align: center;
     }
 
@@ -54,5 +172,106 @@ const sortedEpisodes = allEpisodes.sort((a, b) => b.data.pubDate.valueOf() - a.d
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: var(--spacing-lg);
         margin-bottom: var(--spacing-2xl);
+    }
+
+    /* Filter Styles */
+    .filter-wrapper {
+        margin-top: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .search-bar-container {
+        position: relative;
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 1rem 1rem 1rem 3rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 100px;
+        color: var(--color-text-main);
+        font-family: var(--font-body);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.2rem;
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .filter-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .filter-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--color-text-muted);
+        padding: 0.5rem 1.25rem;
+        border-radius: 100px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--color-text-main);
+        transform: translateY(-2px);
+    }
+
+    .filter-btn.active {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    /* No Results */
+    .no-results {
+        text-align: center;
+        padding: 4rem 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .no-results-icon {
+        font-size: 3rem;
+        opacity: 0.5;
+        margin-bottom: 0.5rem;
+    }
+
+    .no-results p {
+        color: var(--color-text-muted);
+        font-size: 1.2rem;
+    }
+
+    .hidden {
+        display: none !important;
     }
 </style>

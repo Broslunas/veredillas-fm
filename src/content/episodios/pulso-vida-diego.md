@@ -7,6 +7,8 @@ spotifyUrl: "https://open.spotify.com/embed/episode/1LYXQYIGRE38is2LzS9Jfe?utm_s
 season: 1
 episode: 6
 duration: "37 min"
+participants: ["Diego"]
+tags: ["Reflexión", "Vida Estudiantil"]
 ---
 
 **¡Hola! ¡Bienvenido a Veredillas FM!**

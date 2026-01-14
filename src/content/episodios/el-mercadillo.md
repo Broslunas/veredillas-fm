@@ -6,6 +6,8 @@ image: "https://radio.broslunas.com/img/005.webp"
 season: 1
 episode: 5
 duration: "6 min"
+participants: ["Carlos", "Anaysa", "Gisselle"]
+tags: ["Eventos"]
 ---
 
 **¡Hola! ¡Bienvenido a Veredillas FM, dónde lo mejor del I.E.S. Las Veredillas es Veredillas FM!**

@@ -7,6 +7,8 @@ spotifyUrl: "https://open.spotify.com/embed/episode/3WQF20Rsg7LYlbuS2E5ogD?utm_s
 season: 1
 episode: 4
 duration: "42 min"
+participants: ["Domingo", "Diego"]
+tags: ["Bachillerato", "Vida Estudiantil"]
 ---
 
 **¡Hola! ¡Bienvenido a Veredillas FM, dónde lo mejor del I.E.S. Las Veredillas es Veredillas FM!**

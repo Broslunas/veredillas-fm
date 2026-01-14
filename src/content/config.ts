@@ -11,6 +11,8 @@ const episodios = defineCollection({
 		duration: z.string().optional(),
 		season: z.number().optional(),
 		episode: z.number().optional(),
+		tags: z.array(z.string()).default(['General']),
+		participants: z.array(z.string()).optional(),
 	}),
 });
 
