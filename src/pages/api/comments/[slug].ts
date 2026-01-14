@@ -135,31 +135,16 @@ export const DELETE: APIRoute = async ({ request }) => {
     comment.deletionToken = deletionToken;
     await comment.save();
 
-    // Trigger Webhook
-    try {
-        const webhookUrl = 'https://n8n.broslunas.com/webhook/veredillasfm-comments-delete';
-        const hostname = request.headers.get('host') || 'veredillasfm.es';
-        const protocol = hostname.includes('localhost') ? 'http' : 'https';
-        const deleteLink = `${protocol}://${hostname}/verify-delete?token=${deletionToken}`;
-        
-        await fetch(webhookUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: comment.name,
-                email: comment.email,
-                text: comment.text,
-                slug: comment.slug,
-                deleteLink
-            })
-        });
-    } catch (e) {
-        console.error('Webhook failed', e);
-    }
-
     return new Response(JSON.stringify({ 
         success: true, 
-        message: 'Verification email sent' 
+        message: 'Verification email sent',
+        deletionToken,
+        comment: {
+            name: comment.name,
+            email: comment.email,
+            text: comment.text,
+            slug: comment.slug
+        }
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
