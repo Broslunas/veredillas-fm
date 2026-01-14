@@ -52,6 +52,13 @@ const isActive = (href: string) => {
         <ThemeToggle />
       </div>
     </nav>
+
+    <!-- Mobile Menu Toggle -->
+    <button id="menu-toggle" class="menu-toggle pill" aria-label="Abrir menú">
+      <div class="hamburger-box">
+        <span class="hamburger-inner"></span>
+      </div>
+    </button>
   </div>
 </header>
 
@@ -320,141 +327,202 @@ const isActive = (href: string) => {
   }
 
   /* ========================================= */
-  /* MOBILE REDESIGN                           */
+  /* MOBILE REDESIGN (Hamburger)               */
   /* ========================================= */
 
-  @media (max-width: 768px) {
+  .menu-toggle {
+      display: none;
+      padding: 0;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .hamburger-box {
+      width: 18px;
+      height: 14px;
+      position: relative;
+  }
+
+  .hamburger-inner {
+      display: block;
+      top: 50%;
+      margin-top: -1px;
+      width: 100%;
+      height: 2px;
+      background-color: var(--color-text-main);
+      border-radius: 2px;
+      position: absolute;
+      transition: transform 0.15s ease;
+  }
+
+  .hamburger-inner::before,
+  .hamburger-inner::after {
+      content: "";
+      display: block;
+      width: 100%;
+      height: 2px;
+      background-color: var(--color-text-main);
+      border-radius: 2px;
+      position: absolute;
+      transition: transform 0.15s ease;
+  }
+
+  .hamburger-inner::before { top: -6px; }
+  .hamburger-inner::after { bottom: -6px; }
+
+  /* Active State (X shape) */
+  .menu-toggle.active .hamburger-inner {
+      transform: rotate(45deg);
+  }
+  .menu-toggle.active .hamburger-inner::before {
+      top: 0;
+      opacity: 0;
+  }
+  .menu-toggle.active .hamburger-inner::after {
+      bottom: 0;
+      transform: rotate(-90deg);
+  }
+
+  @media (max-width: 1024px) {
       .header-wrapper {
           padding: 0.75rem 1rem;
-          background: transparent;
+      }
+      
+      .menu-toggle {
+          display: flex;
+          color: var(--color-text-main);
+      }
+      
+      :global([data-theme="light"]) .menu-toggle {
+          background: rgba(255, 255, 255, 0.7);
+          border-color: rgba(0, 0, 0, 0.05);
       }
 
-      /* Top Bar: Just Logo + Actions */
-      .header-inner {
-          justify-content: space-between;
-      }
-
-      /* Logo pill modification for mobile */
+      /* Logo Pill */
       .logo-pill {
           padding-left: 0.25rem;
           padding-right: 1rem;
           background: rgba(10, 10, 11, 0.7);
           backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-      
-      .logo-text {
-          font-size: 1rem;
       }
 
-      /* Hide the desktop Nav Pill wrapper, but keep its children available for moving */
+      /* NAV PILL - The Full Screen Overlay */
       .nav-pill {
-          background: transparent !important;
-          box-shadow: none !important;
-          border: none !important;
-          padding: 0 !important;
-          backdrop-filter: none !important;
-          width: auto;
-          position: static;
-      }
-
-      /* ACTIONS: Move to Top Right */
-      .actions {
-          position: fixed;
-          top: 0.75rem;
-          right: 1rem;
-          z-index: 101;
-          background: rgba(10, 10, 11, 0.7);
-          backdrop-filter: blur(12px);
-          padding: 0.25rem;
-          border-radius: 9999px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          gap: 0.25rem;
-          pointer-events: auto;
-      }
-      
-      :global([data-theme="light"]) .actions {
-          background: rgba(255, 255, 255, 0.8);
-          border-color: rgba(0, 0, 0, 0.08);
-      }
-      
-      .action-btn {
-          width: 36px;
-          height: 36px;
-      }
-
-      /* NAV LIST: Bottom Navigation Bar */
-      .nav-list {
-          position: fixed;
-          bottom: 0;
+          position: fixed !important;
+          top: 0;
           left: 0;
-          width: 100%;
-          background: rgba(10, 10, 11, 0.95);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          width: 100vw !important;
+          height: 100vh !important; /* Fallback */
+          height: 100dvh !important;
+          margin: 0 !important;
+          max-width: none !important;
+          
+          background: var(--color-bg); /* Opaque background */
           display: flex;
-          justify-content: space-around;
+          flex-direction: column;
+          justify-content: center;
           align-items: center;
-          padding: 0.75rem 0.5rem calc(0.75rem + env(safe-area-inset-bottom));
-          z-index: 1000;
+          z-index: 150;
+          border-radius: 0 !important;
+          border: none !important;
+          padding: 2rem;
+          box-sizing: border-box;
+          
+          /* Animation Start State */
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          pointer-events: none;
+          
+          /* Slide from bottom subtle */
+          transform: translateY(20px) scale(0.98);
+      }
+      
+      :global([data-theme="light"]) .nav-pill {
+          background: #ffffff;
+      }
+
+      .nav-pill.menu-open {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0) scale(1);
           pointer-events: auto;
       }
-      
-      :global([data-theme="light"]) .nav-list {
-          background: rgba(255, 255, 255, 0.95);
-          border-top: 1px solid rgba(0, 0, 0, 0.1);
-      }
 
-      /* Nav Items transformation */
-      .nav-link {
+      /* Navigation List Items */
+      .nav-list {
           flex-direction: column;
-          gap: 0.25rem;
-          padding: 0.5rem;
-          background: transparent !important;
-          border-radius: 0.5rem;
-          width: 60px; /* Fixed touch target width */
-      }
-      
-      li {
-          display: contents; /* Ensure li doesn't break flex layout */
+          align-items: center;
+          gap: 2rem;
+          width: 100%;
       }
 
-      .nav-icon {
-          font-size: 1.25rem;
+      .nav-link {
+          font-size: 2rem; /* Larger font for immersion */
+          font-weight: 700;
+          padding: 0;
+          width: auto;
+          justify-content: center;
+          flex-direction: row;
+          background: transparent !important;
+          
+          /* Stagger Animation Setup */
+          opacity: 0;
+          transform: translateY(20px);
+          transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
       
-      .nav-icon svg {
-          width: 20px;
-          height: 20px;
+      .menu-open .nav-link {
+          opacity: 1;
+          transform: translateY(0);
       }
+      
+      /* Stagger Delays */
+      .menu-open li:nth-child(1) .nav-link { transition-delay: 0.1s; }
+      .menu-open li:nth-child(2) .nav-link { transition-delay: 0.15s; }
+      .menu-open li:nth-child(3) .nav-link { transition-delay: 0.2s; }
+      .menu-open li:nth-child(4) .nav-link { transition-delay: 0.25s; }
+      .menu-open li:nth-child(5) .nav-link { transition-delay: 0.3s; }
 
       .nav-text {
-          font-size: 0.65rem;
-          font-weight: 500;
-          display: block;
+          display: inline-block;
       }
       
-      /* Active State Mobile */
-      .nav-link.active {
-          color: var(--color-primary);
-          background: transparent;
+      .nav-icon {
+          display: none; /* Hide icons for cleaner big text look, or keep if preferred */
+      }
+      .nav-icon svg {
+          width: 32px;
+          height: 32px;
+      }
+
+      /* Actions in Menu */
+      .actions {
+          flex-direction: row;
+          scale: 1.5; /* Bigger actions */
+          margin-top: 2rem;
+          
+          opacity: 0;
+          transform: translateY(20px);
+          transition: all 0.4s ease 0.4s; /* Delay after links */
       }
       
-      .nav-link.active .nav-icon {
-          background: rgba(139, 92, 246, 0.15);
-          border-radius: 999px;
-          padding: 4px 12px;
+      .menu-open .actions {
+          opacity: 1;
+          transform: translateY(0);
       }
-      
-      /* Hide Divider */
+
       .divider {
           display: none;
       }
-
-      /* Adjust body padding for bottom nav */
-      :global(body) {
-          padding-bottom: 80px; 
+      
+      .nav-link.active {
+          color: var(--color-primary);
       }
   }
 </style>
@@ -462,13 +530,12 @@ const isActive = (href: string) => {
 <script>
   // Update active state on navigation (Client-side)
   document.addEventListener('astro:page-load', () => {
+    // 1. Highlight Active Link
     const currentPath = window.location.pathname;
     const navLinks = document.querySelectorAll('.nav-link');
     
     navLinks.forEach(link => {
       const href = link.getAttribute('href');
-      // Normalize paths (remove trailing slashes for comparison if needed)
-      // Simple logic: Exact match for home, startsWith for others
       if (href === '/') {
         if (currentPath === '/') link.classList.add('active');
         else link.classList.remove('active');
@@ -480,5 +547,33 @@ const isActive = (href: string) => {
          }
       }
     });
+
+    // 2. Mobile Menu Logic
+    const menuToggle = document.getElementById('menu-toggle');
+    const navPill = document.querySelector('.nav-pill');
+    
+    if (menuToggle && navPill) {
+        menuToggle.addEventListener('click', () => {
+            const isOpen = navPill.classList.toggle('menu-open');
+            menuToggle.classList.toggle('active');
+            
+            // Prevent body scroll when menu is open
+            if (isOpen) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Close menu when clicking a link
+        const links = navPill.querySelectorAll('a');
+        links.forEach(link => {
+            link.addEventListener('click', () => {
+                navPill.classList.remove('menu-open');
+                menuToggle.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+    }
   });
 </script>

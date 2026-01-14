@@ -871,38 +871,43 @@ const recentPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pu
 
     @media (max-width: 640px) {
         .hero-section {
-            padding-top: 1rem;
+            padding-top: 2rem;
+            padding-bottom: 4rem;
         }
         
         .hero-title {
             font-size: clamp(2.5rem, 10vw, 3.5rem);
+            margin-bottom: 1rem;
         }
 
         .hero-desc {
-            font-size: 1rem;
+            font-size: 1.1rem;
+            padding: 0 1rem; /* Prevent text touching edges */
         }
 
         .hero-actions {
             flex-direction: column;
             width: 100%;
-            gap: 0.75rem;
+            gap: 1rem;
+            align-items: center; /* Center buttons */
         }
 
         .btn-lg {
             width: 100%;
+            max-width: 320px; /* Prevent looking like a brick */
             justify-content: center;
         }
 
         .hero-visual {
-            transform: scale(0.7);
-            margin-top: -2rem;
-            min-height: 300px;
+            transform: scale(0.75);
+            margin-top: -3rem;
+            min-height: 320px;
         }
 
         .episodes-section, 
         .info-section, 
         .blog-section {
-            padding: 3rem 0;
+            padding: 4rem 0;
         }
         
         .cta-inner h2 {
@@ -918,7 +923,55 @@ const recentPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pu
         }
         
         .blob {
-            opacity: 0.2;
+            opacity: 0.3;
+        }
+    }
+
+    /* Small Mobile Design (<500px) */
+    @media (max-width: 500px) {
+        .hero-title {
+            font-size: 2.5rem; /* Force smaller title */
+        }
+        
+        .hero-desc {
+            font-size: 1rem;
+            padding: 0;
+        }
+
+        .hero-visual {
+            transform: scale(0.55);
+            margin-top: -6rem; /* Pull it up significantly */
+            margin-bottom: -4rem;
+            min-height: 250px;
+        }
+        
+        .section-title {
+            font-size: 1.75rem;
+        }
+        
+        .section-subtitle {
+            font-size: 0.95rem;
+        }
+        
+        .info-grid, .blog-grid {
+            grid-template-columns: 1fr; /* Force single column */
+            gap: 1.5rem;
+        }
+        
+        .slider-nav {
+            display: none; /* Hide arrows on small screens, users swipe */
+        }
+        
+        .episodes-swiper {
+            padding-bottom: 3rem; /* Space for pagination */
+        }
+        
+        .vinyl-title {
+            font-size: 1rem;
+        }
+        
+        .vinyl-date {
+            font-size: 0.75rem;
         }
     }
 </style>
