@@ -141,7 +141,7 @@ const isActive = (href: string) => {
     color: var(--color-primary);
   }
 
-  /* Nav Pill */
+  /* Nav Pill (Desktop) */
   .nav-pill {
       padding: 0.4rem 1rem;
       gap: 1.5rem;
@@ -319,77 +319,140 @@ const isActive = (href: string) => {
       background: #1DB954;
   }
 
-
+  /* ========================================= */
+  /* MOBILE REDESIGN                           */
+  /* ========================================= */
 
   @media (max-width: 768px) {
       .header-wrapper {
-          padding: var(--spacing-sm);
+          padding: 0.75rem 1rem;
+          background: transparent;
+      }
+
+      /* Top Bar: Just Logo + Actions */
+      .header-inner {
+          justify-content: space-between;
+      }
+
+      /* Logo pill modification for mobile */
+      .logo-pill {
+          padding-left: 0.25rem;
+          padding-right: 1rem;
+          background: rgba(10, 10, 11, 0.7);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
       }
       
-      .nav-links {
+      .logo-text {
+          font-size: 1rem;
+      }
+
+      /* Hide the desktop Nav Pill wrapper, but keep its children available for moving */
+      .nav-pill {
+          background: transparent !important;
+          box-shadow: none !important;
+          border: none !important;
+          padding: 0 !important;
+          backdrop-filter: none !important;
+          width: auto;
+          position: static;
+      }
+
+      /* ACTIONS: Move to Top Right */
+      .actions {
+          position: fixed;
+          top: 0.75rem;
+          right: 1rem;
+          z-index: 101;
+          background: rgba(10, 10, 11, 0.7);
+          backdrop-filter: blur(12px);
+          padding: 0.25rem;
+          border-radius: 9999px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          gap: 0.25rem;
+          pointer-events: auto;
+      }
+      
+      :global([data-theme="light"]) .actions {
+          background: rgba(255, 255, 255, 0.8);
+          border-color: rgba(0, 0, 0, 0.08);
+      }
+      
+      .action-btn {
+          width: 36px;
+          height: 36px;
+      }
+
+      /* NAV LIST: Bottom Navigation Bar */
+      .nav-list {
           position: fixed;
           bottom: 0;
           left: 0;
-          right: 0;
-          background: var(--color-surface); /* Fallback */
-          background: rgba(14, 14, 17, 0.95);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          padding: 1rem 1.5rem calc(1rem + env(safe-area-inset-bottom));
-          border-top: 1px solid var(--color-border);
-          justify-content: space-around;
-          z-index: 999; /* Below MiniPlayer (9999) */
+          width: 100%;
+          background: rgba(10, 10, 11, 0.95);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
           display: flex;
-          box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+          justify-content: space-around;
+          align-items: center;
+          padding: 0.75rem 0.5rem calc(0.75rem + env(safe-area-inset-bottom));
+          z-index: 1000;
+          pointer-events: auto;
+      }
+      
+      :global([data-theme="light"]) .nav-list {
+          background: rgba(255, 255, 255, 0.95);
+          border-top: 1px solid rgba(0, 0, 0, 0.1);
       }
 
-      [data-theme="light"] .nav-links {
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
-      }
-      
-      .nav-text {
-          display: none;
-      }
-      
-      .nav-pill {
+      /* Nav Items transformation */
+      .nav-link {
+          flex-direction: column;
+          gap: 0.25rem;
           padding: 0.5rem;
-          background: transparent;
-          border: none;
-          color: var(--color-text-dim);
-          border-radius: 50%;
+          background: transparent !important;
+          border-radius: 0.5rem;
+          width: 60px; /* Fixed touch target width */
       }
       
-      .nav-pill.active {
-          color: var(--color-primary);
-          background: rgba(139, 92, 246, 0.1);
+      li {
+          display: contents; /* Ensure li doesn't break flex layout */
       }
 
+      .nav-icon {
+          font-size: 1.25rem;
+      }
+      
+      .nav-icon svg {
+          width: 20px;
+          height: 20px;
+      }
+
+      .nav-text {
+          font-size: 0.65rem;
+          font-weight: 500;
+          display: block;
+      }
+      
+      /* Active State Mobile */
+      .nav-link.active {
+          color: var(--color-primary);
+          background: transparent;
+      }
+      
+      .nav-link.active .nav-icon {
+          background: rgba(139, 92, 246, 0.15);
+          border-radius: 999px;
+          padding: 4px 12px;
+      }
+      
+      /* Hide Divider */
       .divider {
           display: none;
       }
 
-      .logo-text {
-          display: block; /* Keep logo visible on top */
-          font-size: 1.1rem;
-      }
-      
-      .logo-pill {
-          padding-right: 0.5rem;
-          background: transparent;
-          border: none;
-      }
-      
-      .logo-pill .logo-icon {
-           width: 32px;
-           height: 32px;
-      }
-      
-      .header-right {
-           gap: 0.5rem;
-      }
-      
-      /* Ensure body has padding bottom for nav bar */
+      /* Adjust body padding for bottom nav */
       :global(body) {
           padding-bottom: 80px; 
       }

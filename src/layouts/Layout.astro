@@ -44,6 +44,15 @@ const fullTitle = title === "Inicio" ? "Veredillas FM - El Podcast del IES Vered
 <!doctype html>
 <html lang="es">
 	<head>
+		<!-- Google tag (gtag.js) -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-N33MZ5JH43"></script>
+		<script is:inline>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'G-N33MZ5JH43');
+		</script>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -362,6 +371,12 @@ const fullTitle = title === "Inicio" ? "Veredillas FM - El Podcast del IES Vered
 		min-height: 100vh;
 		padding-top: 100px; /* Increased space for floating header */
 	}
+
+    @media (max-width: 768px) {
+        main {
+            padding-top: 80px; /* Smaller header on mobile */
+        }
+    }
 </style>
 
 
