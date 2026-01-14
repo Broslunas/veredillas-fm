@@ -3,15 +3,9 @@ import mongoose from 'mongoose';
 
 const MONGODB_URI = import.meta.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env');
-}
-
-/**
- * Global is used here to maintain a cached connection across hot reloads
- * in development. This prevents connections growing exponentially
- * during API Route usage.
- */
+// Global is used here to maintain a cached connection across hot reloads
+// in development. This prevents connections growing exponentially
+// during API Route usage.
 interface MongooseCache {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
@@ -24,6 +18,10 @@ if (!cached) {
 }
 
 async function dbConnect() {
+  if (!MONGODB_URI) {
+    throw new Error('Please define the MONGODB_URI environment variable inside .env');
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
