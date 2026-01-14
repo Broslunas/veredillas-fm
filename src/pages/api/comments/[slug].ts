@@ -100,7 +100,10 @@ export const POST: APIRoute = async ({ params, request }) => {
 
         const response = await fetch(webhookUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'User-Agent': 'VeredillasFM/1.0 (Node.js)'
+            },
             body: JSON.stringify({
                 name,
                 email,
