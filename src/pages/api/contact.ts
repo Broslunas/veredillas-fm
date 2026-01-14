@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const webhookUrl = "https://n8n.broslunas.com/webhook-test/veredillasfm-contact";
+    const webhookUrl = "https://n8n.broslunas.com/webhook/veredillasfm-contact";
     const secret = import.meta.env.CONTACT_WEBHOOK_SECRET;
 
     if (!secret) {
