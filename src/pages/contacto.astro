@@ -114,14 +114,14 @@ import Layout from '../layouts/Layout.astro';
           const result = await response.json();
 
           if (response.ok) {
-            alert('¡Mensaje enviado con éxito! Nos pondremos en contacto contigo pronto.');
+            window.showToast('¡Mensaje enviado con éxito! Nos pondremos en contacto contigo pronto.', 'success');
             form.reset();
           } else {
-            alert(result.message || 'Error al enviar el mensaje. Por favor intenta de nuevo.');
+            window.showToast(result.message || 'Error al enviar el mensaje. Por favor intenta de nuevo.', 'error');
           }
         } catch (error) {
           console.error('Error:', error);
-          alert('Error de conexión. Por favor verifica tu internet e intenta de nuevo.');
+          window.showToast('Error de conexión. Por favor verifica tu internet e intenta de nuevo.', 'error');
         } finally {
           // Unlock UI
           inputs.forEach(input => (input as HTMLInputElement).disabled = false);

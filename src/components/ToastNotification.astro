@@ -1,0 +1,165 @@
+<div id="toast-container"></div>
+
+<script>
+  // Add to window type definition
+  declare global {
+    interface Window {
+      showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
+    }
+  }
+
+  window.showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type} fade-in`;
+    
+    // Icon based on type
+    let icon = '';
+    if (type === 'success') {
+      icon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+    } else if (type === 'error') {
+      icon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+    } else {
+      icon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+    }
+
+    toast.innerHTML = `
+      <div class="toast-icon">${icon}</div>
+      <div class="toast-message">${message}</div>
+      <button class="toast-close" onclick="this.parentElement.remove()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      toast.classList.add('fade-out');
+      toast.addEventListener('animationend', () => {
+        toast.remove();
+      });
+    }, 5000);
+  };
+</script>
+
+<style is:global>
+  #toast-container {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    z-index: 9999;
+    pointer-events: none; /* Allow clicking through container */
+  }
+
+  .toast {
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 1rem 1.25rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    pointer-events: auto; /* Enable clicks on toast */
+    min-width: 300px;
+    max-width: 450px;
+    animation: slideIn 0.3s ease-out forwards;
+  }
+
+  .toast-success {
+    border-left: 4px solid #10b981;
+  }
+  
+  .toast-success .toast-icon {
+    color: #10b981;
+  }
+
+  .toast-error {
+    border-left: 4px solid #ef4444;
+  }
+  
+  .toast-error .toast-icon {
+    color: #ef4444;
+  }
+
+  .toast-info {
+    border-left: 4px solid #3b82f6;
+  }
+  
+  .toast-info .toast-icon {
+    color: #3b82f6;
+  }
+
+  .toast-message {
+    font-size: 0.95rem;
+    font-weight: 500;
+    flex: 1;
+    line-height: 1.4;
+  }
+
+  .toast-close {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+  }
+
+  .toast-close:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .toast.fade-out {
+    animation: slideOut 0.3s ease-in forwards;
+  }
+
+  @keyframes slideOut {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+  }
+  
+  @media (max-width: 640px) {
+    #toast-container {
+      bottom: 1rem;
+      left: 1rem;
+      right: 1rem;
+      align-items: center;
+    }
+    
+    .toast {
+      width: 100%;
+      min-width: 0;
+    }
+  }
+</style>
