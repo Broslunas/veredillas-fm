@@ -1,0 +1,412 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Placeholder data - In a real app, this might come from a CMS or local folder scan
+const galleryImages = [
+  {
+    src: "https://radio.broslunas.com/img/006.webp",
+    alt: "Podcasts 006",
+    category: "Podcasts"
+  },{
+    src: "https://radio.broslunas.com/img/005.webp",
+    alt: "Podcasts 005",
+    category: "Podcasts"
+  },{
+    src: "https://radio.broslunas.com/img/004.webp",
+    alt: "Podcasts 004",
+    category: "Podcasts"
+  },{
+    src: "https://radio.broslunas.com/img/003.webp",
+    alt: "Podcasts 003",
+    category: "Podcasts"
+  },{
+    src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjnLK1u1y6yDhK6yumKrztTdimUtq91FmdvK2mHJ9zZyRKmYO8JBZmrAuDorqXAKUVkayN4uV5EcG7sOPOTVZCTqeOISM7jrzSxEac-RItneKwC4Q3NS0S8eL0ioG2v5V8ys6YPOAD9RBjrlkbtWSDp1SmoBxOX46qPTppBbr-sqsBQuLvcCWw-TmEW8DI/w640-h640/Imagen%20de%20WhatsApp%202025-12-10%20a%20las%2012.07.00_ac94ad9a.jpg",
+    alt: "Podcasts 002",
+    category: "Podcasts"
+  },{
+    src: "https://radio.broslunas.com/galeria/001.jpg",
+    alt: "Equipo",
+    category: "Equipo"
+  },{
+    src: "https://radio.broslunas.com/galeria/002.jpg",
+    alt: "Equipo",
+    category: "Equipo"
+  },{
+    src: "https://radio.broslunas.com/galeria/003.jpg",
+    alt: "Equipo",
+    category: "Equipo"
+  },{
+    src: "https://radio.broslunas.com/galeria/004.jpg",
+    alt: "Equipo",
+    category: "Equipo"
+  },{
+    src: "https://radio.broslunas.com/galeria/005.jpg",
+    alt: "Equipo",
+    category: "Equipo"
+  },{
+    src: "https://radio.broslunas.com/galeria/006.jpg",
+    alt: "Equipo",
+    category: "Equipo"
+  },{
+    src: "https://radio.broslunas.com/galeria/007.jpg",
+    alt: "Equipo",
+    category: "Equipo"
+  },{
+    src: "https://radio.broslunas.com/galeria/008.jpg",
+    alt: "Equipo",
+    category: "Equipo"
+  },
+];
+---
+
+<Layout 
+  title="Galería"
+  description="Un vistazo visual a la vida en Veredillas FM. Fotos del estudio, eventos escolares y el equipo en acción."
+  image="/logo.png"
+>
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="lightbox">
+        <button class="close-lightbox" aria-label="Cerrar">&times;</button>
+        <div class="lightbox-content">
+            <img id="lightbox-img" src="" alt="Vista previa" />
+            <div class="lightbox-caption"></div>
+        </div>
+        <button class="nav-btn prev" aria-label="Anterior">&#10094;</button>
+        <button class="nav-btn next" aria-label="Siguiente">&#10095;</button>
+    </div>
+
+    <div class="container page-wrapper">
+        <header class="page-header gs-reveal">
+            <span class="badge">Galería</span>
+            <h1>Momentos <span class="text-gradient">Veredillas</span></h1>
+            <p class="subtitle">
+                Capturando la esencia de nuestra radio escolar, dentro y fuera del estudio.
+            </p>
+        </header>
+
+        <div class="masonry-grid gs-grid">
+            {galleryImages.map((img, index) => (
+                <div class="grid-item zoom-trigger" data-index={index}>
+                    <div class="img-wrapper">
+                        <img src={img.src} alt={img.alt} loading="lazy" />
+                        <div class="overlay">
+                            <span class="category-tag">{img.category}</span>
+                            <span class="expand-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M14 10l6.1-6.1"/><path d="M9 21H3v-6"/><path d="M10 14l-6.1 6.1"/></svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { gsap } from "gsap";
+    
+    // Gallery Logic
+    const initGallery = () => {
+        const gridItems = document.querySelectorAll('.zoom-trigger');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement;
+        const caption = document.querySelector('.lightbox-caption');
+        const closeBtn = document.querySelector('.close-lightbox');
+        const nextBtn = document.querySelector('.nav-btn.next');
+        const prevBtn = document.querySelector('.nav-btn.prev');
+        
+        // Data populated from Astro template via data attributes would be cleaner, 
+        // but for simplicity we'll just grab src from DOM or repeat array if we had it.
+        // Let's rely on DOM query for the image list to keep it simple.
+        let currentIndex = 0;
+        
+        // Helper to get image URL from index
+        const getImageInfo = (index: number) => {
+            const item = gridItems[index];
+            if(!item) return null;
+            const img = item.querySelector('img');
+            return {
+                src: img?.src || '',
+                alt: img?.alt || ''
+            };
+        };
+
+        const openLightbox = (index: number) => {
+            const info = getImageInfo(index);
+            if (!info || !lightbox || !lightboxImg) return;
+            
+            currentIndex = index;
+            lightboxImg.src = info.src;
+            if(caption) caption.textContent = info.alt;
+            
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        };
+
+        const closeLightboxModal = () => {
+            if(!lightbox) return;
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        };
+
+        const nextImage = (e: Event) => {
+            e.stopPropagation();
+            let newIndex = currentIndex + 1;
+            if (newIndex >= gridItems.length) newIndex = 0;
+            openLightbox(newIndex);
+        };
+        
+        const prevImage = (e: Event) => {
+            e.stopPropagation();
+            let newIndex = currentIndex - 1;
+            if (newIndex < 0) newIndex = gridItems.length - 1;
+            openLightbox(newIndex);
+        };
+
+        // Event Listeners
+        gridItems.forEach((item, index) => {
+            item.addEventListener('click', () => openLightbox(index));
+        });
+
+        if (closeBtn) closeBtn.addEventListener('click', closeLightboxModal);
+        if (lightbox) {
+            lightbox.addEventListener('click', (e) => {
+               if(e.target === lightbox) closeLightboxModal();
+            });
+        }
+        
+        if (nextBtn) nextBtn.addEventListener('click', nextImage);
+        if (prevBtn) prevBtn.addEventListener('click', prevImage);
+        
+        // Keyboard Nav
+        document.addEventListener('keydown', (e) => {
+             if (!lightbox?.classList.contains('active')) return;
+             if (e.key === 'Escape') closeLightboxModal();
+             if (e.key === 'ArrowRight') nextBtn?.dispatchEvent(new Event('click'));
+             if (e.key === 'ArrowLeft') prevBtn?.dispatchEvent(new Event('click'));
+        });
+
+        // Animations
+         gsap.from(".gs-reveal", {
+            y: 30,
+            opacity: 0,
+            duration: 0.8,
+            ease: "power2.out"
+        });
+        
+        gsap.from(".grid-item", {
+            y: 50,
+            opacity: 0,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: "power2.out",
+            delay: 0.2
+        });
+    }
+
+    document.addEventListener('astro:page-load', initGallery);
+</script>
+
+<style>
+    .page-wrapper {
+        padding: 4rem var(--spacing-md);
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto 4rem;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        background: rgba(139, 92, 246, 0.1);
+        color: var(--color-primary);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+
+    h1 {
+        font-size: clamp(3rem, 5vw, 4.5rem);
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        font-weight: 800;
+    }
+
+    .subtitle {
+        font-size: 1.25rem;
+        color: var(--color-text-muted);
+        line-height: 1.6;
+    }
+
+    /* Masonry Grid */
+    .masonry-grid {
+        column-count: 3;
+        column-gap: 20px;
+    }
+    
+    @media (max-width: 1024px) {
+        .masonry-grid { column-count: 2; }
+    }
+    
+    @media (max-width: 640px) {
+        .masonry-grid { column-count: 1; }
+    }
+
+    .grid-item {
+        break-inside: avoid;
+        margin-bottom: 20px;
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .img-wrapper {
+        position: relative;
+        width: 100%;
+        background: black;
+    }
+
+    .img-wrapper img {
+        width: 100%;
+        height: auto;
+        display: block;
+        transition: transform 0.5s ease;
+    }
+
+    .grid-item:hover img {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+
+    .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.3);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 1.5rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .grid-item:hover .overlay {
+        opacity: 1;
+    }
+
+    .category-tag {
+        align-self: flex-start;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .expand-icon {
+        align-self: flex-end;
+        color: white;
+        background: var(--color-primary);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: translateY(20px);
+        transition: transform 0.3s ease;
+    }
+
+    .grid-item:hover .expand-icon {
+        transform: translateY(0);
+    }
+
+    /* Lightbox */
+    .lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        background: rgba(0, 0, 0, 0.95);
+        display: flex; /* Flex but hidden initially */
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        backdrop-filter: blur(5px);
+    }
+
+    .lightbox.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .lightbox-content {
+        max-width: 90vw;
+        max-height: 85vh;
+        position: relative;
+    }
+
+    .lightbox-content img {
+        max-width: 100%;
+        max-height: 85vh;
+        border-radius: 8px;
+        box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+    }
+    
+    .lightbox-caption {
+        position: absolute;
+        bottom: -40px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        color: white;
+        font-size: 1.1rem;
+    }
+
+    .close-lightbox {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 3rem;
+        color: white;
+        background: none;
+        border: none;
+        cursor: pointer;
+        line-height: 0.5;
+        transition: color 0.2s;
+        z-index: 10001;
+    }
+    
+    .close-lightbox:hover {
+        color: var(--color-primary);
+    }
+
+    .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        color: white;
+        border: none;
+        font-size: 3rem;
+        cursor: pointer;
+        padding: 1rem;
+        z-index: 10001;
+        opacity: 0.5;
+        transition: opacity 0.2s;
+    }
+    
+    .nav-btn:hover { opacity: 1; }
+    .prev { left: 20px; }
+    .next { right: 20px; }
+</style>

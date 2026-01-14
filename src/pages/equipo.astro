@@ -1,0 +1,307 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const departments = [
+  {
+    title: "Dirección",
+    members: [
+      { 
+        name: 'Abel Fernández', 
+        role: 'Guionista y Co-Dirección', 
+        image: 'https://iili.io/fzO4DGV.jpg',
+        link: 'https://www.instagram.com/abelfrp/'
+      },
+      { 
+        name: 'Dylan Jorge', 
+        role: 'Redactor Jefe', 
+        image: 'https://iili.io/fzObDbI.jpg' 
+      },
+      { 
+        name: 'Miguel Salazar', 
+        role: 'Estrategia Digital', 
+        image: 'https://iili.io/f8u8VQS.jpg',
+        link: 'https://www.instagram.com/miguelslzzz/',
+      },
+    ]
+  },
+  {
+    title: "Tecnología y Producción",
+    members: [
+      { 
+        name: 'Pablo Luna', 
+        role: 'Lead Developer & Sonido', 
+        link: 'https://broslunas.com', 
+        image: 'https://i.imgur.com/G4IX2d0.jpeg' 
+      },
+      { 
+        name: 'Pablo Santamaría', 
+        role: 'Diseño Web & UX', 
+        image: 'https://iili.io/fzetcMu.jpg',
+        link: 'https://www.instagram.com/pabl0.sp/',
+      },
+      { 
+        name: 'Omar Reyes', 
+        role: 'Desarrollo Web', 
+        image: 'https://iili.io/fze34sV.jpg',
+        link: 'https://www.instagram.com/ereyes_magos/'
+      },
+    ]
+  },
+  {
+    title: "Voces y Colaboradores",
+    members: [
+      { 
+        name: 'Pablo Pérez', 
+        role: 'Locutor y Colaborador', 
+        image: 'https://iili.io/fze0awJ.jpg',
+        link: 'https://www.instagram.com/__pabloprz/'
+      },
+      // Placeholder for future members
+    ]
+  }
+];
+---
+
+<Layout 
+  title="Nuestro Equipo"
+  description="Conoce a las personas que hacen posible Veredillas FM. Estudiantes apasionados por la comunicación, la tecnología y la creatividad."
+  image="/logo.png"
+>
+    <div class="container page-wrapper">
+        <header class="page-header gs-reveal">
+            <span class="badge">El Equipo</span>
+            <h1>Caras detrás de <br><span class="text-gradient">la Voz</span></h1>
+            <p class="subtitle">
+                Somos un grupo diverso de estudiantes del IES Veredillas unidos por una misma pasión: conectar con nuestra comunidad a través del audio.
+            </p>
+        </header>
+
+        <div class="departments gs-reveal">
+            {departments.map((dept) => (
+                <section class="department-section">
+                    <h2 class="dept-title">{dept.title}</h2>
+                    <div class="team-grid">
+                        {dept.members.map((member) => (
+                            <div class="member-card glass-panel">
+                                <div class="image-wrapper">
+                                    <img src={member.image} alt={member.name} loading="lazy" />
+                                </div>
+                                <div class="member-info">
+                                    <h3>
+                                        {member.link ? (
+                                            <a href={member.link} target="_blank" rel="noopener noreferrer" class="name-link">
+                                                {member.name}
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                            </a>
+                                        ) : (
+                                            member.name
+                                        )}
+                                    </h3>
+                                    <p class="role">{member.role}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            ))}
+        </div>
+
+        <!-- Join CTA -->
+        <section class="join-cta glass-panel gs-reveal">
+            <div class="cta-content">
+                <h2>¿Quieres formar parte?</h2>
+                <p>Siempre buscamos nuevas voces, guionistas, técnicos y creativos. Si eres alumno del Veredillas, ¡te estamos esperando!</p>
+                <a href="/contacto" class="btn btn-primary">Únete al equipo</a>
+            </div>
+            <div class="cta-decoration">
+                <svg width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mic-icon"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/><line x1="8" x2="16" y1="22" y2="22"/></svg>
+            </div>
+        </section>
+    </div>
+</Layout>
+
+<script>
+    import { gsap } from "gsap";
+    
+    document.addEventListener('astro:page-load', () => {
+        gsap.from(".gs-reveal", {
+            y: 30,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.2,
+            ease: "power2.out"
+        });
+    });
+</script>
+
+<style>
+    .page-wrapper {
+        padding: 4rem var(--spacing-md);
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto 6rem;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        background: rgba(139, 92, 246, 0.1);
+        color: var(--color-primary);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+
+    h1 {
+        font-size: clamp(3rem, 5vw, 4.5rem);
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        font-weight: 800;
+    }
+
+    .subtitle {
+        font-size: 1.25rem;
+        color: var(--color-text-muted);
+        line-height: 1.6;
+    }
+
+    /* Departments */
+    .department-section {
+        margin-bottom: 5rem;
+    }
+
+    .dept-title {
+        font-size: 1.75rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        color: var(--color-text-main);
+    }
+
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+    }
+
+    .member-card {
+        padding: 1.5rem;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: transform 0.3s ease, background 0.3s ease;
+    }
+    
+    .member-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .image-wrapper {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+        border: 2px solid rgba(255,255,255,0.1);
+    }
+
+    .image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .member-info h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+        font-weight: 700;
+    }
+
+    .name-link {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: color 0.2s;
+    }
+    
+    .name-link:hover {
+        color: var(--color-primary);
+    }
+
+    .role {
+        font-size: 0.9rem;
+        color: var(--color-text-muted);
+    }
+
+    /* CTA */
+    .join-cta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4rem;
+        border-radius: 30px;
+        position: relative;
+        overflow: hidden;
+        margin-top: 4rem;
+        background: radial-gradient(circle at right bottom, rgba(139, 92, 246, 0.15), rgba(255, 255, 255, 0.02));
+    }
+
+    .cta-content {
+        max-width: 500px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .cta-content h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .cta-content p {
+        color: var(--color-text-muted);
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+    }
+
+    .cta-decoration {
+        position: absolute;
+        right: -20px;
+        bottom: -40px;
+        opacity: 0.05;
+        transform: rotate(-15deg);
+        pointer-events: none;
+    }
+    
+    .mic-icon {
+        width: 300px;
+        height: 300px;
+    }
+
+    @media (max-width: 768px) {
+        .join-cta {
+            flex-direction: column;
+            text-align: center;
+            padding: 3rem 1.5rem;
+        }
+        
+        .member-card {
+            flex-direction: column;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .image-wrapper {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 0.5rem;
+        }
+    }
+</style>

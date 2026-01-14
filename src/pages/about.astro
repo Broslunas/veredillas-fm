@@ -1,49 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const team = [
-  { 
-    name: 'Abel Fernández', 
-    role: 'Guionista', 
-    image: 'https://iili.io/fzO4DGV.jpg',
-    link: 'https://www.instagram.com/abelfrp/'
-  },
-  { 
-    name: 'Pablo Luna', 
-    role: 'Web, Sonido y Programación', 
-    link: 'https://broslunas.com', 
-    image: 'https://i.imgur.com/G4IX2d0.jpeg' 
-  },
-  { 
-    name: 'Pablo Santamaría', 
-    role: 'Diseño Web y Sonido', 
-    image: 'https://iili.io/fzetcMu.jpg',
-    link: 'https://www.instagram.com/pabl0.sp/',
-  },
-  { 
-    name: 'Omar Reyes', 
-    role: 'Diseñador Web', 
-    image: 'https://iili.io/fze34sV.jpg',
-    link: 'https://www.instagram.com/ereyes_magos/'
-  },
-  { 
-    name: 'Dylan Jorge', 
-    role: 'Redactor Jefe', 
-    image: 'https://iili.io/fzObDbI.jpg' 
-  },
-  { 
-    name: 'Pablo Pérez', 
-    role: 'Integrante del Podcast', 
-    image: 'https://iili.io/fze0awJ.jpg',
-    link: 'https://www.instagram.com/__pabloprz/'
-  },
-  { 
-    name: 'Miguel Salazar', 
-    role: 'Estrategia Digital', 
-    image: 'https://iili.io/f8u8VQS.jpg',
-    link: 'https://www.instagram.com/miguelslzzz/',
-  },
-];
+
 ---
 
 <Layout 
@@ -56,10 +14,10 @@ const team = [
     <div class="container about-page">
         <!-- Hero Section -->
         <section class="intro fade-in-up">
-            <span class="badge">El Equipo</span>
-            <h1>Quiénes Hacemos <br><span class="text-gradient">Veredillas FM</span></h1>
+            <span class="badge">El Proyecto</span>
+            <h1>Quiénes Somos <br><span class="text-gradient">Veredillas FM</span></h1>
             <p class="big-text">
-                Un proyecto impulsado por la creatividad y el talento de los estudiantes de 2º de Bachillerato B.
+                Una iniciativa educativa de 2º de Bachillerato B que rompe las barreras del aula para dar voz a nuestra comunidad.
             </p>
         </section>
 
@@ -90,37 +48,12 @@ const team = [
             </div>
         </section>
 
-        <!-- Team Section -->
-        <section class="team fade-in-up delay-200">
-            <div class="section-header">
-                <h2>Conoce a los creadores</h2>
-                <p>Las mentes detrás del micrófono y los controles</p>
-            </div>
-            
-            <div class="team-grid">
-                {team.map((member) => (
-                    <div class="member-card group">
-                        <div class="image-wrapper">
-                            <img src={member.image} alt={member.name} class="member-image" loading="lazy" />
-                            <div class="overlay"></div>
-                        </div>
-                        <div class="member-info">
-                            <h3>
-                                {member.link ? (
-                                    <a href={member.link} target="_blank" rel="noopener noreferrer" class="member-link">
-                                        {member.name}
-                                        <span class="link-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
-                                        </span>
-                                    </a>
-                                ) : (
-                                    member.name
-                                )}
-                            </h3>
-                            <span class="role-badge">{member.role}</span>
-                        </div>
-                    </div>
-                ))}
+        <!-- CTA to Team -->
+        <section class="team-cta fade-in-up delay-200 glass-panel">
+            <div class="cta-inner">
+                <h2>¿Quiénes hacen esto posible?</h2>
+                <p>Somos un equipo multidisciplinar de locutores, técnicos, redactores y soñadores.</p>
+                <a href="/equipo" class="btn btn-primary">Conoce al Equipo</a>
             </div>
         </section>
     </div>
@@ -211,95 +144,26 @@ const team = [
         line-height: 1.6;
     }
 
-    /* Team Grid */
-    .section-header {
+    /* Team CTA */
+    .team-cta {
+        padding: 4rem 2rem;
+        background: radial-gradient(circle at center, rgba(139, 92, 246, 0.1), transparent);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 20px;
         text-align: center;
-        margin-bottom: 4rem;
+        margin-bottom: 6rem;
     }
 
-    .section-header h2 {
+    .cta-inner h2 {
         font-size: 2.5rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .section-header p {
-        color: var(--color-text-muted);
-        font-size: 1.1rem;
-    }
-
-    .team-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 2rem;
-        justify-content: center;
-    }
-
-    .member-card {
-        position: relative;
-        max-width: 220px;
-        margin: 0 auto;
-    }
-
-    .image-wrapper {
-        aspect-ratio: 1;
-        border-radius: 100px; /* Circle for a more pro look? Or just very rounded? Let's stick to rounded square but smaller. rounded-xl is usually 12-16px. Let's do 16px */
-        border-radius: 16px;
-        overflow: hidden;
         margin-bottom: 1rem;
-        position: relative;
-        background: var(--color-surface-hover);
-        box-shadow: 0 8px 24px -8px rgba(0,0,0,0.4);
     }
 
-    .member-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: all 0.4s ease;
-    }
-
-    .member-card:hover .member-image {
-        transform: scale(1.05);
-    }
-
-    .member-info {
-        text-align: center;
-    }
-
-    .member-info h3 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-    }
-
-    .member-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        transition: color 0.2s;
-    }
-
-    .member-link:hover {
-        color: var(--color-primary);
-    }
-
-    .link-icon {
-        font-size: 0.8em;
-        opacity: 0.5;
-    }
-
-    .role-badge {
-        display: inline-block;
-        font-size: 0.875rem;
+    .cta-inner p {
         color: var(--color-text-muted);
-        padding: 0.25rem 1rem;
-        border: 1px solid var(--color-border);
-        border-radius: 100px;
-        background: rgba(255, 255, 255, 0.02);
+        max-width: 600px;
+        margin: 0 auto 2rem;
+        font-size: 1.1rem;
     }
 
     /* Animations */
