@@ -1,17 +1,22 @@
 ---
-import { getCollection } from 'astro:content';
+import { getEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import Comments from '../../components/Comments.astro';
 import SocialShare from '../../components/SocialShare.astro';
 
-export async function getStaticPaths() {
-  const episodes = await getCollection('episodios');
-  return episodes.map(entry => ({
-    params: { slug: entry.slug }, props: { entry },
-  }));
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect('/404');
 }
 
-const { entry } = Astro.props;
+const entry = await getEntry('episodios', slug);
+
+if (!entry) {
+  return Astro.redirect('/404');
+}
 const { Content } = await entry.render();
 
 const formattedDate = entry.data.pubDate.toLocaleDateString('es-ES', {

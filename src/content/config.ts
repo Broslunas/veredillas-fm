@@ -5,7 +5,7 @@ const episodios = defineCollection({
 		title: z.string(),
 		description: z.string(),
 		pubDate: z.coerce.date(),
-		author: z.string().default('Equipo Veredillas FM'),
+		author: z.string().default('Pablo Luna'),
 		image: z.string().optional(),
 		spotifyUrl: z.string().optional(), // Expected format: https://open.spotify.com/episode/...
 		duration: z.string().optional(),
