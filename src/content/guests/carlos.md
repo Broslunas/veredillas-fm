@@ -1,6 +1,6 @@
 ---
 name: "Carlos"
-role: "Alumno"
+role: "Alumno de 2º Bachillerato B"
 description: "Alumno 2º Bachillerato B."
 image: "https://radio.broslunas.com/guest/carlos.jpg"
 ---
