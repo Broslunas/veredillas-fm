@@ -3,6 +3,7 @@ import { getEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import Comments from '../../components/Comments.astro';
 import SocialShare from '../../components/SocialShare.astro';
+import RelatedEpisodes from '../../components/RelatedEpisodes.astro';
 
 export const prerender = false;
 
@@ -94,6 +95,8 @@ const formattedDate = entry.data.pubDate.toLocaleDateString('es-ES', {
         <div class="container" style="max-width: 1000px; margin-bottom: 6rem;">
             <Comments slug={entry.slug} />
         </div>
+
+        <RelatedEpisodes currentSlug={entry.slug} tags={entry.data.tags} />
     </article>
 </Layout>
 
