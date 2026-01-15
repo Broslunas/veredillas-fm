@@ -532,7 +532,7 @@ const isActive = (href: string) => {
 
 <script>
   // Update active state on navigation (Client-side)
-  document.addEventListener('astro:page-load', () => {
+  document.addEventListener('DOMContentLoaded', () => {
     // 1. Highlight Active Link
     const currentPath = window.location.pathname;
     const navLinks = document.querySelectorAll('.nav-link');

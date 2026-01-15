@@ -350,12 +350,16 @@ const recentPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pu
                         slidesPerView: 3,
                         spaceBetween: 30,
                     },
+                    1280: {
+                         slidesPerView: 3.5,
+                         spaceBetween: 30,
+                    }
                 },
             });
         }
     }
 
-    document.addEventListener('astro:page-load', initPage);
+    document.addEventListener('DOMContentLoaded', initPage);
 </script>
 
 <style>

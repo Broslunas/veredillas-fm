@@ -106,26 +106,27 @@ const galleryImages = [
     </div>
 </Layout>
 
-<script>
-    import { gsap } from "gsap";
-    
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script is:inline>
     // Gallery Logic
-    const initGallery = () => {
+    function initGallery() {
+        if (typeof gsap === 'undefined') {
+            console.warn('GSAP not loaded yet, retrying...');
+            setTimeout(initGallery, 100);
+            return;
+        }
+
         const gridItems = document.querySelectorAll('.zoom-trigger');
         const lightbox = document.getElementById('lightbox');
-        const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement;
+        const lightboxImg = document.getElementById('lightbox-img');
         const caption = document.querySelector('.lightbox-caption');
         const closeBtn = document.querySelector('.close-lightbox');
         const nextBtn = document.querySelector('.nav-btn.next');
         const prevBtn = document.querySelector('.nav-btn.prev');
         
-        // Data populated from Astro template via data attributes would be cleaner, 
-        // but for simplicity we'll just grab src from DOM or repeat array if we had it.
-        // Let's rely on DOM query for the image list to keep it simple.
         let currentIndex = 0;
         
-        // Helper to get image URL from index
-        const getImageInfo = (index: number) => {
+        const getImageInfo = (index) => {
             const item = gridItems[index];
             if(!item) return null;
             const img = item.querySelector('img');
@@ -135,7 +136,7 @@ const galleryImages = [
             };
         };
 
-        const openLightbox = (index: number) => {
+        const openLightbox = (index) => {
             const info = getImageInfo(index);
             if (!info || !lightbox || !lightboxImg) return;
             
@@ -153,14 +154,14 @@ const galleryImages = [
             document.body.style.overflow = '';
         };
 
-        const nextImage = (e: Event) => {
+        const nextImage = (e) => {
             e.stopPropagation();
             let newIndex = currentIndex + 1;
             if (newIndex >= gridItems.length) newIndex = 0;
             openLightbox(newIndex);
         };
         
-        const prevImage = (e: Event) => {
+        const prevImage = (e) => {
             e.stopPropagation();
             let newIndex = currentIndex - 1;
             if (newIndex < 0) newIndex = gridItems.length - 1;
@@ -169,6 +170,9 @@ const galleryImages = [
 
         // Event Listeners
         gridItems.forEach((item, index) => {
+            // Remove old listeners to be safe? 
+            // Since this script runs on every nav (is:inline), and DOM is swapped, 
+            // the elements are fresh. No need to remove.
             item.addEventListener('click', () => openLightbox(index));
         });
 
@@ -208,7 +212,15 @@ const galleryImages = [
         });
     }
 
-    document.addEventListener('astro:page-load', initGallery);
+    // Initialize immediately
+    initGallery();
+    
+    // Also listen for re-renders if layout doesn't fully swap body? 
+    // But router swaps main. Inline script is in body (astro puts it there usually), 
+    // wait, astro puts scripts in head or body? 
+    // If it's `is:inline` inside the component, it renders where the component is.
+    // Layout renders <slot /> in <main>. So this script is in <main>.
+    // So it is re-executed. Perfect.
 </script>
 
 <style>

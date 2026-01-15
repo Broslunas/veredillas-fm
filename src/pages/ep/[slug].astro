@@ -128,9 +128,12 @@ const formattedDate = entry.data.pubDate.toLocaleDateString('es-ES', {
 </Layout>
 
 <script>
-    document.addEventListener('astro:page-load', () => {
+    const setupEpisodePage = () => {
         const btns = document.querySelectorAll('.play-trigger-btn');
         btns.forEach(btn => {
+            // Remove old listener if possible? No, we just rely on fresh DOM or clean initial add.
+            // With Custom Router, the DOM is fresh, so the elements are new.
+            // We just need to ensure we don't attach THIS setup loop multiple times to the SAME 'astro:page-load' event chain.
             btn.addEventListener('click', (e) => {
                 const target = e.currentTarget as HTMLElement;
                 const url = target.getAttribute('data-spotify-url');
@@ -153,7 +156,13 @@ const formattedDate = entry.data.pubDate.toLocaleDateString('es-ES', {
                 }));
             });
         }
-    });
+    };
+
+    // WE USE { once: true } to prevent accumulation of this specific closure if the script is re-run.
+    // However, the Custom Router fires 'astro:page-load' on every navigation.
+    // If we use { once: true }, this listener runs for the CURRENT page load, then unregisters.
+    // If the script is re-executed on the NEXT navigation, it adds a NEW listener (once).
+    document.addEventListener('DOMContentLoaded', setupEpisodePage);
 </script>
 
 <style>

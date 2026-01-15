@@ -4,7 +4,7 @@
 ---
 
 <!-- Mini Player (Floating) -->
-<div id="mini-player" class="mini-player hidden" transition:persist="verified-player">
+<div id="mini-player" class="mini-player hidden">
   <div class="player-wrapper glass-panel">
       <div id="player-placeholder"></div>
       
@@ -24,7 +24,7 @@
 </div>
 
 <!-- Immersive Overlay (Cinema Mode) -->
-<div id="immersive-player" class="immersive-overlay hidden" transition:persist="immersive-overlay">
+<div id="immersive-player" class="immersive-overlay hidden">
     <div class="background-glow"></div>
     <div class="immersive-container">
         
@@ -55,7 +55,7 @@
 
 <!-- Hidden Story Card Template -->
 <!-- Story Customization Modal -->
-<div id="story-modal" class="story-modal hidden" transition:persist="story-modal">
+<div id="story-modal" class="story-modal hidden">
     <div class="modal-backdrop"></div>
     <div class="modal-content-wrapper">
         <div class="modal-preview-column">
@@ -123,10 +123,13 @@
         }
     }
 
-    if (!window.hasGlobalPlayerListener) {
-        window.hasGlobalPlayerListener = true;
+    // We use a global flag to prevent attaching GLOBAL event listeners (like 'play-episode' on document) multiple times.
+    // However, 'astro:page-load' needs to be handled carefully.
+
         window.playerCurrentUrl = null;
         window.playerMeta = null;
+        
+        // Modules are cached, so these run once.
         const fac = new FastAverageColor();
 
         // ---- Visualizer Logic (Simulated) ----
@@ -374,7 +377,7 @@
         };
 
         // Listeners
-        document.addEventListener('astro:page-load', updatePlayerState);
+
         window.addEventListener('resize', updatePlayerState);
         
         // Custom Play Event
@@ -453,17 +456,19 @@
              if (sTitle) sTitle.innerText = window.playerMeta.title;
              if (sAuthor) sAuthor.innerText = window.playerMeta.author;
 
-             // Generate QR
+             // 2. Generate QR Code
              const qrContainer = document.getElementById('story-qr-code');
-             if (qrContainer) {
-                 const urlToShare = window.location.href; // Simplified for demo
+             if (qrContainer && QRCode) {
+                 const urlToShare = window.location.href;
                  try {
-                     const qrDataUrl = await QRCode.toDataURL(urlToShare, { margin: 0, color: { dark: '#000', light: '#FFF' } });
-                     qrContainer.innerHTML = `<img src="${qrDataUrl}" style="width:100%; height:100%; border-radius: 4px;" />`;
-                 } catch (err) {}
+                     const qrDataUrl = await QRCode.toDataURL(urlToShare, { margin: 1, color: { dark: '#000', light: '#FFF' } });
+                     qrContainer.innerHTML = `<img src="${qrDataUrl}" style="width:100%; height:100%; border-radius: 8px;" />`;
+                 } catch (err) {
+                     console.error(err);
+                 }
              }
 
-             // Render Wave
+             // 3. Draw Static Wave
              const waveCanvas = document.getElementById('story-wave') as HTMLCanvasElement;
              if (waveCanvas) {
                  const ctx = waveCanvas.getContext('2d');
@@ -515,7 +520,7 @@
 
         const downloadStoryImage = async () => {
              const card = document.getElementById('story-card-preview');
-             if (!card) return;
+             if (!card || !toPng) return;
              
              const originalTransform = card.style.transform;
              card.style.transform = 'none'; // Reset scale for capture
@@ -585,12 +590,17 @@
                  if (immersive) immersive.classList.add('hidden');
             }
 
-            // Share Story
+            // Custom Share Story Event
             if (target && (target.closest('#share-story-btn') || target.closest('#mini-share-btn'))) {
                 openStoryModal();
             }
         });
-    }
+
+
+
+    
+    // Auto-run setup (MPA mode)
+    document.addEventListener('DOMContentLoaded', updatePlayerState);
 </script>
 
 <style>
