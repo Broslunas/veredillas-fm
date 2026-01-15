@@ -65,7 +65,13 @@ const formattedDate = entry.data.pubDate.toLocaleDateString('es-ES', {
         <!-- Player -->
         <div class="player-container container">
             {entry.data.spotifyUrl && (
-                <div id="episode-player-placeholder" data-spotify-url={entry.data.spotifyUrl}></div>
+                <div 
+                    id="episode-player-placeholder" 
+                    data-spotify-url={entry.data.spotifyUrl}
+                    data-title={entry.data.title}
+                    data-image={entry.data.image}
+                    data-author={entry.data.author}
+                ></div>
             )}
         </div>
 

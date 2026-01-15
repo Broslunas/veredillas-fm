@@ -3,70 +3,200 @@
 // Persisted player component that listens for 'play-episode' events
 ---
 
+<!-- Mini Player (Floating) -->
 <div id="mini-player" class="mini-player hidden" transition:persist="verified-player">
-  <div class="player-wrapper">
+  <div class="player-wrapper glass-panel">
       <div id="player-placeholder"></div>
-      <button id="close-player" aria-label="Cerrar reproductor">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-      </button>
+      
+      <!-- Controls for Mini Player -->
+      <div class="mini-controls">
+          <button id="expand-player" class="control-btn" aria-label="Pantalla completa">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+          </button>
+          <button id="close-player" class="control-btn close" aria-label="Cerrar reproductor">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+      </div>
   </div>
 </div>
 
+<!-- Immersive Overlay (Cinema Mode) -->
+<div id="immersive-player" class="immersive-overlay hidden" transition:persist="immersive-overlay">
+    <div class="background-glow"></div>
+    <div class="immersive-container">
+        
+        <button id="collapse-player" class="collapse-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+        </button>
+
+        <div class="immersive-content">
+            <div class="immersive-cover-wrapper">
+                <img id="immersive-cover" src="/logo.png" alt="Cover" />
+                <div class="vinyl-grooves"></div>
+            </div>
+            
+            <div class="immersive-meta">
+                <h2 id="immersive-title">Título del Episodio</h2>
+                <p id="immersive-author">Veredillas FM</p>
+            </div>
+
+            <canvas id="audio-visualizer"></canvas>
+        </div>
+    </div>
+</div>
+
 <script>
+    import { FastAverageColor } from 'fast-average-color';
+
     declare global {
         interface Window {
             hasGlobalPlayerListener: boolean;
             playerCurrentUrl: string | null;
+            playerMeta: { title: string, image: string, author: string } | null;
+            visualizerInterval: number;
         }
     }
 
     if (!window.hasGlobalPlayerListener) {
         window.hasGlobalPlayerListener = true;
         window.playerCurrentUrl = null;
+        window.playerMeta = null;
+        const fac = new FastAverageColor();
 
-        // Function to update position
+        // ---- Visualizer Logic (Simulated) ----
+        const initVisualizer = () => {
+             const canvas = document.getElementById('audio-visualizer') as HTMLCanvasElement;
+             if (!canvas) return;
+             
+             const ctx = canvas.getContext('2d');
+             if (!ctx) return;
+
+             // Resize
+             const resize = () => {
+                 canvas.width = canvas.offsetWidth;
+                 canvas.height = canvas.offsetHeight;
+             };
+             window.addEventListener('resize', resize);
+             resize();
+
+             if (window.visualizerInterval) cancelAnimationFrame(window.visualizerInterval);
+
+             const bars = 60;
+             let time = 0;
+
+             const draw = () => {
+                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+                 
+                 const width = canvas.width / bars;
+                 const center = canvas.height / 2;
+                 
+                 ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-primary');
+                 
+                 for (let i = 0; i < bars; i++) {
+                     // Simulating wave data based on time and index
+                     const relX = i / bars; // 0 to 1
+                     
+                     // Complex wave function to look like speech/music
+                     const h1 = Math.sin(time * 0.1 + i * 0.2) * 50; 
+                     const h2 = Math.cos(time * 0.2 + i * 0.1) * 30;
+                     const noise = Math.random() * 20;
+                     
+                     // Shape envelope (taper at ends)
+                     const envelope = Math.sin(relX * Math.PI);
+                     
+                     const height = Math.abs((h1 + h2 + noise) * envelope * 2); // Scale up
+                     
+                     const x = i * width;
+                     const y = center - height / 2;
+                     
+                     // Rounded bars
+                     ctx.beginPath();
+                     ctx.roundRect(x + 2, y, width - 4, height, 4);
+                     ctx.fill();
+                 }
+                 
+                 time += 0.5;
+                 window.visualizerInterval = requestAnimationFrame(draw);
+             };
+             
+             draw();
+        };
+
+        // ---- Ambient Mode Logic ----
+        const updateAmbientTheme = async (imageUrl: string) => {
+            try {
+                const color = await fac.getColorAsync(imageUrl);
+                document.documentElement.style.setProperty('--color-primary-glow', color.rgba);
+                // Also update the glow in immersive mode
+                const glow = document.querySelector('.background-glow') as HTMLElement;
+                if (glow) {
+                    glow.style.background = `radial-gradient(circle at center, ${color.rgba}, transparent 70%)`;
+                }
+            } catch (e) {
+                console.log("Ambient color failed", e);
+            }
+        };
+
+        // Function to update position and metadata
         const updatePlayerState = () => {
             const player = document.getElementById('mini-player');
             const placeholder = document.getElementById('episode-player-placeholder');
-            const iframe = document.getElementById('spotify-iframe') as HTMLIFrameElement;
             const container = document.getElementById('player-placeholder');
+            const immersiveOverlay = document.getElementById('immersive-player');
+            
+            // Elements to update in Immersive
+            const immTitle = document.getElementById('immersive-title');
+            const immAuthor = document.getElementById('immersive-author');
+            const immCover = document.getElementById('immersive-cover') as HTMLImageElement;
 
             if (!player || !container) return;
 
             if (placeholder) {
                 // INLINE MODE CANDIDATE
                 const url = placeholder.getAttribute('data-spotify-url');
-                
-                // CHECK CONFLICT: If playing something else
+                const title = placeholder.getAttribute('data-title');
+                const image = placeholder.getAttribute('data-image');
+                const author = placeholder.getAttribute('data-author');
+
+                // Update Meta Global
+                if (title) window.playerMeta = { title, image: image || '/logo.png', author: author || 'Veredillas FM' };
+
+                // CHECK CONFLICT
                 if (window.playerCurrentUrl && url && window.playerCurrentUrl !== url) {
-                    
-                    // 1. Keep Player FLOATING (Show current audio)
+                    // CONFLICT: Show Floating Player
                     if (container.hasChildNodes()) {
                         player.classList.remove('inline', 'hidden');
                         player.classList.add('floating', 'visible');
                         
-                        // Apply floating styles explicitly
+                        // Setup Floating Styles
                         player.style.position = 'fixed';
                         player.style.top = 'auto';
                         player.style.bottom = '0';
                         player.style.left = '0';
                         player.style.width = '100%';
                         player.style.height = 'auto';
-                        player.style.transform = '';
                         
                         const closeBtn = document.getElementById('close-player');
                         if(closeBtn) closeBtn.style.display = 'flex';
-
+                        
                         document.body.style.paddingBottom = '100px';
+                        
+                        // Populate Immersive if needed
+                        if (immTitle && window.playerMeta) {
+                            immTitle.innerText = window.playerMeta.title;
+                            if (immAuthor) immAuthor.innerText = window.playerMeta.author;
+                            immCover.src = window.playerMeta.image;
+                            updateAmbientTheme(window.playerMeta.image);
+                        }
                     }
 
-                    // 2. Render Prompt in Placeholder (if not already there)
+                    // Render Prompt in Placeholder
                     if (!placeholder.hasAttribute('data-rendered-prompt')) {
-                        placeholder.setAttribute('data-rendered-prompt', 'true');
-                        placeholder.innerHTML = `
+                         placeholder.setAttribute('data-rendered-prompt', 'true');
+                         placeholder.innerHTML = `
                             <div class="conflict-wrapper" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; background: rgba(255,255,255,0.03); border-radius:12px; border: 1px dashed rgba(255,255,255,0.1);">
                                 <p style="margin:0; color: #a1a1aa; font-size: 0.95rem; font-weight: 500;">Estás escuchando otro episodio</p>
-                                <button id="force-play-btn" class="btn-conflict" style="cursor: pointer; background: white; color: black; border: none; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; transition: transform 0.2s;">
+                                <button id="force-play-btn" style="cursor: pointer; background: white; color: black; border: none; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem;">
                                     Reproducir este en su lugar
                                 </button>
                             </div>
@@ -75,27 +205,31 @@
                         const btn = placeholder.querySelector('#force-play-btn');
                         if(btn) {
                             btn.addEventListener('click', () => {
-                                // Force play: Clear state to trigger reload
                                 window.playerCurrentUrl = null; 
-                                container.innerHTML = ''; // Force clear old iframe
+                                container.innerHTML = '';
                                 updatePlayerState();
                             });
                         }
                     }
-                    return; // Stop here, do not proceed to inline logic
+                    return; 
                 }
                 
-                // NO CONFLICT -> Standard Inline Logic
-                // Auto-load if needed
-                if (url && (window.playerCurrentUrl !== url || !iframe)) {
+                // NO CONFLICT -> Inline Logic
+                if (url && (window.playerCurrentUrl !== url)) {
                     window.playerCurrentUrl = url;
+                    if(title) window.playerMeta = { title, image: image || '/logo.png', author: author || 'Veredillas FM' };
+                    
+                    // Update Ambient
+                    if (image) updateAmbientTheme(image);
+                    
+                    // Inject Iframe
                     let finalUrl = url;
                     try {
-                        const urlObj = new URL(url);
-                        if (!urlObj.pathname.includes('/embed/')) {
-                            const segments = urlObj.pathname.split('/').filter(Boolean);
-                            if (segments[0] !== 'embed') finalUrl = `${urlObj.origin}/embed${urlObj.pathname}`;
-                        }
+                         const urlObj = new URL(url);
+                         if (!urlObj.pathname.includes('/embed/')) {
+                              const segments = urlObj.pathname.split('/').filter(Boolean);
+                              if (segments[0] !== 'embed') finalUrl = `${urlObj.origin}/embed${urlObj.pathname}`;
+                         }
                     } catch(e) {}
                     
                     container.innerHTML = `
@@ -105,7 +239,8 @@
                         src="${finalUrl}?autoplay=0" 
                         width="100%" 
                         height="100%" 
-                        frameBorder="0" 
+                        frameBorder="0"
+                        scrolling="no"
                         allowfullscreen="" 
                         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
                         loading="lazy">
@@ -113,49 +248,51 @@
                     `;
                 }
 
-                // Calculate Position
+                // Inline CSS
                 const rect = placeholder.getBoundingClientRect();
                 const scrollX = window.scrollX || window.pageXOffset;
                 const scrollY = window.scrollY || window.pageYOffset;
 
                 player.classList.remove('floating', 'hidden');
-                player.classList.add('inline');
-                player.classList.add('visible'); // Ensure it's visible
+                player.classList.add('inline', 'visible');
 
                 player.style.position = 'absolute';
                 player.style.top = `${rect.top + scrollY}px`;
                 player.style.left = `${rect.left + scrollX}px`;
                 player.style.width = `${rect.width}px`;
                 player.style.height = `${rect.height}px`;
-                player.style.transform = 'none';
                 
-                // Hide close button in inline mode
-                const closeBtn = document.getElementById('close-player');
-                if(closeBtn) closeBtn.style.display = 'none';
+                // Hide controls in inline
+                const ctrls = player.querySelector('.mini-controls') as HTMLElement;
+                if(ctrls) ctrls.style.display = 'none';
 
-                // Reset body padding
                 document.body.style.paddingBottom = '0';
 
             } else {
-                // FLOATING MODE
-                // Only content if we have something playing
+                // FLOATING MODE (Navigating other pages)
                 if (container.hasChildNodes()) {
                     player.classList.remove('inline', 'hidden');
-                    player.classList.add('floating');
-                    player.classList.add('visible');
+                    player.classList.add('floating', 'visible');
 
                     player.style.position = 'fixed';
                     player.style.top = 'auto';
                     player.style.bottom = '0';
                     player.style.left = '0';
                     player.style.width = '100%';
-                    player.style.height = 'auto'; // Let CSS handle height
-                    player.style.transform = ''; // Clear inline transform if any
+                    player.style.height = 'auto';
 
-                    const closeBtn = document.getElementById('close-player');
-                    if(closeBtn) closeBtn.style.display = 'flex';
+                    const ctrls = player.querySelector('.mini-controls') as HTMLElement;
+                    if(ctrls) ctrls.style.display = 'flex';
 
                     document.body.style.paddingBottom = '100px';
+
+                    // Update Immersive Data if available
+                    if (window.playerMeta && immTitle) {
+                         immTitle.innerText = window.playerMeta.title;
+                         if (immAuthor) immAuthor.innerText = window.playerMeta.author;
+                         immCover.src = window.playerMeta.image;
+                         updateAmbientTheme(window.playerMeta.image);
+                    }
                 } else {
                     player.classList.add('hidden');
                     player.classList.remove('visible');
@@ -168,30 +305,34 @@
         document.addEventListener('astro:page-load', updatePlayerState);
         window.addEventListener('resize', updatePlayerState);
         
-        // Listen to custom play event (from other buttons if any)
+        // Custom Play Event
         document.addEventListener('play-episode', ((e: Event) => {
-             const customEvent = e as CustomEvent<{ url: string }>;
-             const { url } = customEvent.detail;
+             const customEvent = e as CustomEvent;
+             const { url, title, image, author } = customEvent.detail;
              
-             // Just set the URL logic like above, but maybe force floating if on non-episode page
-             const iframe = document.getElementById('spotify-iframe');
              const container = document.getElementById('player-placeholder');
-             const player = document.getElementById('mini-player');
              
-             if (container && player) {
+             if (container) {
                  window.playerCurrentUrl = url;
-                 // Load iframe logic...
-                 // (Simplified repetition)
-                 let finalUrl = url;
-                 try {
-                     const urlObj = new URL(url);
-                     if (!urlObj.pathname.includes('/embed/')) {
-                            const segments = urlObj.pathname.split('/').filter(Boolean);
-                            if (segments[0] !== 'embed') finalUrl = `${urlObj.origin}/embed${urlObj.pathname}`;
-                     }
-                 } catch(e) {}
-
-                     container.innerHTML = `
+                 if (title) window.playerMeta = { title, image, author };
+                 
+                 // Reuse insertion logic
+                 // ... simplified for brevity, assume updatePlayerState handles if we set the placeholder attrs conceptually or just direct
+                 // Since we don't have a placeholder on non-ep pages, we must manually inject into floating
+                 // But wait, play-episode usually comes from clicking something.
+                 // If we are on a listing page, there is no placeholder.
+                 
+                 // Direct Inject
+                  let finalUrl = url;
+                    try {
+                         const urlObj = new URL(url);
+                         if (!urlObj.pathname.includes('/embed/')) {
+                              const segments = urlObj.pathname.split('/').filter(Boolean);
+                              if (segments[0] !== 'embed') finalUrl = `${urlObj.origin}/embed${urlObj.pathname}`;
+                         }
+                    } catch(e) {}
+                 
+                 container.innerHTML = `
                          <iframe 
                          id="spotify-iframe"
                          style="border-radius:12px" 
@@ -199,21 +340,22 @@
                          width="100%" 
                          height="100%" 
                          frameBorder="0" 
+                         scrolling="no"
                          allowfullscreen="" 
                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
                          loading="lazy">
                      </iframe>
                   `;
-                 
-                 // Trigger state update to decide floating vs inline
-                 updatePlayerState();
+                  
+                  if(image) updateAmbientTheme(image);
+                  updatePlayerState();
              }
         }));
 
         // Close logic
          document.addEventListener('click', (e: Event) => {
             const target = e.target as HTMLElement;
-            if (target && (target.closest('#close-player'))) {
+            if (target && target.closest('#close-player')) {
                 const player = document.getElementById('mini-player');
                 const container = document.getElementById('player-placeholder');
                 if (player) {
@@ -223,8 +365,26 @@
                         player.classList.add('hidden');
                         if (container) container.innerHTML = '';
                         window.playerCurrentUrl = null;
+                        window.playerMeta = null;
+                        // Close immersive if open
+                        document.getElementById('immersive-player')?.classList.add('hidden');
                     }, 300);
                 }
+            }
+            
+            // Expand
+            if (target && target.closest('#expand-player')) {
+                const immersive = document.getElementById('immersive-player');
+                if (immersive) {
+                    immersive.classList.remove('hidden');
+                    initVisualizer();
+                }
+            }
+
+            // Collapse
+            if (target && target.closest('#collapse-player')) {
+                 const immersive = document.getElementById('immersive-player');
+                 if (immersive) immersive.classList.add('hidden');
             }
         });
     }
@@ -232,18 +392,13 @@
 
 <style>
   .mini-player {
-    position: fixed; /* Default start */
+    position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
     z-index: 9999;
     padding: 0;
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
-                top 0.5s ease, 
-                left 0.5s ease, 
-                width 0.5s ease, 
-                height 0.5s ease,
-                bottom 0.3s ease; /* Animate bottom change */
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
   
   .mini-player.hidden {
@@ -259,36 +414,47 @@
   .player-wrapper {
     width: 100%;
     height: 100%;
-    background: #282828;
-    backdrop-filter: blur(10px);
-    border-radius: 12px; /* Always rounded */
+    background: #000;
+    border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     position: relative;
     overflow: hidden;
   }
   
-  /* Floating Specifics */
-  .mini-player.floating {
-      padding: 10px;
-  }
-  
   .mini-player.floating .player-wrapper {
-       max-width: 600px; /* Slightly narrower for better aesthetic */
-       margin: 0 auto;
-       height: 152px !important; /* Force standard Spotify embed height */
+       max-width: 600px;
+       margin: 0 auto 10px; /* margin bottom for floating */
+       height: 152px !important;
+       border: 1px solid rgba(255,255,255,0.1);
   }
 
-  /* Floating Mobile Adjustment */
-  @media (max-width: 768px) {
-      .mini-player.floating.visible {
-          bottom: 74px; /* Height of bottom nav (approx) + padding */
-      }
-      
-      .mini-player.floating .player-wrapper {
-          border-radius: 12px;
-          margin: 0 10px; /* Side margins */
-          width: calc(100% - 20px);
-      }
+  .mini-controls {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      display: none; /* Hidden by default (inline) */
+      gap: 5px;
+      z-index: 20;
+  }
+
+  .control-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: all 0.2s;
+  }
+
+  .control-btn:hover {
+      background: white;
+      color: black;
   }
 
   /* Inline Specifics */
@@ -297,51 +463,135 @@
       z-index: 10; 
       box-shadow: none;
   }
-  
   .mini-player.inline .player-wrapper {
       background: transparent;
       box-shadow: none;
-      backdrop-filter: none;
+      border: none;
       max-width: none;
       border-radius: 12px;
-      height: 100%; /* Fill the placeholder */
+      height: 100%;
   }
 
   #player-placeholder {
       width: 100%;
       height: 100%;
-      min-height: 80px; 
   }
   
-  #close-player {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    background: rgba(0,0,0,0.8);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: white;
-    cursor: pointer;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
-    z-index: 20;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
+  :global(#spotify-iframe) {
+      width: 100% !important;
+      height: 100% !important;
+      overflow: hidden !important;
+      border: none !important;
   }
-  
-  .mini-player.floating:hover #close-player {
+
+  /* IMMERSIVE MODE */
+  .immersive-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: #050505;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+  }
+
+  .immersive-overlay:not(.hidden) {
       opacity: 1;
       pointer-events: auto;
   }
 
-  /* Force iframe to fit container */
-  :global(#spotify-iframe) {
-      width: 100% !important;
-      height: 100% !important;
+  .immersive-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+  }
+
+  .background-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at center, var(--color-primary-glow), transparent 70%);
+      opacity: 0.3;
+      z-index: 1;
+      pointer-events: none;
+  }
+
+  .immersive-content {
+      text-align: center;
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+  }
+
+  .immersive-cover-wrapper {
+      width: 300px;
+      height: 300px;
+      margin: 0 auto 30px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      position: relative;
+      animation: float 6s ease-in-out infinite;
+  }
+
+  .immersive-cover-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+  }
+
+  .immersive-meta h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(to bottom, #fff, #aaa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+  }
+  
+  .immersive-meta p {
+      font-size: 1.2rem;
+      color: var(--color-text-muted);
+      margin-bottom: 2rem;
+  }
+
+  #audio-visualizer {
+      width: 100%;
+      height: 100px;
+      margin-top: 20px;
+      opacity: 0.8;
+  }
+
+  .collapse-btn {
+      position: absolute;
+      top: 40px;
+      right: 40px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      z-index: 10;
+  }
+  
+  .collapse-btn:hover {
+      background: rgba(255,255,255,0.2);
   }
 </style>
