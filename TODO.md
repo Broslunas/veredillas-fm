@@ -9,7 +9,7 @@ Idea: Usa una librería ligera (como colorthief) para extraer el color dominante
 
 Idea: Implementa una interfaz tipo "Cmd+K" (como la de Vercel o MacOS). Que al presionar Ctrl+K se abra un buscador rápido para saltar instantáneamente a cualquier episodio, post del blog o miembro del equipo.
 
-- [x] Share-Cards Generativas:
+- [] Share-Cards Generativas:
 
 Idea: Añade un botón en el reproductor: "Compartir en Historia". Esto debería generar al vuelo una imagen vertical (usando html-to-image) con la carátula, el título y una onda de audio estática, lista para que el usuario la suba a Instagram/TikTok.
 

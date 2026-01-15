@@ -6,6 +6,7 @@ import MiniPlayer from '../components/MiniPlayer.astro';
 import CookieConsent from '../components/CookieConsent.astro';
 import ToastNotification from '../components/ToastNotification.astro';
 
+
 interface Props {
 	title: string;
 	description?: string;
@@ -180,6 +181,8 @@ const fullTitle = title === "Inicio" ? "Veredillas FM - El Podcast del IES Vered
                 <div class="loader-spinner"></div>
             </div>
         </div>
+
+
 
 		<main>
 			<slot />
