@@ -197,13 +197,12 @@ if (isLoggedIn) {
 </style>
 
 <script>
-    // 30 seconds delay before showing the modal
     const SHOW_DELAY = 30000; 
     const STORAGE_KEY = 'veredillas_auth_prompt_dismissed';
 
     function initAuthPrompt() {
-        // Double check cookies client side to be sure
-        if (document.cookie.includes('auth-token')) return;
+        // Double check cookies client side to be sure (using client readable cookie)
+        if (document.cookie.includes('user-session')) return;
 
         // Check if user dismissed it in this session
         const dismissed = sessionStorage.getItem(STORAGE_KEY);
@@ -215,11 +214,12 @@ if (isLoggedIn) {
         // With ViewTransitions, specific page load events fire.
         
         // Prevent multiple timeouts if user navigates fast
-        if (window.authPromptTimeout) clearTimeout(window.authPromptTimeout);
+        if ((window as any).authPromptTimeout) clearTimeout((window as any).authPromptTimeout);
 
-        window.authPromptTimeout = setTimeout(() => {
+        (window as any).authPromptTimeout = setTimeout(() => {
             const modal = document.getElementById('auth-prompt-modal');
-            if (modal && !document.cookie.includes('auth-token') && !sessionStorage.getItem(STORAGE_KEY)) {
+            // Check again before showing
+            if (modal && !document.cookie.includes('user-session') && !sessionStorage.getItem(STORAGE_KEY)) {
                 modal.style.display = 'flex';
                 // Trigger reflow for transition
                 modal.offsetHeight; 

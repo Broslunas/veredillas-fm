@@ -89,6 +89,15 @@ export const GET: APIRoute = async ({ url, redirect, cookies }) => {
       maxAge: 60 * 60 * 24 * 30, // 30 días
       path: '/'
     });
+    
+    // Set a client-readable cookie to flag session state
+    cookies.set('user-session', 'true', {
+      httpOnly: false,
+      secure: import.meta.env.PROD,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30,
+      path: '/'
+    });
 
     // Redirigir a la página de éxito para cerrar el popup
     return redirect('/auth/success');
