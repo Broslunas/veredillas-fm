@@ -1,0 +1,226 @@
+---
+import { LEVELS } from '../lib/gamification';
+
+interface Props {
+  currentLevelName: string;
+  listeningTime: number;
+}
+
+const { currentLevelName, listeningTime } = Astro.props;
+
+function formatTime(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+}
+---
+
+<div id="levels-modal" class="modal-backdrop">
+    <div class="glass-panel modal-content gs-fade-up">
+        <div class="modal-header">
+            <h3>Niveles de Oyente</h3>
+            <button id="close-modal-btn" class="close-btn">&times;</button>
+        </div>
+        <div class="levels-list">
+            {LEVELS.map((level) => {
+                const isCurrent = currentLevelName === level.name;
+                const isUnlocked = listeningTime >= level.minSeconds;
+                
+                return (
+                    <div class={`level-item ${isCurrent ? 'current' : ''} ${isUnlocked ? 'unlocked' : 'locked'}`}>
+                        <div class="level-icon-wrapper" style={`border-color: ${level.color}`}>
+                            <span class="level-icon">{level.icon}</span>
+                        </div>
+                        <div class="level-details">
+                            <span class="level-title" style={`color: ${isUnlocked ? level.color : 'var(--color-text-muted)'}`}>
+                                {level.name}
+                                {isCurrent && <span class="current-badge">Actual</span>}
+                            </span>
+                            <p class="level-req">
+                                {level.minSeconds === 0 ? '0m' : formatTime(level.minSeconds)} +
+                            </p>
+                            <p class="level-description">{level.description}</p>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modal Styles */
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal-content {
+        width: 100%;
+        max-width: 500px;
+        max-height: 85vh;
+        overflow-y: auto;
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 0;
+        background: #1a1a24;
+        border-radius: 12px;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        position: sticky;
+        top: 0;
+        background: #1a1a24;
+        z-index: 10;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+    }
+
+    .modal-header h3 { margin: 0; font-size: 1.25rem; color: white; }
+    
+    .close-btn {
+        background: none;
+        border: none;
+        color: var(--color-text);
+        font-size: 2rem;
+        cursor: pointer;
+        padding: 0;
+        line-height: 0.5;
+        opacity: 0.7;
+    }
+    .close-btn:hover { opacity: 1; }
+
+    .levels-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1.5rem;
+    }
+
+    .level-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(255,255,255,0.03);
+        border-radius: 12px;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+    }
+
+    .level-item.current {
+        background: rgba(139, 92, 246, 0.1);
+        border-color: rgba(139, 92, 246, 0.3);
+    }
+
+    .level-item.locked {
+        opacity: 0.5;
+        filter: grayscale(0.8);
+    }
+
+    .level-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 2px solid;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        background: rgba(0,0,0,0.2);
+        flex-shrink: 0;
+    }
+
+    .level-details {
+        flex: 1;
+    }
+
+    .level-title {
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.2rem;
+    }
+    
+    .current-badge {
+        font-size: 0.6rem;
+        background: var(--color-primary);
+        color: white;
+        padding: 0.1rem 0.4rem;
+        border-radius: 10px;
+        text-transform: uppercase;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+    }
+
+    .level-req {
+        font-size: 0.75rem;
+        font-family: var(--font-display);
+        color: var(--color-text-muted);
+        margin-bottom: 0.2rem;
+        font-weight: 600;
+    }
+
+    .level-description {
+        font-size: 0.85rem;
+        color: var(--color-text-dim);
+        line-height: 1.3;
+    }
+</style>
+
+<script>
+    function initModal() {
+        const modal = document.getElementById('levels-modal');
+        // Use a class selector for potential multiple triggers if needed, though ID 'view-levels-btn' is standard
+        const openBtns = document.querySelectorAll('.view-levels-btn, #view-levels-btn');
+        const closeBtn = document.getElementById('close-modal-btn');
+
+        if (modal) {
+            const openModal = (e) => {
+                e.preventDefault();
+                modal.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            };
+
+            const closeModal = () => {
+                modal.classList.remove('open');
+                document.body.style.overflow = '';
+            };
+
+            openBtns.forEach(btn => btn.addEventListener('click', openModal));
+            
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('open')) {
+                    closeModal();
+                }
+            });
+        }
+    }
+
+    // Initialize on load and on view transitions
+    document.addEventListener('astro:page-load', initModal);
+    document.addEventListener('DOMContentLoaded', initModal);
+</script>

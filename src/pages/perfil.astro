@@ -4,6 +4,7 @@ import { getUserFromCookie } from '../lib/auth';
 import mongoose from 'mongoose';
 import User from '../models/User';
 import { getLevel, getNextLevel, getProgressToNextLevel } from '../lib/gamification';
+import LevelsModal from '../components/LevelsModal.astro';
 
 export const prerender = false;
 
@@ -182,8 +183,8 @@ function formatTime(seconds: number): string {
                     </form>
                 </div>
             </main>
-        </div>
     </div>
+    <LevelsModal currentLevelName={currentLevel.name} listeningTime={listeningTime} />
 </Layout>
 
 <style>

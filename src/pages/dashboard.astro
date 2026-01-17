@@ -7,6 +7,7 @@ import { getUserFromCookie } from '../lib/auth';
 import type { IUser } from '../models/User';
 import mongoose from 'mongoose';
 import { getLevel, getNextLevel, getProgressToNextLevel } from '../lib/gamification';
+import LevelsModal from '../components/LevelsModal.astro';
 
 export const prerender = false;
 
@@ -79,12 +80,12 @@ const hoursToNext = nextLevel ? Math.ceil((nextLevel.minSeconds - (user.listenin
                 </div>
             </div>
         </header>
-
         <!-- Progress / Level Section -->
         <section class="level-section animate-fade-in-up glass-panel">
             <div class="level-info">
                 <h3>Nivel Actual</h3>
-                <p>{currentLevel.description}</p>
+                <p style="margin-bottom: 0.5rem;">{currentLevel.description}</p>
+                <button class="view-levels-btn">Ver progresión de niveles</button>
             </div>
             
             <div class="progress-container">
@@ -149,6 +150,7 @@ const hoursToNext = nextLevel ? Math.ceil((nextLevel.minSeconds - (user.listenin
             )}
         </section>
     </div>
+    <LevelsModal currentLevelName={currentLevel.name} listeningTime={user.listeningTime || 0} />
 </Layout>
 
 <style>
@@ -433,5 +435,23 @@ const hoursToNext = nextLevel ? Math.ceil((nextLevel.minSeconds - (user.listenin
         .dashboard-title {
             font-size: 2rem;
         }
+    }
+
+    .view-levels-btn {
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.75rem;
+        text-decoration: underline;
+        cursor: pointer;
+        padding: 0;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s;
+        display: inline-block;
+    }
+    
+    .view-levels-btn:hover {
+        opacity: 1;
+        color: white;
     }
 </style>

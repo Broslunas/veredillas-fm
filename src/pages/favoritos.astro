@@ -13,7 +13,7 @@ const userPayload = getUserFromCookie(cookieHeader);
 
 // Si no hay usuario, redirigir a login
 if (!userPayload) {
-  return Astro.redirect('/api/auth/google/login');
+  return Astro.redirect('/login');
 }
 
 // Obtener favoritos del usuario
