@@ -1,0 +1,397 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getUserFromCookie } from '../lib/auth';
+import mongoose from 'mongoose';
+import User from '../models/User';
+
+export const prerender = false;
+
+// Obtener usuario autenticado
+const cookieHeader = Astro.request.headers.get('cookie');
+const userPayload = getUserFromCookie(cookieHeader);
+
+// Si no hay usuario, redirigir a login
+if (!userPayload) {
+  return Astro.redirect('/api/auth/google/login');
+}
+
+// Conectar a MongoDB y obtener datos completos del usuario
+let user = null;
+try {
+  if (mongoose.connection.readyState !== 1) {
+    const MONGODB_URI = import.meta.env.MONGODB_URI;
+    if (MONGODB_URI) {
+      await mongoose.connect(MONGODB_URI);
+    }
+  }
+  user = await User.findById(userPayload.userId);
+} catch (error) {
+  console.error('Error loading user:', error);
+}
+
+if (!user) {
+  return Astro.redirect('/api/auth/google/login');
+}
+
+// Formatear fecha de creación
+const createdDate = new Date(user.createdAt).toLocaleDateString('es-ES', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+---
+
+<Layout title="Mi Perfil" description="Gestiona tu perfil de Veredillas FM">
+  <div class="profile-container">
+    <div class="profile-card">
+      <!-- Header del perfil -->
+      <div class="profile-header">
+        <div class="profile-image-wrapper">
+          {user.picture ? (
+            <img src={user.picture} alt={user.name} class="profile-image" />
+          ) : (
+            <div class="profile-image-placeholder">
+              <span>{user.name.charAt(0).toUpperCase()}</span>
+            </div>
+          )}
+        </div>
+        <h1 class="profile-name">{user.name}</h1>
+        <p class="profile-email">{user.email}</p>
+        <p class="profile-joined">Miembro desde {createdDate}</p>
+      </div>
+
+      <!-- Formulario de edición -->
+      <form class="profile-form" id="profile-form">
+        <div class="form-group">
+          <label for="name">Nombre</label>
+          <input 
+            type="text" 
+            id="name" 
+            name="name" 
+            value={user.name}
+            required
+            minlength="2"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="bio">Biografía</label>
+          <textarea 
+            id="bio" 
+            name="bio" 
+            rows="4"
+            maxlength="500"
+            placeholder="Cuéntanos sobre ti..."
+          >{user.bio || ''}</textarea>
+          <div class="char-count">
+            <span id="char-count">0</span>/500
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="save-btn">
+            Guardar Cambios
+          </button>
+          <a href="/api/auth/logout" class="btn btn-secondary">
+            Cerrar Sesión
+          </a>
+        </div>
+      </form>
+
+      <!-- Mensaje de estado -->
+      <div id="status-message" class="status-message"></div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .profile-card {
+    background: var(--color-surface);
+    border-radius: 24px;
+    padding: 3rem;
+    box-shadow: 
+      0 10px 40px rgba(139, 92, 246, 0.1),
+      0 0 0 1px rgba(139, 92, 246, 0.1);
+    backdrop-filter: blur(10px);
+  }
+
+  .profile-header {
+    text-align: center;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+    margin-bottom: 2rem;
+  }
+
+  .profile-image-wrapper {
+    margin-bottom: 1.5rem;
+  }
+
+  .profile-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--color-primary);
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+  }
+
+  .profile-image-placeholder {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent, #ec4899));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+  }
+
+  .profile-name {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--color-text);
+  }
+
+  .profile-email {
+    color: var(--color-text-muted);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .profile-joined {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+  }
+
+  .profile-form {
+    margin-top: 2rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  }
+
+  .char-count {
+    text-align: right;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin-top: 0.25rem;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent, #ec4899));
+    color: white;
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--color-text);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(139, 92, 246, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .status-message {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+    display: none;
+    animation: slideIn 0.3s ease;
+  }
+
+  .status-message.visible {
+    display: block;
+  }
+
+  .status-message.success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+  }
+
+  .status-message.error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .profile-container {
+      padding: 1rem;
+    }
+
+    .profile-card {
+      padding: 2rem 1.5rem;
+    }
+
+    .form-actions {
+      flex-direction: column;
+    }
+
+    .profile-name {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+
+<script>
+  // Character counter
+  const bioTextarea = document.getElementById('bio') as HTMLTextAreaElement;
+  const charCount = document.getElementById('char-count');
+
+  function updateCharCount() {
+    if (bioTextarea && charCount) {
+      charCount.textContent = bioTextarea.value.length.toString();
+    }
+  }
+
+  bioTextarea?.addEventListener('input', updateCharCount);
+  updateCharCount(); // Initial count
+
+  // Form submission
+  const form = document.getElementById('profile-form') as HTMLFormElement;
+  const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
+  const statusMessage = document.getElementById('status-message');
+
+  function showMessage(message: string, type: 'success' | 'error') {
+    if (!statusMessage) return;
+    
+    statusMessage.textContent = message;
+    statusMessage.className = `status-message visible ${type}`;
+    
+    setTimeout(() => {
+      statusMessage.classList.remove('visible');
+    }, 5000);
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(form);
+    const name = formData.get('name') as string;
+    const bio = formData.get('bio') as string;
+
+    // Disable button
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Guardando...';
+
+    try {
+      const response = await fetch('/api/auth/update-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, bio }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showMessage('¡Perfil actualizado correctamente!', 'success');
+      } else {
+        showMessage(data.error || 'Error al actualizar el perfil', 'error');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showMessage('Error de conexión. Por favor, intenta de nuevo.', 'error');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Guardar Cambios';
+    }
+  });
+
+  // Check for auth success message
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('auth') === 'success') {
+    showMessage('¡Bienvenido! Has iniciado sesión correctamente.', 'success');
+    // Clean URL
+    window.history.replaceState({}, '', '/perfil');
+  }
+</script>
+
+</Layout>
