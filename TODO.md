@@ -20,14 +20,11 @@ Nivel/badges de oyente - Gamificación por tiempo escuchado
 Configuración de accesibilidad - Tamaño de texto, contraste, etc.
 
 💬 Comunidad & Social (8)
-Sistema de comentarios por episodio - Con hilos de conversación
 Ratings/valoraciones de episodios - Sistema de estrellas
 Compartir timestamp específico - Links a momentos exactos
 Clips sociales - Crear clips de 30-60 seg para compartir
-Foro/comunidad - Espacio de discusión general
-Live chat durante estrenos - Chat en tiempo real
 Share listening session - Escuchar sincronizado con amigos
-Top episodios de la semana/mes - Rankings por popularidad
+
 🔍 Descubrimiento & Navegación (7)
 Búsqueda por voz - Comandos de voz para buscar
 Búsqueda semántica con IA - Buscar por conceptos, no solo palabras
@@ -36,12 +33,14 @@ Modo exploración aleatoria - "Descubrir" episodio random
 Timeline interactiva - Visualizar todos los episodios cronológicamente
 Episodios relacionados - Sugerencias al final de cada episodio
 Mapa de contenido - Visualización gráfica de temas/conexiones
+
 📊 Analytics & Estadísticas (5)
 Dashboard personal de estadísticas - Tiempo escuchado, episodios favoritos
 Wrapped anual - Estilo Spotify Wrapped
 Estadísticas públicas del podcast - Transparencia de audiencia
 Mapa de oyentes - Visualización geográfica
 Gráficas de crecimiento - Evolución del podcast
+
 ✨ Experiencias Inmersivas (5)
 Modo cine/teatro - Vista expandida con visuales
 Efectos visuales reactivos al audio - Partículas, gradientes dinámicos

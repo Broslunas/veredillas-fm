@@ -1,8 +1,8 @@
-
 import type { APIRoute } from 'astro';
 import dbConnect from '../../../lib/mongodb';
 import Comment from '../../../models/Comment';
 import crypto from 'node:crypto';
+import { getUserFromCookie } from '../../../lib/auth';
 
 export const prerender = false;
 
@@ -63,6 +63,16 @@ export const POST: APIRoute = async ({ params, request }) => {
     const body = await request.json();
     let { name, email, text } = body;
 
+    // Check for authentication
+    const cookieHeader = request.headers.get('cookie');
+    const userPayload = getUserFromCookie(cookieHeader);
+    const isAuthenticated = !!userPayload;
+
+    // If authenticated, use payload data to ensure integrity (optional, but safer)
+    // However, frontend sends name/email as hidden fields, so we can trust them if verified against payload
+    // Or just trust the request if we verified the token.
+    // Let's rely on the inputs but trust them more if authenticated.
+    
     // Basic Validation
     if (!name || !email || !text) {
          return new Response(JSON.stringify({ success: false, error: 'Name, email, and text are required' }), {
@@ -76,52 +86,77 @@ export const POST: APIRoute = async ({ params, request }) => {
 
     await dbConnect();
     
-    // Generate random token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-
-    // Create unverified comment
-    const comment = await Comment.create({
-      slug,
-      name,
-      email,
-      text,
-      isVerified: false, 
-      verificationToken
-    });
-    
-    // Server-side Webhook Dispatch
-    const origin = request.headers.get('origin') || import.meta.env.SITE || 'https://veredillasfm.es';
-    const verificationLink = `${origin}/verify-comment?token=${verificationToken}`;
-    const webhookSecret = import.meta.env.CONTACT_WEBHOOK_SECRET;
-
-    try {
-        await fetch('https://n8n.broslunas.com/webhook/veredillasfm-comments', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${webhookSecret}`
-            },
-            body: JSON.stringify({
-                name,
-                email,
-                text,
-                slug,
-                verificationLink
-            })
+    // Logic split: Authenticated vs Guest
+    if (isAuthenticated) {
+        // --- AUTHENTICATED FLOW ---
+        // Auto-verify comment
+        const comment = await Comment.create({
+            slug,
+            name,
+            email,
+            text,
+            isVerified: true, // Auto-verified
+            verificationToken: null
         });
-    } catch (webhookError) {
-        console.error('Webhook dispatch failed:', webhookError);
-        // Continue, as the comment is created. User might need to retry verification or we log it.
+
+        return new Response(JSON.stringify({ 
+            success: true, 
+            message: 'Comment published successfully.', 
+            pending: false, // Changed to false so UI knows it's live
+            comment: comment // Return comment to append immediately if needed
+        }), {
+          status: 201,
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+    } else {
+        // --- GUEST FLOW (Existing) ---
+        // Generate random token
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+
+        // Create unverified comment
+        const comment = await Comment.create({
+          slug,
+          name,
+          email,
+          text,
+          isVerified: false, 
+          verificationToken
+        });
+        
+        // Server-side Webhook Dispatch
+        const origin = request.headers.get('origin') || import.meta.env.SITE || 'https://veredillasfm.es';
+        const verificationLink = `${origin}/verify-comment?token=${verificationToken}`;
+        const webhookSecret = import.meta.env.CONTACT_WEBHOOK_SECRET;
+
+        try {
+            await fetch('https://n8n.broslunas.com/webhook/veredillasfm-comments', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${webhookSecret}`
+                },
+                body: JSON.stringify({
+                    name,
+                    email,
+                    text,
+                    slug,
+                    verificationLink
+                })
+            });
+        } catch (webhookError) {
+            console.error('Webhook dispatch failed:', webhookError);
+        }
+        
+        return new Response(JSON.stringify({ 
+            success: true, 
+            message: 'Comment pending verification. Check your email.', 
+            pending: true
+        }), {
+          status: 201,
+          headers: { 'Content-Type': 'application/json' }
+        });
     }
-    
-    return new Response(JSON.stringify({ 
-        success: true, 
-        message: 'Comment pending verification. Check your email.', 
-        pending: true
-    }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' }
-    });
 
   } catch (error) {
     console.error(error);

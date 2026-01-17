@@ -1,12 +1,41 @@
 
 ---
 import '../styles/global.css';
+import { getUserFromCookie } from '../lib/auth';
+import User from '../models/User';
+import mongoose from 'mongoose';
 
 interface Props {
   slug: string;
 }
 
 const { slug } = Astro.props;
+
+// Get current user
+const cookieHeader = Astro.request.headers.get('cookie');
+const userPayload = getUserFromCookie(cookieHeader);
+let currentUser = null;
+
+if (userPayload) {
+  try {
+     if (mongoose.connection.readyState !== 1) {
+        const MONGODB_URI = import.meta.env.MONGODB_URI;
+        if (MONGODB_URI) await mongoose.connect(MONGODB_URI);
+     }
+     const userDoc = await User.findById(userPayload.userId);
+     if (userDoc) {
+       currentUser = {
+         id: userDoc._id.toString(),
+         name: userDoc.name,
+         email: userDoc.email,
+         picture: userDoc.picture
+       };
+     }
+  } catch (e) {
+    console.error('Error fetching user for comments:', e);
+  }
+}
+const isLoggedIn = !!currentUser;
 ---
 
 <div class="comments-layout">
@@ -27,19 +56,37 @@ const { slug } = Astro.props;
       </p>
 
       <form id="comment-form" class="modern-form">
-        <div class="form-grid">
-          <div class="input-wrapper">
-             <input type="text" id="name" name="name" placeholder=" " required maxlength="60" />
-             <label for="name">Nombre</label>
-             <div class="focus-line"></div>
+        {isLoggedIn ? (
+          <div class="logged-in-badge">
+            <div class="badge-avatar">
+              {currentUser?.picture ? (
+                <img src={currentUser.picture} alt={currentUser.name} />
+              ) : (
+                <div class="avatar-placeholder">{currentUser?.name.charAt(0).toUpperCase()}</div>
+              )}
+            </div>
+            <div class="badge-info">
+              <span class="badge-label">Comentando como</span>
+              <strong class="badge-name">{currentUser?.name}</strong>
+            </div>
+            <input type="hidden" name="name" value={currentUser?.name} />
+            <input type="hidden" name="email" value={currentUser?.email} />
           </div>
-          
-          <div class="input-wrapper">
-             <input type="email" id="email" name="email" placeholder=" " required />
-             <label for="email">Email (privado)</label>
-             <div class="focus-line"></div>
+        ) : (
+          <div class="form-grid">
+            <div class="input-wrapper">
+               <input type="text" id="name" name="name" placeholder=" " required maxlength="60" />
+               <label for="name">Nombre</label>
+               <div class="focus-line"></div>
+            </div>
+            
+            <div class="input-wrapper">
+               <input type="email" id="email" name="email" placeholder=" " required />
+               <label for="email">Email (privado)</label>
+               <div class="focus-line"></div>
+            </div>
           </div>
-        </div>
+        )}
 
         <div class="input-wrapper full-width">
           <textarea id="text" name="text" rows="3" placeholder=" " required maxlength="1000"></textarea>
@@ -237,7 +284,13 @@ const { slug } = Astro.props;
 
       if (json.success) {
          form.reset();
-         showToast('¡Casi listo! Revisa tu email para verificar.', 'info');
+         if (json.pending === false) {
+           showToast('¡Comentario publicado!', 'success');
+           // Reload comments to show the new one
+           fetchComments();
+         } else {
+           showToast('¡Casi listo! Revisa tu email para verificar.', 'info');
+         }
       } else {
          showToast(json.error || 'Error al publicar', 'error');
       }
@@ -371,6 +424,63 @@ const { slug } = Astro.props;
       font-size: 0.95rem;
       pointer-events: none;
       transition: all 0.3s ease;
+  }
+
+  /* Logged In Badge */
+  .logged-in-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+  }
+
+  .badge-avatar {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+
+  .badge-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--color-primary), #ec4899);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.8rem;
+  }
+
+  .badge-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.2;
+  }
+
+  .badge-label {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-name {
+    color: var(--color-text);
+    font-size: 0.9rem;
   }
 
   /* Floating Label Logic */
