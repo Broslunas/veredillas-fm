@@ -11,7 +11,6 @@ Modo karaoke/sincronización de letras - Para episodios musicales
 Historial de reproducción - Ver últimos episodios escuchados
 
 👤 Usuario & Personalización (10)
-Favoritos/Me gusta - Guardar episodios preferidos
 Suscripciones a tags específicos - Notificaciones personalizadas
 Temas personalizables - Múltiples esquemas de color
 Progreso guardado - Continuar donde lo dejaste automáticamente

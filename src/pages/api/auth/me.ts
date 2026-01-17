@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import mongoose from 'mongoose';
 import { getUserFromCookie } from '../../../lib/auth';
 import User from '../../../models/User';
+import crypto from 'crypto';
 
 export const prerender = false;
 
@@ -37,12 +38,23 @@ export const GET: APIRoute = async ({ request }) => {
       });
     }
 
+    // Determine picture URL: DB > Gravatar > Placeholder (handled by UI)
+    let pictureUrl = user.picture;
+    
+    if (!pictureUrl && user.email) {
+      const hash = crypto
+        .createHash('md5')
+        .update(user.email.trim().toLowerCase())
+        .digest('hex');
+      pictureUrl = `https://www.gravatar.com/avatar/${hash}?d=mp&s=200`;
+    }
+
     return new Response(JSON.stringify({ 
       user: {
         id: user._id,
         email: user.email,
         name: user.name,
-        picture: user.picture,
+        picture: pictureUrl, // Send Gravatar URL if no picture
         bio: user.bio,
         createdAt: user.createdAt,
         lastLogin: user.lastLogin
