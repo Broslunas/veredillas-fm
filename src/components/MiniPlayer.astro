@@ -456,17 +456,10 @@ import './player/SharedPlayerStyles.css';
              const immDuration = document.getElementById('imm-duration');
              const immBack = document.getElementById('imm-back-btn');
              const immFwd = document.getElementById('imm-fwd-btn');
-             const lyricsContainer = document.querySelector('.lyrics-trackable') as HTMLElement;
-             const toggleLyricsBtn = document.getElementById('toggle-lyrics');
+
              const collapseBtn = document.getElementById('collapse-player');
              
-             // Toggle Lyrics
-             if (toggleLyricsBtn) {
-                  toggleLyricsBtn.onclick = () => {
-                      const lyricsPanel = document.getElementById('immersive-lyrics');
-                      if(lyricsPanel) lyricsPanel.classList.toggle('hidden');
-                  };
-             }
+
              
              // Collapse Player
              if (collapseBtn) {
@@ -488,46 +481,7 @@ import './player/SharedPlayerStyles.css';
                  immSeekBar.oninput = () => audio.currentTime = parseFloat(immSeekBar.value);
              }
 
-             // Parse Transcription if available
-             let transcriptionLines: { start: number, end: number, text: string, element: HTMLElement }[] = [];
-             
-             if (meta.transcription && lyricsContainer) {
-                 lyricsContainer.innerHTML = '';
-                 
-                 // Logic to parse "mm:ss" string to seconds
-                 const parseTime = (timeStr: string) => {
-                     if(!timeStr) return 0;
-                     const parts = timeStr.split(':');
-                     if(parts.length === 2) return parseInt(parts[0]) * 60 + parseInt(parts[1]);
-                     if(parts.length === 3) return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
-                     return 0;
-                 };
 
-                 transcriptionLines = meta.transcription.map((t: any) => {
-                      const p = document.createElement('p');
-                      p.className = 'lyric-line';
-                      p.textContent = t.text; // Assuming 'text' contains the content
-                      p.style.cursor = 'pointer';
-                      p.style.transition = 'all 0.2s';
-                      
-                      const startSec = typeof t.timestamp === 'string' ? parseTime(t.timestamp) : t.timestamp;
-                      
-                      // Seek on click
-                      p.onclick = () => {
-                          audio.currentTime = startSec;
-                          if(audio.paused) audio.play();
-                      };
-                      
-                      lyricsContainer.appendChild(p);
-                      return { start: startSec, end: 99999, text: t.text, element: p }; 
-                 });
-                 
-                 // Sort and determine end times
-                 transcriptionLines.sort((a,b) => a.start - b.start);
-                 for(let i=0; i<transcriptionLines.length - 1; i++) {
-                     transcriptionLines[i].end = transcriptionLines[i+1].start;
-                 }
-             }
 
              // Time Update Sync
              const onTimeUpdate = () => {
@@ -538,21 +492,7 @@ import './player/SharedPlayerStyles.css';
                       immCurrentTime.textContent = `${m}:${s < 10 ? '0'+s : s}`;
                  }
                  
-                 // Update Lyrics Highlight
-                 if(transcriptionLines.length > 0) {
-                     const current = audio.currentTime;
-                     transcriptionLines.forEach(line => {
-                         if(current >= line.start && current < line.end) {
-                             if(!line.element.classList.contains('active')) {
-                                 // Remove other actives
-                                 lyricsContainer.querySelectorAll('.lyric-line.active').forEach(el => el.classList.remove('active'));
-                                 
-                                 line.element.classList.add('active');
-                                 line.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                             }
-                         }
-                     });
-                 }
+
              };
              
              audio.addEventListener('timeupdate', onTimeUpdate);
