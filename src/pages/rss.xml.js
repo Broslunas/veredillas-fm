@@ -31,9 +31,6 @@ export async function GET(context) {
     title: 'Veredillas FM',
     description: 'El podcast oficial de Veredillas. Donde te mantenemos al pendiente de los temas más candentes.',
     site: context.site,
-    xmlns: {
-      media: 'http://search.yahoo.com/mrss/',
-    },
     items: allContent.map(item => ({
       title: item.title,
       description: item.description,
@@ -42,7 +39,7 @@ export async function GET(context) {
       author: item.author,
       categories: item.type === 'episode' ? ['Podcast', 'Episodio'] : ['Blog'],
       customData: item.image 
-        ? `<media:content type="image/${item.image.split('.').pop()}" medium="image" url="${item.image}" />`
+        ? `<image>${item.image}</image>`
         : undefined
     })),
     customData: `<language>es-ES</language>`,
