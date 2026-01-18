@@ -4,6 +4,8 @@ import ChatBan from '../../../../models/ChatBan';
 import User from '../../../../models/User';
 import { verifyToken } from '../../../../lib/auth';
 
+export const prerender = false;
+
 export const POST: APIRoute = async ({ request, params }) => {
     const { slug } = params;
     if (!slug) return new Response('Slug required', { status: 400 });
@@ -24,8 +26,30 @@ export const POST: APIRoute = async ({ request, params }) => {
          }
 
          const body = await request.json();
-         const { targetValue, targetType } = body; // targetValue = userId or name
+         const { targetValue, targetType, messageId } = body; 
 
+         if (messageId) {
+             const ChatMessage = (await import('../../../../models/ChatMessage')).default;
+             const msg = await ChatMessage.findById(messageId);
+             
+             if (!msg) {
+                 return new Response(JSON.stringify({ success: false, error: 'Message not found' }), { status: 404 });
+             }
+             
+             const bans = [];
+             if (msg.user.sessionId) bans.push({ value: msg.user.sessionId, type: 'sessionId' });
+             if (msg.user.userId) bans.push({ value: msg.user.userId, type: 'userId' });
+             // Optionally ban strict name too, though less effective
+             if (msg.user.name) bans.push({ value: msg.user.name, type: 'name' });
+             
+             await Promise.all(bans.map(ban => 
+                 ChatBan.create({ room: slug, value: ban.value, type: ban.type }).catch(() => {})
+             ));
+             
+             return new Response(JSON.stringify({ success: true, bannedCount: bans.length }), { status: 200 });
+         }
+
+         // Legacy / Direct Mode
          if (!targetValue || !targetType) {
              return new Response(JSON.stringify({ success: false, error: 'Missing ban details' }), { status: 400 });
          }

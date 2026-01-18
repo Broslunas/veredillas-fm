@@ -1,11 +1,4 @@
-1. Mejoras de Interacción (Engagement)
-Reacciones Flotantes ("Lluvia de Emojis"): Al estilo Instagram Live o Periscope. Un botón para "dar amor" o aplaudir que haga flotar corazones por encima del reproductor. Es muy visual y da sensación de comunidad.
-Contador de Oyentes: Mostrar un "🔴 24 escuchando ahora" para que la gente sepa que no está sola.
-Mensajes Fijados (Pinned): Que el administrador (tú) pueda fijar un mensaje arriba del chat (ej: "¡Bienvenidos! Dejad vuestras preguntas aquí").
-2. Mejoras de Moderación
-Herramientas de Admin: Ahora mismo, si alguien "trollea", no puedes borrar el mensaje. Sería útil añadir un botón de "borrar" visible solo para ti (detectando isAdmin en el usuario).
-Rate Limiting: Evitar que alguien envíe 50 mensajes por segundo y sature el chat.
-3. Visibilidad Global
+2. Visibilidad Global
 Banner "EN EL AIRE": Si hay un estreno ocurriendo ahora mismo, mostrar una barrita o aviso en la cabecera de toda la web (Home, otras páginas) invitando a la gente a unirse.
 Página de Próximos Estrenos: Si vas a hacer esto a menudo, una sección "Calendario" vendría bien.
 4. Técnico

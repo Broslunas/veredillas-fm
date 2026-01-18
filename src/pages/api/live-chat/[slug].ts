@@ -27,11 +27,12 @@ export const GET: APIRoute = async ({ params, request }) => {
 
     // Optimization: if 'since' is present, we likely don't need the last 50, just the new ones.
     // But if it's the first load (no since), we want last 50.
+    const projection = { 'user.sessionId': 0 }; // Hide session ID
     let messages;
     if(since) {
-        messages = await ChatMessage.find(query).sort({ createdAt: 1 }).lean();
+        messages = await ChatMessage.find(query, projection).sort({ createdAt: 1 }).lean();
     } else {
-        const last50 = await ChatMessage.find({ room: slug }).sort({ createdAt: -1 }).limit(50).lean();
+        const last50 = await ChatMessage.find({ room: slug }, projection).sort({ createdAt: -1 }).limit(50).lean();
         messages = last50.reverse();
     }
 
@@ -58,11 +59,15 @@ export const GET: APIRoute = async ({ params, request }) => {
         deletedIds = deletedLogs.map(log => log.messageId);
     }
 
+    // PINNED MESSAGE
+    const pinnedMessage = await ChatMessage.findOne({ room: slug, isPinned: true }, projection).lean();
+
     const serverTime = Date.now();
 
     return new Response(JSON.stringify({ 
         success: true, 
         messages, 
+        pinnedMessage, 
         reactions: reactionCounts,
         deletedIds,
         timestamp: serverTime 
@@ -94,8 +99,20 @@ export const POST: APIRoute = async ({ params, request }) => {
     // Check Auth
     const cookieHeader = request.headers.get('cookie');
     const userPayload = getUserFromCookie(cookieHeader);
-
+    
     let userField;
+
+    // Session ID Logic (Persistent Guest Identity)
+    let sessionId = request.headers.get('cookie')?.split('; ').find(row => row.startsWith('chat-guest-id='))?.split('=')[1];
+    let newCookieHeaders = {};
+    
+    if (!sessionId) {
+        sessionId = crypto.randomUUID();
+        // Set cookie for 1 year
+        newCookieHeaders = { 
+            'Set-Cookie': `chat-guest-id=${sessionId}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax` 
+        };
+    }
 
     if (userPayload) {
       // Authenticated
@@ -103,6 +120,7 @@ export const POST: APIRoute = async ({ params, request }) => {
       userField = {
         name: userPayload.name,
         userId: userPayload.userId,
+        sessionId, // Link session to user too
         avatar: `https://www.gravatar.com/avatar/${emailHash}?d=retro&s=50`,
         isVerified: true
       };
@@ -113,6 +131,7 @@ export const POST: APIRoute = async ({ params, request }) => {
       }
       userField = {
         name: guestName,
+        sessionId,
         isVerified: false,
         // Generate random or deterministic avatar based on name
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(guestName)}&background=random`
@@ -121,15 +140,15 @@ export const POST: APIRoute = async ({ params, request }) => {
 
     await dbConnect();
     
-    // Check for Bans
-    const potentialBanValues = [userField.userId, userField.name].filter(Boolean);
+    // Check for Bans (UserId, Name, or SessionId)
+    const potentialBanValues = [userField.userId, userField.name, sessionId].filter(Boolean);
     const isBanned = await ChatBan.exists({ 
         room: slug, 
         value: { $in: potentialBanValues } 
     });
     
     if (isBanned) {
-        return new Response(JSON.stringify({ success: false, error: 'You are banned from this chat' }), { status: 403 });
+        return new Response(JSON.stringify({ success: false, error: 'Estas baneado de este chat' }), { status: 403 });
     }
 
     const newMessage = await ChatMessage.create({
@@ -138,7 +157,13 @@ export const POST: APIRoute = async ({ params, request }) => {
       content: message.trim()
     });
 
-    return new Response(JSON.stringify({ success: true, message: newMessage }), { status: 201 });
+    return new Response(JSON.stringify({ success: true, message: newMessage }), { 
+        status: 201,
+        headers: {
+            'Content-Type': 'application/json',
+            ...newCookieHeaders
+        }
+    });
 
   } catch (e) {
     console.error(e);
