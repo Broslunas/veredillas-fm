@@ -13,6 +13,7 @@ import EpisodeRating from '../../components/EpisodeRating.astro';
 
 import PremiereCountdown from '../../components/PremiereCountdown.astro';
 import LiveChat from '../../components/LiveChat.astro';
+import ListenerCount from '../../components/ListenerCount.astro';
 
 export const prerender = false;
 
@@ -114,6 +115,7 @@ try {
             <p class="lead">{entry.data.description}</p>
             
             <div class="header-actions">
+                {isPremiere && !hasPremiereEnded && <ListenerCount onlyCurrentPath={true} />}
                 <EpisodeRating slug={entry.slug} />
                 <FavoriteButton episodeSlug={entry.slug} />
             </div>

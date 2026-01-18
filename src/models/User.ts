@@ -19,6 +19,7 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   lastLogin: Date;
+  role: 'user' | 'admin';
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -64,6 +65,11 @@ const userSchema = new mongoose.Schema<IUser>({
   listeningTime: {
     type: Number,
     default: 0
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
   }
 }, {
   timestamps: true,

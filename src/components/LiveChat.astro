@@ -7,11 +7,22 @@ const { slug } = Astro.props;
 
 // Basic user check for initial state if possible (optional as client handles it too)
 import { verifyToken } from '../lib/auth';
+import dbConnect from '../lib/mongodb';
+import User from '../models/User';
+
 let currentUser = null;
 try {
     const token = Astro.cookies.get('auth-token')?.value;
-    if (token) currentUser = verifyToken(token);
-} catch(e) {}
+    if (token) {
+        const payload = verifyToken(token);
+        if (payload) {
+             await dbConnect();
+             currentUser = await User.findById(payload.userId).lean();
+        }
+    }
+} catch(e) {
+    console.error("Auth helper error", e);
+}
 ---
 
 <div class="live-chat-container" id="live-chat-widget" data-slug={slug} data-current-user={JSON.stringify(currentUser)}>
@@ -191,6 +202,65 @@ try {
         justify-content: center;
         padding: 0;
     }
+    .admin-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 6px;
+    }
+    
+    .ban-btn {
+        background: rgba(234, 179, 8, 0.1);
+        border: 1px solid rgba(234, 179, 8, 0.2);
+        color: #eab308; /* Yellow-500 */
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 4px;
+        transition: all 0.2s ease;
+    }
+    
+    .ban-btn:hover {
+        background: #eab308;
+        color: white;
+        border-color: #eab308;
+        transform: scale(1.1);
+    }
+    .ban-btn svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+    
+    .delete-btn {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 4px;
+        /* Removed margin-left auto as it is now in flex container */
+        transition: all 0.2s ease;
+    }
+    .delete-btn:hover {
+        background: #ef4444;
+        color: white;
+        border-color: #ef4444;
+        transform: scale(1.1);
+    }
+    .delete-btn svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
     
     .reaction-btn:hover {
         background: rgba(255,255,255,0.2);
@@ -308,6 +378,7 @@ try {
             this.el = el;
             this.slug = el.dataset.slug || '';
             this.currentUser = JSON.parse(el.dataset.currentUser || 'null');
+            console.log("Current Chat User:", this.currentUser); // DEBUG
             
             this.msgArea = el.querySelector('#chat-messages') as HTMLElement;
             this.input = el.querySelector('#chat-input') as HTMLInputElement;
@@ -400,6 +471,21 @@ try {
                     // Render Messages
                     if (data.messages && Array.isArray(data.messages)) {
                          this.renderMessages(data.messages);
+                    }
+                    
+                    // Handle Deletions
+                    if (data.deletedIds && Array.isArray(data.deletedIds)) {
+                        data.deletedIds.forEach((id: string) => {
+                            const el = this.msgArea.querySelector(`.chat-msg[data-id="${id}"]`) as HTMLElement;
+                            if (el) {
+                                // Animate removal if not already removing
+                                if (el.style.opacity !== '0') {
+                                    el.style.opacity = '0';
+                                    el.style.transform = 'translateX(20px)';
+                                    setTimeout(() => el.remove(), 300);
+                                }
+                            }
+                        });
                     }
                     
                     // Trigger Reactions
@@ -506,22 +592,105 @@ try {
             div.className = 'chat-msg';
             div.dataset.id = msg._id;
             
-            const isVerified = msg.user.isVerified ? 'verified' : '';
+            const isAdmin = this.currentUser && this.currentUser.role === 'admin';
             
             div.innerHTML = `
-                <img src="${msg.user.avatar}" class="chat-avatar" alt="${msg.user.name}" />
+                <img src="${this.escapeHtml(msg.user.avatar)}" alt="${this.escapeHtml(msg.user.name)}" class="chat-avatar">
                 <div class="msg-content">
                     <div class="msg-header">
-                        <span class="msg-author ${isVerified}">${msg.user.name}</span>
-                        ${isVerified ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' : ''}
+                        <span class="msg-author ${msg.user.isVerified ? 'verified' : ''}">
+                            ${this.escapeHtml(msg.user.name)}
+                            ${msg.user.isVerified ? '✓' : ''}
+                        </span>
+                        ${isAdmin ? `
+                        <div class="admin-actions">
+                            <button class="ban-btn" title="Bloquear usuario">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                                </svg>
+                            </button>
+                            <button class="delete-btn" title="Borrar mensaje">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>` : ''}
                     </div>
                     <div class="msg-text">${this.escapeHtml(msg.content)}</div>
                 </div>
             `;
+            
+            if(isAdmin) {
+                div.querySelector('.delete-btn')?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.deleteMessage(msg._id, div);
+                });
+                
+                div.querySelector('.ban-btn')?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Determine ban target
+                    const targetValue = msg.user.userId || msg.user.name;
+                    const targetType = msg.user.userId ? 'userId' : 'name';
+                    this.banUser(targetValue, targetType, msg.user.name);
+                });
+            }
+            
             return div;
         }
+        
+        async banUser(targetValue: string, targetType: string, userName: string) {
+            if(!confirm(`¿Bloquear permanentemente a ${userName} de este chat?`)) return;
+            
+            try {
+                const res = await fetch(`/api/live-chat/${this.slug}/ban`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ targetValue, targetType })
+                });
+                const data = await res.json();
+                
+                if(data.success) {
+                    alert(`Usuario ${userName} bloqueado.`);
+                    // Optional: could manually trigger a deletion of their recent messages here if we wanted
+                } else {
+                    alert('Error al bloquear: ' + data.error);
+                }
+            } catch(e) {
+                console.error(e);
+                alert('Connection error');
+            }
+        }
 
-        escapeHtml(text: string) {
+        async deleteMessage(id: string, el: HTMLElement) {
+            // Instant feedback
+            el.style.opacity = '0.3';
+            el.style.pointerEvents = 'none'; // Prevent double clicks
+            
+            try {
+                const res = await fetch(`/api/live-chat/message/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                
+                if(data.success) {
+                    // Animate out
+                    el.style.transform = 'translateX(20px)';
+                    el.style.opacity = '0';
+                    setTimeout(() => el.remove(), 300);
+                } else {
+                    // Revert if failed
+                    el.style.opacity = '1';
+                    el.style.pointerEvents = 'auto';
+                    alert('Error al borrar: ' + data.error);
+                }
+            } catch(e) {
+                console.error(e);
+                el.style.opacity = '1';
+                el.style.pointerEvents = 'auto';
+            }
+        }
+
+        escapeHtml(text: string): string {
              const div = document.createElement('div');
              div.textContent = text;
              return div.innerHTML;

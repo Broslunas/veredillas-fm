@@ -2,6 +2,8 @@ import type { APIRoute } from 'astro';
 import dbConnect from '../../../lib/mongodb';
 import ChatMessage from '../../../models/ChatMessage';
 import ChatReaction from '../../../models/ChatReaction';
+import DeletedMessageLog from '../../../models/DeletedMessageLog';
+import ChatBan from '../../../models/ChatBan';
 import { getUserFromCookie } from '../../../lib/auth';
 import crypto from 'node:crypto';
 
@@ -33,10 +35,14 @@ export const GET: APIRoute = async ({ params, request }) => {
         messages = last50.reverse();
     }
 
-    // Reactions Logic
+    // Reactions & Deletions Logic
     let reactionCounts = {};
+    let deletedIds: string[] = [];
+
     if (since) {
         const sinceDate = new Date(parseInt(since));
+        
+        // REACTION AGGREGATION
         const stats = await ChatReaction.aggregate([
             { $match: { room: slug, createdAt: { $gt: sinceDate } } },
             { $group: { _id: "$type", count: { $sum: 1 } } }
@@ -46,6 +52,10 @@ export const GET: APIRoute = async ({ params, request }) => {
             acc[curr._id] = curr.count;
             return acc;
         }, {} as Record<string, number>);
+        
+        // DELETED MESSAGES FETCH
+        const deletedLogs = await DeletedMessageLog.find({ room: slug, deletedAt: { $gt: sinceDate } }).lean();
+        deletedIds = deletedLogs.map(log => log.messageId);
     }
 
     const serverTime = Date.now();
@@ -54,6 +64,7 @@ export const GET: APIRoute = async ({ params, request }) => {
         success: true, 
         messages, 
         reactions: reactionCounts,
+        deletedIds,
         timestamp: serverTime 
     }), {
       status: 200,
@@ -109,6 +120,18 @@ export const POST: APIRoute = async ({ params, request }) => {
     }
 
     await dbConnect();
+    
+    // Check for Bans
+    const potentialBanValues = [userField.userId, userField.name].filter(Boolean);
+    const isBanned = await ChatBan.exists({ 
+        room: slug, 
+        value: { $in: potentialBanValues } 
+    });
+    
+    if (isBanned) {
+        return new Response(JSON.stringify({ success: false, error: 'You are banned from this chat' }), { status: 403 });
+    }
+
     const newMessage = await ChatMessage.create({
       room: slug,
       user: userField,
