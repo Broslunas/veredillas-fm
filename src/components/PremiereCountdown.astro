@@ -1,0 +1,267 @@
+---
+interface Props {
+  targetDate: Date;
+  title: string;
+}
+
+const { targetDate, title } = Astro.props;
+const isoDate = targetDate.toISOString();
+---
+
+<div class="premiere-countdown" data-target={isoDate}>
+    <div class="countdown-content">
+        <div class="badge">Estreno Oficial</div>
+        <h2>{title}</h2>
+        <p class="subtitle">El episodio comenzará en</p>
+        
+        <div class="timer">
+            <div class="time-unit">
+                <span class="value days">00</span>
+                <span class="label">Días</span>
+            </div>
+            <span class="separator">:</span>
+            <div class="time-unit">
+                <span class="value hours">00</span>
+                <span class="label">Hrs</span>
+            </div>
+            <span class="separator">:</span>
+            <div class="time-unit">
+                <span class="value minutes">00</span>
+                <span class="label">Min</span>
+            </div>
+            <span class="separator">:</span>
+            <div class="time-unit">
+                <span class="value seconds">00</span>
+                <span class="label">Seg</span>
+            </div>
+        </div>
+        
+        <div class="status-message">Esperando señal en directo...</div>
+    </div>
+</div>
+
+<style>
+    .premiere-countdown {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--color-surface) 0%, #000 100%);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-2xl);
+        text-align: center;
+        min-height: 400px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .premiere-countdown::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .badge {
+        background: var(--color-primary);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: bold;
+        margin-bottom: var(--spacing-md);
+        box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+    }
+
+    h2 {
+        font-size: clamp(1.5rem, 5vw, 2.5rem);
+        margin-bottom: var(--spacing-sm);
+        background: linear-gradient(white, #aaa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+        color: var(--color-text-muted);
+        font-size: 1.1rem;
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .timer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+        font-variant-numeric: tabular-nums;
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .time-unit {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        line-height: 1;
+        color: var(--color-text-main);
+    }
+
+    .label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+        margin-top: 5px;
+        letter-spacing: 0.05em;
+    }
+
+    .separator {
+        font-size: 2rem;
+        color: var(--color-text-muted);
+        margin-bottom: 20px; /* Align with numbers */
+    }
+
+    .status-message {
+        font-size: 0.9rem;
+        color: var(--color-primary);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    @media (max-width: 600px) {
+        .value { font-size: 1.8rem; }
+        .separator { font-size: 1.5rem; }
+    }
+</style>
+
+<script>
+    class PremiereCountdown {
+        el: HTMLElement;
+        targetDate: Date;
+        daysEl: HTMLElement | null;
+        hoursEl: HTMLElement | null;
+        minutesEl: HTMLElement | null;
+        secondsEl: HTMLElement | null;
+        wrapper: HTMLElement | null;
+        interval: number | undefined;
+
+        constructor(el: HTMLElement) {
+            this.el = el;
+            this.targetDate = new Date(el.dataset.target || '');
+            this.daysEl = el.querySelector('.days');
+            this.hoursEl = el.querySelector('.hours');
+            this.minutesEl = el.querySelector('.minutes');
+            this.secondsEl = el.querySelector('.seconds');
+            this.wrapper = el.querySelector('.premiere-countdown');
+            
+            this.start();
+        }
+
+        update() {
+            const now = new Date();
+            const diff = this.targetDate.getTime() - now.getTime();
+
+            if (diff <= 0) {
+                this.finish();
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            if(this.daysEl) this.daysEl.textContent = String(days).padStart(2, '0');
+            if(this.hoursEl) this.hoursEl.textContent = String(hours).padStart(2, '0');
+            if(this.minutesEl) this.minutesEl.textContent = String(minutes).padStart(2, '0');
+            if(this.secondsEl) this.secondsEl.textContent = String(seconds).padStart(2, '0');
+        }
+
+        start() {
+            this.update();
+            this.interval = window.setInterval(() => this.update(), 1000);
+        }
+
+        async finish() {
+            if(this.interval) clearInterval(this.interval);
+            
+            // 1. CONFETTI ALERT!
+            // @ts-ignore
+            import('canvas-confetti').then(({ default: confetti }) => {
+                 this.fireConfetti(confetti);
+            });
+            
+            // 2. UI Transition
+            const countdownWrapper = document.getElementById('premiere-countdown-wrapper');
+            const playerWrapper = document.getElementById('premiere-player-wrapper');
+
+            if(countdownWrapper && playerWrapper) {
+                // Fade out countdown
+                countdownWrapper.style.transition = 'opacity 1s ease-out, transform 1s ease-out';
+                countdownWrapper.style.opacity = '0';
+                countdownWrapper.style.transform = 'scale(0.95)';
+                
+                // Show player container
+                playerWrapper.classList.remove('hidden');
+                playerWrapper.style.display = 'block';
+                
+                // Wait small tick then fade in
+                setTimeout(() => {
+                    playerWrapper.style.opacity = '1';
+                    
+                    // Remove countdown from DOM after fade
+                    setTimeout(() => {
+                         countdownWrapper.style.display = 'none';
+                         // Dispatch event to notify others (like MiniPlayer to auto-start)
+                         document.dispatchEvent(new CustomEvent('premiere-started'));
+                    }, 1000);
+                }, 100);
+            } else {
+                 // Fallback if structure missing
+                 window.location.reload();
+            }
+        }
+
+        fireConfetti(confetti: any) {
+            const count = 200;
+            const defaults = {
+                origin: { y: 0.7 }
+            };
+
+            function fire(particleRatio: number, opts: any) {
+                confetti({
+                    ...defaults,
+                    ...opts,
+                    particleCount: Math.floor(count * particleRatio)
+                });
+            }
+
+            fire(0.25, { spread: 26, startVelocity: 55 });
+            fire(0.2, { spread: 60 });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45 });
+        }
+    }
+
+    document.addEventListener('astro:page-load', () => {
+        const els = document.querySelectorAll('.premiere-countdown');
+        els.forEach(el => new PremiereCountdown(el as HTMLElement));
+    });
+
+    // Fallback for non-view-transitions
+    document.addEventListener('DOMContentLoaded', () => {
+        const els = document.querySelectorAll('.premiere-countdown');
+        els.forEach(el => new PremiereCountdown(el as HTMLElement));
+    });
+</script>

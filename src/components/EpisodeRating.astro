@@ -1,0 +1,189 @@
+---
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+---
+
+<div class="episode-rating-widget" data-slug={slug}>
+  <div class="rating-skeleton">
+    <div class="skeleton-stars"></div>
+    <div class="skeleton-text"></div>
+  </div>
+  <div class="rating-content" style="display: none;">
+    <div class="rating-stars">
+      <span class="star-display" data-index="1">★</span>
+      <span class="star-display" data-index="2">★</span>
+      <span class="star-display" data-index="3">★</span>
+      <span class="star-display" data-index="4">★</span>
+      <span class="star-display" data-index="5">★</span>
+    </div>
+    <div class="rating-info">
+      <span class="rating-average">0</span>
+      <span class="rating-count">(0 valoraciones)</span>
+    </div>
+  </div>
+  <div class="rating-empty" style="display: none;">
+    <span class="no-rating-text">Sin valoraciones aún</span>
+  </div>
+</div>
+
+<script>
+  const initEpisodeRating = () => {
+    const widgets = document.querySelectorAll('.episode-rating-widget');
+    
+    widgets.forEach(async (widget) => {
+      const slug = widget.getAttribute('data-slug');
+      if (!slug) return;
+
+      const skeleton = widget.querySelector('.rating-skeleton') as HTMLElement;
+      const content = widget.querySelector('.rating-content') as HTMLElement;
+      const empty = widget.querySelector('.rating-empty') as HTMLElement;
+
+      try {
+        const res = await fetch(`/api/ratings/${slug}`);
+        const json = await res.json();
+
+        if (json.success && json.data.count > 0) {
+          const { average, count } = json.data;
+          
+          // Update stars
+          const stars = widget.querySelectorAll('.star-display');
+          stars.forEach((star) => {
+            const index = parseInt(star.getAttribute('data-index') || '0', 10);
+            if (index <= average) {
+              star.classList.add('filled');
+            } else if (index - 1 < average && index > average) {
+              // Partial star (for future half-star support)
+              star.classList.add('filled');
+            }
+          });
+
+          // Update text
+          const avgEl = widget.querySelector('.rating-average');
+          const countEl = widget.querySelector('.rating-count');
+          if (avgEl) avgEl.textContent = average.toFixed(1);
+          if (countEl) countEl.textContent = `(${count} valoración${count !== 1 ? 'es' : ''})`;
+
+          // Show content
+          skeleton.style.display = 'none';
+          content.style.display = 'flex';
+        } else {
+          // No ratings
+          skeleton.style.display = 'none';
+          empty.style.display = 'flex';
+        }
+      } catch (e) {
+        skeleton.style.display = 'none';
+        empty.style.display = 'flex';
+      }
+    });
+  };
+
+  // Run on initial load and on page transitions
+  document.addEventListener('DOMContentLoaded', initEpisodeRating);
+  document.addEventListener('astro:page-load', initEpisodeRating);
+</script>
+
+<style>
+  .episode-rating-widget {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 99px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  [data-theme="light"] .episode-rating-widget {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.06);
+  }
+
+  /* Skeleton */
+  .rating-skeleton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .skeleton-stars {
+    width: 100px;
+    height: 16px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+  }
+
+  .skeleton-text {
+    width: 60px;
+    height: 12px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Content */
+  .rating-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .rating-stars {
+    display: flex;
+    gap: 2px;
+  }
+
+  .star-display {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.15);
+    transition: color 0.3s ease;
+  }
+
+  [data-theme="light"] .star-display {
+    color: rgba(0, 0, 0, 0.1);
+  }
+
+  .star-display.filled {
+    color: #f59e0b;
+  }
+
+  .rating-info {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+
+  .rating-average {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--color-text-main);
+  }
+
+  .rating-count {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+
+  /* Empty state */
+  .rating-empty {
+    display: flex;
+    align-items: center;
+  }
+
+  .no-rating-text {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+</style>

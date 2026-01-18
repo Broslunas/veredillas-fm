@@ -1,3 +1,18 @@
+1. Mejoras de Interacción (Engagement)
+Reacciones Flotantes ("Lluvia de Emojis"): Al estilo Instagram Live o Periscope. Un botón para "dar amor" o aplaudir que haga flotar corazones por encima del reproductor. Es muy visual y da sensación de comunidad.
+Contador de Oyentes: Mostrar un "🔴 24 escuchando ahora" para que la gente sepa que no está sola.
+Mensajes Fijados (Pinned): Que el administrador (tú) pueda fijar un mensaje arriba del chat (ej: "¡Bienvenidos! Dejad vuestras preguntas aquí").
+2. Mejoras de Moderación
+Herramientas de Admin: Ahora mismo, si alguien "trollea", no puedes borrar el mensaje. Sería útil añadir un botón de "borrar" visible solo para ti (detectando isAdmin en el usuario).
+Rate Limiting: Evitar que alguien envíe 50 mensajes por segundo y sature el chat.
+3. Visibilidad Global
+Banner "EN EL AIRE": Si hay un estreno ocurriendo ahora mismo, mostrar una barrita o aviso en la cabecera de toda la web (Home, otras páginas) invitando a la gente a unirse.
+Página de Próximos Estrenos: Si vas a hacer esto a menudo, una sección "Calendario" vendría bien.
+4. Técnico
+Server-Sent Events (SSE): Ahora usamos polling (preguntamos al servidor cada 3 segundos). Para un chat con mucha gente, lo ideal es SSE o WebSockets para que los mensajes lleguen instantáneamente sin saturar el servidor.
+
+
+
 🎵 Reproductor & Audio (10)
 Cola de reproducción personalizada - Permite crear y gestionar listas de episodios
 
@@ -5,10 +20,8 @@ Cola de reproducción personalizada - Permite crear y gestionar listas de episod
 Ratings/valoraciones de episodios - Sistema de estrellas
 Compartir timestamp específico - Links a momentos exactos
 Clips sociales - Crear clips de 30-60 seg para compartir
-Share listening session - Escuchar sincronizado con amigos
 
 🔍 Descubrimiento & Navegación (7)
-Búsqueda por voz - Comandos de voz para buscar
 Búsqueda semántica con IA - Buscar por conceptos, no solo palabras
 Filtros avanzados - Por duración, fecha, invitados, tema
 Modo exploración aleatoria - "Descubrir" episodio random

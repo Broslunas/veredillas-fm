@@ -61,7 +61,8 @@ export const POST: APIRoute = async ({ params, request }) => {
 
   try {
     const body = await request.json();
-    let { name, email, text } = body;
+    let { name, email, text, rating } = body;
+    rating = typeof rating === 'number' ? Math.min(5, Math.max(0, Math.round(rating))) : 0;
 
     // Check for authentication
     const cookieHeader = request.headers.get('cookie');
@@ -95,6 +96,7 @@ export const POST: APIRoute = async ({ params, request }) => {
             name,
             email,
             text,
+            rating,
             isVerified: true, // Auto-verified
             verificationToken: null
         });
@@ -120,6 +122,7 @@ export const POST: APIRoute = async ({ params, request }) => {
           name,
           email,
           text,
+          rating,
           isVerified: false, 
           verificationToken
         });

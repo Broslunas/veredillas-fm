@@ -1,0 +1,413 @@
+---
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+
+// Basic user check for initial state if possible (optional as client handles it too)
+import { verifyToken } from '../lib/auth';
+let currentUser = null;
+try {
+    const token = Astro.cookies.get('auth-token')?.value;
+    if (token) currentUser = verifyToken(token);
+} catch(e) {}
+---
+
+<div class="live-chat-container" id="live-chat-widget" data-slug={slug} data-current-user={JSON.stringify(currentUser)}>
+    <div class="chat-header">
+        <div class="live-indicator">
+            <span class="dot"></span> EN DIRECTO
+        </div>
+        <h3>Chat de Estreno</h3>
+    </div>
+    
+    <div class="messages-area" id="chat-messages">
+        <div class="system-message">Bienvenido al chat en directo. Sé respetuoso.</div>
+        <!-- Messages injected here -->
+    </div>
+
+    <div class="input-area">
+        {!currentUser && (
+            <input type="text" id="guest-name-input" placeholder="Tu nombre..." class="guest-input" autocomplete="off" />
+        )}
+        <div class="input-row">
+            <input type="text" id="chat-input" placeholder="Escribe un mensaje..." autocomplete="off" />
+            <button id="send-btn" type="button" aria-label="Enviar">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .live-chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 500px;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+    }
+
+    .chat-header {
+        padding: var(--spacing-sm) var(--spacing-md);
+        background: rgba(0,0,0,0.2);
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .live-indicator {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        color: #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+        padding: 2px 8px;
+        border-radius: 12px;
+    }
+
+    .dot {
+        width: 6px;
+        height: 6px;
+        background: #ef4444;
+        border-radius: 50%;
+        animation: pulse-red 1.5s infinite;
+    }
+
+    .chat-header h3 {
+        font-size: 0.9rem;
+        margin: 0;
+        color: var(--color-text-muted);
+    }
+
+    .messages-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: var(--spacing-md);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        scroll-behavior: smooth;
+    }
+
+    .system-message {
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        opacity: 0.7;
+        margin-bottom: 10px;
+    }
+
+    .input-area {
+        padding: var(--spacing-md);
+        background: rgba(0,0,0,0.2);
+        border-top: 1px solid var(--color-border);
+    }
+
+    .guest-input {
+        width: 100%;
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--color-border);
+        background: rgba(0,0,0,0.2);
+        color: var(--color-text-main);
+        font-size: 0.9rem;
+    }
+
+    .input-row {
+        display: flex;
+        gap: 8px;
+    }
+
+    #chat-input {
+        flex: 1;
+        padding: 8px 12px;
+        border-radius: 20px;
+        border: 1px solid var(--color-border);
+        background: rgba(0,0,0,0.2);
+        color: var(--color-text-main);
+        font-size: 0.9rem;
+    }
+    
+    #chat-input:focus, .guest-input:focus {
+        border-color: var(--color-primary);
+        outline: none;
+    }
+
+    #send-btn {
+        background: var(--color-primary);
+        color: white;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    #send-btn:hover {
+        transform: scale(1.1);
+    }
+
+    /* Message Styles (injected via JS) */
+    :global(.chat-msg) {
+        display: flex;
+        gap: 10px;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    :global(.chat-avatar) {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #333;
+    }
+
+    :global(.msg-content) {
+        flex: 1;
+    }
+
+    :global(.msg-header) {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin-bottom: 2px;
+    }
+
+    :global(.msg-author) {
+        font-size: 0.85rem;
+        font-weight: bold;
+        color: var(--color-text-muted);
+    }
+    
+    :global(.msg-author.verified) {
+        color: var(--color-primary);
+    }
+
+    :global(.msg-text) {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    @keyframes pulse-red {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<script>
+    interface ChatUser {
+        name: string;
+        avatar: string;
+        isVerified: boolean;
+        userId?: string;
+    }
+
+    interface ChatMessage {
+        _id: string;
+        user: ChatUser;
+        content: string;
+        createdAt: string;
+    }
+
+    class LiveChat {
+        el: HTMLElement;
+        slug: string;
+        currentUser: any;
+        msgArea: HTMLElement;
+        input: HTMLInputElement;
+        guestInput: HTMLInputElement | null;
+        sendBtn: HTMLElement;
+        lastMsgId: string | null;
+        polling: number | undefined;
+
+        constructor(el: HTMLElement) {
+            this.el = el;
+            this.slug = el.dataset.slug || '';
+            this.currentUser = JSON.parse(el.dataset.currentUser || 'null');
+            
+            this.msgArea = el.querySelector('#chat-messages') as HTMLElement;
+            this.input = el.querySelector('#chat-input') as HTMLInputElement;
+            this.guestInput = el.querySelector('#guest-name-input') as HTMLInputElement | null;
+            this.sendBtn = el.querySelector('#send-btn') as HTMLElement;
+            
+            this.lastMsgId = null;
+            
+            this.init();
+        }
+
+        init() {
+            this.fetchMessages();
+            this.polling = window.setInterval(() => this.fetchMessages(), 3000); // 3s polling
+            
+            this.sendBtn.addEventListener('click', () => this.sendMessage());
+            this.input.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') this.sendMessage();
+            });
+        }
+
+        async fetchMessages() {
+            try {
+                const res = await fetch(`/api/live-chat/${this.slug}`);
+                const data = await res.json();
+                if(data.success) {
+                    this.renderMessages(data.messages);
+                }
+            } catch(e) {
+                console.error("Chat poll error", e);
+            }
+        }
+
+        async sendMessage() {
+            console.log("Attempting to send message...");
+            const text = this.input.value.trim();
+            if(!text) {
+                console.log("Empty text");
+                return;
+            }
+            
+            let guestName = null;
+            // Check if user is NOT logged in (guest mode)
+            if(!this.currentUser) {
+                console.log("User is guest. Checking guest input name...");
+                if(this.guestInput) {
+                    guestName = this.guestInput.value.trim();
+                    if(!guestName) {
+                        alert("Por favor, introduce tu nombre para participar.");
+                        this.guestInput.focus();
+                        return;
+                    }
+                } else {
+                    console.error("Guest input not found despite being guest.");
+                    alert("Error: No se encuentra el campo de nombre.");
+                    return; 
+                }
+            }
+
+            // Optimistic clear
+            const originalValue = this.input.value;
+            this.input.value = '';
+            
+            try {
+                console.log("Sending fetch request...");
+                const res = await fetch(`/api/live-chat/${this.slug}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: text,
+                        guestName
+                    })
+                });
+                
+                const data = await res.json();
+                console.log("Response:", data);
+
+                if(data.success) {
+                    // Message will appear on next poll, or we can append it now (optional)
+                    this.fetchMessages(); 
+                } else {
+                    this.input.value = originalValue; // Restore on error
+                    alert(data.error || "Error enviando mensaje");
+                }
+            } catch(e) {
+                console.error("Fetch error:", e);
+                this.input.value = originalValue; // Restore on error
+                alert("Error de conexión al enviar el mensaje.");
+            }
+        }
+
+        renderMessages(messages: ChatMessage[]) {
+            // Simple render: clear and redraw OR smart append?
+            // Simple approach for now to avoid duplication complexity: 
+            // clear list except system message, then append all.
+            // Better: only append NEW messages if we tracked IDs.
+            // Let's implement smart append based on ID.
+            
+            // Note: This naive approach might re-render existing ones if we don't check ID.
+            // Let's iterate and only add if ID > lastKnownId (if sorted).
+            // Or just check if element exists.
+            
+            messages.forEach(msg => {
+                const exists = this.msgArea.querySelector(`[data-id="${msg._id}"]`);
+                if(!exists) {
+                    const msgEl = this.createMessageElement(msg);
+                    this.msgArea.appendChild(msgEl);
+                    this.msgArea.scrollTop = this.msgArea.scrollHeight; // Auto scroll
+                }
+            });
+        }
+
+        createMessageElement(msg: ChatMessage) {
+            const div = document.createElement('div');
+            div.className = 'chat-msg';
+            div.dataset.id = msg._id;
+            
+            const isVerified = msg.user.isVerified ? 'verified' : '';
+            
+            div.innerHTML = `
+                <img src="${msg.user.avatar}" class="chat-avatar" alt="${msg.user.name}" />
+                <div class="msg-content">
+                    <div class="msg-header">
+                        <span class="msg-author ${isVerified}">${msg.user.name}</span>
+                        ${isVerified ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' : ''}
+                    </div>
+                    <div class="msg-text">${this.escapeHtml(msg.content)}</div>
+                </div>
+            `;
+            return div;
+        }
+
+        escapeHtml(text: string) {
+             const div = document.createElement('div');
+             div.textContent = text;
+             return div.innerHTML;
+        }
+
+        destroy() {
+             if(this.polling) clearInterval(this.polling);
+        }
+    }
+
+    // Clean up old instances to prevent dual polling on navigation
+    let activeChat: LiveChat | null = null;
+
+    // Initialize logic
+    const initChat = () => {
+        // Cleanup existing
+        if(activeChat) {
+            activeChat.destroy();
+            activeChat = null;
+        }
+        
+        const el = document.getElementById('live-chat-widget');
+        if(el) {
+            console.log("Initializing LiveChat widget...");
+            activeChat = new LiveChat(el);
+        } else {
+            console.warn("LiveChat widget element not found");
+        }
+    };
+
+    // Support both standard page loads and View Transitions
+    document.addEventListener('DOMContentLoaded', initChat);
+    document.addEventListener('astro:page-load', initChat);
+</script>

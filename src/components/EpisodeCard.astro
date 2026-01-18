@@ -71,6 +71,9 @@ const formattedDate = post.data.pubDate.toLocaleDateString('es-ES', {
             </p>
             
             <div class="footer-meta">
+                <span class="card-rating" data-rating-slug={post.slug}>
+                    <span class="rating-stars-mini">★★★★★</span>
+                </span>
                 <span class="duration">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     {post.data.duration || 'N/A'}
@@ -286,4 +289,68 @@ const formattedDate = post.data.pubDate.toLocaleDateString('es-ES', {
         opacity: 1;
         transform: translateX(0);
     }
+
+    /* Card Rating */
+    .card-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .rating-stars-mini {
+        font-size: 0.75rem;
+        letter-spacing: -1px;
+        color: rgba(255, 255, 255, 0.15);
+    }
+
+    [data-theme="light"] .rating-stars-mini {
+        color: rgba(0, 0, 0, 0.1);
+    }
+
+    .card-rating[data-loaded="true"] .rating-stars-mini {
+        color: #f59e0b;
+    }
+
+    .card-rating .rating-value {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+    }
 </style>
+
+<script>
+    const loadCardRatings = async () => {
+        const ratingElements = document.querySelectorAll('.card-rating[data-rating-slug]');
+        
+        ratingElements.forEach(async (el) => {
+            const slug = el.getAttribute('data-rating-slug');
+            if (!slug || el.getAttribute('data-loaded') === 'true') return;
+
+            try {
+                const res = await fetch(`/api/ratings/${slug}`);
+                const json = await res.json();
+
+                if (json.success && json.data.count > 0) {
+                    const { average, count } = json.data;
+                    const starsEl = el.querySelector('.rating-stars-mini');
+                    
+                    if (starsEl) {
+                        // Generate stars based on rating
+                        let starsHtml = '';
+                        for (let i = 1; i <= 5; i++) {
+                            starsHtml += i <= Math.round(average) ? '★' : '☆';
+                        }
+                        starsEl.textContent = starsHtml;
+                        el.setAttribute('data-loaded', 'true');
+                    }
+                }
+            } catch (e) {
+                // Silent fail
+            }
+        });
+    };
+
+    // Run on load and page transitions
+    document.addEventListener('DOMContentLoaded', loadCardRatings);
+    document.addEventListener('astro:page-load', loadCardRatings);
+</script>

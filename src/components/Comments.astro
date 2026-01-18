@@ -94,6 +94,29 @@ const isLoggedIn = !!currentUser;
           <div class="focus-line"></div>
         </div>
 
+        <!-- Star Rating -->
+        <div class="rating-wrapper">
+          <span class="rating-label">¿Qué te ha parecido este episodio?</span>
+          <div class="star-rating" id="star-rating">
+            <button type="button" class="star" data-value="1" aria-label="1 estrella">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </button>
+            <button type="button" class="star" data-value="2" aria-label="2 estrellas">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </button>
+            <button type="button" class="star" data-value="3" aria-label="3 estrellas">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </button>
+            <button type="button" class="star" data-value="4" aria-label="4 estrellas">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </button>
+            <button type="button" class="star" data-value="5" aria-label="5 estrellas">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </button>
+          </div>
+          <input type="hidden" name="rating" id="rating-value" value="0" />
+        </div>
+
         <div class="form-footer">
           <button type="submit" class="submit-btn">
             <span>Publicar</span>
@@ -193,7 +216,10 @@ const isLoggedIn = !!currentUser;
         </div>
         <div class="item-content">
             <header class="item-header">
-                <span class="item-author">${escapeHtml(c.name)}</span>
+                <div class="author-row">
+                    <span class="item-author">${escapeHtml(c.name)}</span>
+                    ${c.rating > 0 ? `<div class="inline-rating">${renderStars(c.rating)}</div>` : ''}
+                </div>
                 <div class="header-right">
                     <time class="item-date">${timeAgo(new Date(c.createdAt))}</time>
                     <button class="delete-btn" title="Eliminar este comentario" onclick="requestDelete('${c._id}')">
@@ -258,13 +284,64 @@ const isLoggedIn = !!currentUser;
     return "ahora mismo";
   }
 
+  function renderStars(rating) {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+      const filled = i <= rating;
+      stars += `<span class="display-star ${filled ? 'filled' : ''}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </span>`;
+    }
+    return stars;
+  }
+
+  // --- STAR RATING LOGIC ---
+  const starRating = document.getElementById('star-rating');
+  const ratingInput = document.getElementById('rating-value');
+  let currentRating = 0;
+
+  if (starRating && ratingInput) {
+    const stars = starRating.querySelectorAll('.star');
+
+    const updateStars = (value, isHover = false) => {
+      stars.forEach((star, index) => {
+        if (index < value) {
+          star.classList.add(isHover ? 'hover' : 'active');
+          if (!isHover) star.classList.remove('hover');
+        } else {
+          star.classList.remove(isHover ? 'hover' : 'active');
+          if (!isHover) star.classList.remove('hover');
+        }
+      });
+    };
+
+    stars.forEach(star => {
+      star.addEventListener('click', () => {
+        currentRating = parseInt(star.dataset.value, 10);
+        ratingInput.value = currentRating;
+        updateStars(currentRating, false);
+      });
+
+      star.addEventListener('mouseenter', () => {
+        updateStars(parseInt(star.dataset.value, 10), true);
+      });
+    });
+
+    starRating.addEventListener('mouseleave', () => {
+      stars.forEach(star => star.classList.remove('hover'));
+      updateStars(currentRating, false);
+    });
+  }
+
+
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(form);
     const data = {
       name: formData.get('name'),
       email: formData.get('email'),
-      text: formData.get('text')
+      text: formData.get('text'),
+      rating: parseInt(formData.get('rating') || '0', 10)
     };
 
     const btn = form.querySelector('button');
@@ -531,13 +608,54 @@ const isLoggedIn = !!currentUser;
   .feed-list {
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1.25rem;
   }
 
   .feed-item {
       display: flex;
       gap: 1rem;
       animation: fadeIn 0.4s ease-out forwards;
+      padding: 1.25rem;
+      background: rgba(255,255,255,0.02);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: all 0.3s ease;
+      position: relative;
+  }
+
+  .feed-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--color-primary) 0%, #ec4899 100%);
+      border-radius: 3px 0 0 3px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+  }
+
+  .feed-item:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.1);
+      transform: translateX(4px);
+  }
+
+  .feed-item:hover::before {
+      opacity: 1;
+  }
+
+  [data-theme="light"] .feed-item {
+      background: #fff;
+      border-color: rgba(0,0,0,0.06);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  [data-theme="light"] .feed-item:hover {
+      background: #fff;
+      border-color: rgba(0,0,0,0.1);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
   }
 
   @keyframes fadeIn {
@@ -545,58 +663,74 @@ const isLoggedIn = !!currentUser;
       to { opacity: 1; transform: translateY(0); }
   }
 
+  .item-avatar {
+      flex-shrink: 0;
+  }
+
   .item-avatar img {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
       object-fit: cover;
-      background: #2a2a2a;
+      background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+      border: 2px solid rgba(255,255,255,0.1);
+      transition: transform 0.3s ease;
+  }
+
+  .feed-item:hover .item-avatar img {
+      transform: scale(1.05);
+  }
+
+  [data-theme="light"] .item-avatar img {
+      border-color: rgba(0,0,0,0.08);
+      background: #e5e5e5;
   }
 
   .item-content {
       flex: 1;
-      background: rgba(255,255,255,0.03);
-      padding: 1.25rem;
-      border-radius: 0 16px 16px 16px; /* Chat bubble style */
-      border: 1px solid rgba(255,255,255,0.05);
-  }
-  
-  [data-theme="light"] .item-content {
-      background: #f4f4f5;
-      border-color: rgba(0,0,0,0.05);
+      min-width: 0;
   }
 
   .item-header {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 0.5rem;
-      align-items: center; /* Better alignment */
+      margin-bottom: 0.75rem;
+      align-items: flex-start;
+      gap: 0.5rem;
+  }
+
+  .author-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
   }
   
   .header-right {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.5rem;
+      flex-shrink: 0;
   }
 
   .delete-btn {
       background: transparent;
       border: none;
-      padding: 4px;
+      padding: 6px;
       color: var(--color-text-muted);
       cursor: pointer;
       opacity: 0; 
       transition: all 0.2s;
-      border-radius: 4px;
+      border-radius: 6px;
   }
   
   .feed-item:hover .delete-btn {
-      opacity: 0.6;
+      opacity: 0.5;
   }
   
   .delete-btn:hover {
       opacity: 1 !important;
-      color: #ef4444; /* Red */
+      color: #ef4444;
       background: rgba(239, 68, 68, 0.1);
   }
 
@@ -604,18 +738,50 @@ const isLoggedIn = !!currentUser;
       font-weight: 700;
       color: var(--color-text-main);
       font-size: 0.95rem;
+      letter-spacing: -0.01em;
+  }
+
+  .inline-rating {
+      display: flex;
+      gap: 1px;
+  }
+
+  .inline-rating .display-star {
+      color: rgba(255, 255, 255, 0.15);
+  }
+
+  .inline-rating .display-star.filled {
+      color: #f59e0b;
+  }
+
+  .inline-rating .display-star svg {
+      width: 14px;
+      height: 14px;
+  }
+
+  [data-theme="light"] .inline-rating .display-star {
+      color: rgba(0, 0, 0, 0.1);
   }
 
   .item-date {
       font-size: 0.75rem;
       color: var(--color-text-muted);
+      background: rgba(255,255,255,0.05);
+      padding: 0.25rem 0.6rem;
+      border-radius: 99px;
+      font-weight: 500;
+  }
+
+  [data-theme="light"] .item-date {
+      background: rgba(0,0,0,0.04);
   }
 
   .item-body {
       color: var(--color-text-dim);
       font-size: 0.95rem;
-      line-height: 1.6;
+      line-height: 1.7;
       white-space: pre-wrap;
+      word-break: break-word;
   }
 
   /* Empty State */
@@ -696,5 +862,76 @@ const isLoggedIn = !!currentUser;
           min-width: auto;
           width: 100%;
       }
+  }
+
+  /* STAR RATING SYSTEM */
+  .rating-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+  }
+
+  .rating-label {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      font-weight: 500;
+  }
+
+  .star-rating {
+      display: flex;
+      gap: 0.25rem;
+  }
+
+  .star-rating .star {
+      background: transparent;
+      border: none;
+      padding: 4px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.2);
+      transition: all 0.2s ease;
+      border-radius: 4px;
+  }
+
+  [data-theme="light"] .star-rating .star {
+      color: rgba(0, 0, 0, 0.15);
+  }
+
+  .star-rating .star svg {
+      width: 24px;
+      height: 24px;
+      display: block;
+      transition: transform 0.2s ease;
+  }
+
+  .star-rating .star:hover svg {
+      transform: scale(1.15);
+  }
+
+  .star-rating .star.hover,
+  .star-rating .star.active {
+      color: #fbbf24;
+  }
+
+  .star-rating .star.active {
+      color: #f59e0b;
+  }
+
+  /* Display stars in comments - handled by .inline-rating and .display-star */
+  .display-star {
+      color: rgba(255, 255, 255, 0.15);
+      display: flex;
+  }
+
+  [data-theme="light"] .display-star {
+      color: rgba(0, 0, 0, 0.1);
+  }
+
+  .display-star.filled {
+      color: #f59e0b;
+  }
+
+  .display-star svg {
+      width: 16px;
+      height: 16px;
   }
 </style>

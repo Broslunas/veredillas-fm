@@ -14,7 +14,9 @@
     "@astrojs/rss": "^4.0.14",
     "@astrojs/sitemap": "^3.6.1",
     "@astrojs/vercel": "^9.0.3",
+    "@types/canvas-confetti": "^1.9.0",
     "astro": "^5.16.9",
+    "canvas-confetti": "^1.9.4",
     "cookie": "^1.1.1",
     "dotenv": "^17.2.3",
     "fast-average-color": "^9.5.0",
@@ -28,7 +30,8 @@
     "node-mailjet": "^6.0.11",
     "qrcode": "^1.5.4",
     "swiper": "^12.0.3",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "ui-avatars": "^1.0.0"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.10"

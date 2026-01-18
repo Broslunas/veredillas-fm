@@ -14,6 +14,7 @@ const episodios = defineCollection({
 		episode: z.number().optional(),
 		tags: z.array(z.string()).default(['General']),
 		participants: z.array(z.string()).optional(),
+        isPremiere: z.boolean().default(false),
         transcription: z.array(z.object({
             time: z.string(), // "MM:SS" or "HH:MM:SS"
             text: z.string(),
