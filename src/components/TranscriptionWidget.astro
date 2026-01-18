@@ -192,14 +192,25 @@ if (!transcription || transcription.length === 0) {
                      if (!lines[activeIdx].el.classList.contains('active')) {
                          lines[activeIdx].el.classList.add('active');
                          
-                         // Scroll within container only (not the whole page)
-                         if (hasStartedPlaying) {
-                             // Use 'nearest' to only scroll if needed, and only within the scrollable container
-                             lines[activeIdx].el.scrollIntoView({ 
-                                 behavior: 'smooth', 
-                                 block: 'nearest',
-                                 inline: 'nearest'
-                             });
+                         // Smart Scroll: Only scroll the container
+                         if (hasStartedPlaying && container) {
+                             const el = lines[activeIdx].el;
+                             const containerRect = container.getBoundingClientRect();
+                             const elRect = el.getBoundingClientRect();
+                             
+                             // Check if out of view
+                             const isAbove = elRect.top < containerRect.top;
+                             const isBelow = elRect.bottom > containerRect.bottom;
+                             
+                             if (isAbove || isBelow) {
+                                 // Calculate explicit scroll position to center or show element
+                                 // Simple approach: Center it
+                                 const relativeTop = el.offsetTop - container.offsetTop;
+                                 container.scrollTo({
+                                     top: relativeTop - (container.clientHeight / 2) + (el.clientHeight / 2),
+                                     behavior: 'smooth'
+                                 });
+                             }
                          }
                      }
                  }
