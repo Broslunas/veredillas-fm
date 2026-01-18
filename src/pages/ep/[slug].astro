@@ -30,6 +30,39 @@ const formattedDate = entry.data.pubDate.toLocaleDateString('es-ES', {
 	month: 'long',
 	day: 'numeric',
 });
+
+// Playback History for resuming
+import { verifyToken } from '../../lib/auth';
+import User from '../../models/User';
+import mongoose from 'mongoose';
+
+let savedProgress = 0;
+const cookieHeader = Astro.request.headers.get('cookie'); // or Astro.cookies.get('auth-token')
+
+// Safely attempt to read progress if logged in
+try {
+    const token = Astro.cookies.get('auth-token')?.value;
+    if (token) {
+        const userPayload = verifyToken(token);
+        if (userPayload) {
+             if (mongoose.connection.readyState !== 1) {
+                const MONGODB_URI = import.meta.env.MONGODB_URI;
+                if (MONGODB_URI) await mongoose.connect(MONGODB_URI);
+            }
+            
+            const user = await User.findById(userPayload.userId);
+            if (user && user.playbackHistory) {
+                const historyItem = user.playbackHistory.find(h => h.episodeSlug === slug);
+                if (historyItem && !historyItem.completed) {
+                   savedProgress = historyItem.progress || 0;
+                }
+            }
+        }
+    }
+} catch (e) {
+    console.warn("Failed to fetch playback history for episode", e);
+}
+
 ---
 
 <Layout 
@@ -90,6 +123,7 @@ const formattedDate = entry.data.pubDate.toLocaleDateString('es-ES', {
                     data-image={entry.data.image}
                     data-author={entry.data.author}
                     data-slug={entry.slug}
+                    data-start-time={savedProgress > 10 ? savedProgress : 0} 
                     data-transcription={entry.data.transcription ? JSON.stringify(entry.data.transcription) : null}
                 ></div>
             ) : null}

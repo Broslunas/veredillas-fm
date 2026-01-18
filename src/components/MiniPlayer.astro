@@ -142,7 +142,7 @@ import './player/SharedPlayerStyles.css';
         }
     };
 
-    const setupCustomPlayer = (container: HTMLElement, url: string, title: string, cover: string, author: string, transcription: any[] | null = null) => {
+    const setupCustomPlayer = (container: HTMLElement, url: string, title: string, cover: string, author: string, transcription: any[] | null = null, startTime: number = 0) => {
              // 1. CLONE TEMPLATE
              container.innerHTML = '';
              const template = document.getElementById('custom-player-template') as HTMLTemplateElement;
@@ -157,6 +157,10 @@ import './player/SharedPlayerStyles.css';
              // 2. Populate Data
              const audioElement = container.querySelector('#audioElement') as HTMLAudioElement;
              audioElement.src = url;
+             
+             if (startTime > 0) {
+                 audioElement.currentTime = startTime;
+             }
 
              // Metadata
              const titleEl = container.querySelector('#playerTitle');
@@ -620,12 +624,11 @@ import './player/SharedPlayerStyles.css';
                         
                     } else if (audioUrl && title) {
                         const transcriptionStr = placeholder.getAttribute('data-transcription');
+                        const startStr = placeholder.getAttribute('data-start-time');
+                        const startTime = startStr ? parseFloat(startStr) : 0;
+                        
                         const trans = transcriptionStr ? JSON.parse(transcriptionStr) : null;
-                        setupCustomPlayer(container, audioUrl, title, image || '', author || '', trans);
-                        // Also restore progress check? 
-                        // For now, we trust the user to start or resume. 
-                        // To auto-resume, we would need to fetch history first.
-                        // Future improvement: Check history and set currentTime.
+                        setupCustomPlayer(container, audioUrl, title, image || '', author || '', trans, startTime);
                     }
                 }
 
