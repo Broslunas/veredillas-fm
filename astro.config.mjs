@@ -6,6 +6,8 @@ import path from 'path';
 
 import fs from 'fs';
 
+import tailwindcss from '@tailwindcss/vite';
+
 const SITE_URL = 'https://veredillasfm.es';
 
 // Store episode dates to use in serialize
@@ -37,8 +39,8 @@ function getCustomPages() {
 // https://astro.build/config
 export default defineConfig({
   site: SITE_URL,
-
   adapter: vercel(),
+
   integrations: [
     sitemap({
       customPages: getCustomPages(),
@@ -99,4 +101,8 @@ export default defineConfig({
       }
     })
   ],
+
+  vite: {
+    plugins: [tailwindcss()]
+  }
 });
