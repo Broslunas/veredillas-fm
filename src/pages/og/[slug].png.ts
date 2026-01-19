@@ -10,6 +10,8 @@ const fetchFont = async () => {
   return await response.arrayBuffer();
 };
 
+export const prerender = false;
+
 export const GET: APIRoute = async ({ params, props, site }) => {
   const { slug } = params;
 

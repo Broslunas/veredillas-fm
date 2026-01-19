@@ -103,6 +103,12 @@ export default defineConfig({
   ],
 
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    ssr: {
+        noExternal: ['satori']
+    },
+    optimizeDeps: {
+        exclude: ['@resvg/resvg-js'] 
+    }
   }
 });
