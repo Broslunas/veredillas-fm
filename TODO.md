@@ -1,23 +1,22 @@
-🎨 1. Experiencia Visual y "Wow Factor" (Aesthetics)
-El objetivo aquí es que la web se sienta "viva" y premium.
+
 
 Fondo de Ruido Granular (Noise Texture): Añadir una textura de "ruido" muy sutil (opacity 0.03) sobre toda la web para que los colores sólidos no se vean planos, dándole un toque vintage de radio/papel.
-Cursor Magnético: Haz que el cursor del ratón "atraiga" ligeramente los botones o interactúe con los bordes de las tarjetas al pasar por encima (gsap ya lo tienes instalado, es perfecto para esto).
-Transiciones Varita Mágica (View Transitions): Astro soporta View Transitions. Úsalas para que la carátula del episodio "flote" desde la lista hasta el reproductor sin cortes al navegar.
-Bento Grid Layout: Rediseñar la Home para usar un estilo "Bento" (cajas de distintos tamaños, asimétricas pero ordenadas estilo Apple) para mostrar el último episodio, top usuarios, newsletter, y foto destacada.
 Modo "Zen" o "Cinema": Un botón en el reproductor que oscurezca toda la interfaz y solo deje el audio spectrum y los subtítulos flotando.
 Tilt 3D en Carátulas: Usar CSS 3D para que las carátulas de los episodios se inclinen según la posición del mouse (efecto holográfico).
 Scroll Parallax Suave: Que las imágenes de fondo se muevan a diferente velocidad que el texto al hacer scroll (efecto profundidad).
+
 🎧 2. Reproductor y Audio (Core)
 El corazón de la web.
 
 Visualizador de Audio en Tiempo Real: Usar la Web Audio API para dibujar ondas (barras o líneas) que reaccionen de verdad a la música/voz que suena en el MiniPlayer.
 "Smart Resume": Si cierro la pestaña y vuelvo mañana, recordad exactamente el minuto y segundo donde me quedé en ese episodio.
+
 Sleep Timer: Un botón de "luna" en el reproductor para detener el audio automáticamente en 15, 30 o 60 minutos (ideal para dormir escuchando).
+
 Compartir Citas (Quote Sharing): Si tienes las transcripciones, permite seleccionar un texto y dar a "Compartir en Twitter", generando una imagen automática con la cita y la carátula.
-Modo "Radio Infinita": Un botón "Aleatorio" que nunca pare. Cuando acaba un episodio, salta a otro random del archivo histórico.
-Control de Velocidad de Precisión: No solo 1x, 1.5x, 2x. Permite un slider para ajustar a 1.2x o 1.1x.
+
 Marcadores de Capítulos: Si los episodios son largos, muestra "puntitos" en la barra de progreso que indiquen cambios de tema.
+
 👥 3. Comunidad y Social (Engagement)
 Para que la gente no solo escuche, sino que pertenezca.
 
