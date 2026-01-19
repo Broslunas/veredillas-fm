@@ -1,9 +1,10 @@
-@import "tailwindcss";
 /* Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 @import 'swiper/css';
 @import 'swiper/css/navigation';
 @import 'swiper/css/pagination';
+
+@import "tailwindcss";
 
 :root {
   /* Default: Premium Dark */

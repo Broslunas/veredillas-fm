@@ -1,6 +1,6 @@
-import mongoose, { Document } from 'mongoose';
+import mongoose from 'mongoose';
 
-export interface IUser extends Document {
+export interface IUser extends mongoose.Document {
   _id: mongoose.Types.ObjectId;
   googleId: string;
   email: string;
