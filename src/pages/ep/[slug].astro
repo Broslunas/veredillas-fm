@@ -115,7 +115,7 @@ try {
             <p class="lead">{entry.data.description}</p>
             
             <div class="header-actions">
-                {isPremiere && !hasPremiereEnded && <ListenerCount onlyCurrentPath={true} />}
+                <ListenerCount onlyCurrentPath={true} />
                 <EpisodeRating slug={entry.slug} />
                 <FavoriteButton episodeSlug={entry.slug} />
             </div>
