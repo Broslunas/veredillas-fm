@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import mongoose from 'mongoose';
+import dbConnect from '../../../lib/mongodb';
 import { getUserFromCookie } from '../../../lib/auth';
 import User from '../../../models/User';
 
@@ -19,13 +19,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Conectar a MongoDB
-    if (mongoose.connection.readyState !== 1) {
-      const MONGODB_URI = import.meta.env.MONGODB_URI;
-      if (!MONGODB_URI) {
-        throw new Error('MONGODB_URI not configured');
-      }
-      await mongoose.connect(MONGODB_URI);
-    }
+    await dbConnect();
 
     // Obtener datos del body
     const body = await request.json();

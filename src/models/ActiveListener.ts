@@ -18,7 +18,10 @@ const ActiveListenerSchema = new mongoose.Schema({
     type: String, // Optional: track which page they are on
     default: '/'
   },
-  userAgent: String // Optional: for debugging or filtering bots
+  userAgent: String, // Optional: for debugging or filtering bots
+  userId: { type: String, required: false },
+  name: { type: String, required: false },
+  picture: { type: String, required: false }
 });
 
 // Prevent overwrite on hot reload

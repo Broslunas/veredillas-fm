@@ -3,7 +3,8 @@
 import Layout from '../../../layouts/Layout.astro';
 import { getUserFromCookie } from '../../../lib/auth';
 import User from '../../../models/User';
-import mongoose from 'mongoose';
+import ActiveListener from '../../../models/ActiveListener';
+import dbConnect from '../../../lib/mongodb';
 
 export const prerender = false;
 
@@ -15,11 +16,7 @@ if (!userPayload) {
 }
 
 // Connect to DB
-if (mongoose.connection.readyState !== 1) {
-    const MONGODB_URI = import.meta.env.MONGODB_URI;
-    if (!MONGODB_URI) throw new Error('MONGODB_URI not configured');
-    await mongoose.connect(MONGODB_URI);
-}
+await dbConnect();
 
 const currentUser = await User.findById(userPayload.userId);
 if (!currentUser || currentUser.role !== 'admin') {
@@ -27,6 +24,12 @@ if (!currentUser || currentUser.role !== 'admin') {
 }
 
 const users = await User.find({}).sort({ createdAt: -1 });
+
+// Fetch Active Listeners
+const threshold = new Date(Date.now() - 5 * 60 * 1000); // 5 minutes
+const activeListeners = await ActiveListener.find({ 
+    lastSeen: { $gt: threshold } 
+}).sort({ lastSeen: -1 });
 
 function formatTime(seconds: number) {
     const h = Math.floor(seconds / 3600);
@@ -59,6 +62,70 @@ function formatTime(seconds: number) {
             return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
         }).length}</p>
       </div>
+    </div>
+
+    <!-- Active Listeners Section -->
+    <div class="users-section" style="margin-bottom: 3rem;">
+        <h2>Oyentes en Línea ({activeListeners.length})</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Usuario / ID</th>
+                        <th>Ruta Actual</th>
+                        <th>Visto por última vez</th>
+                         <th>Dispositivo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {activeListeners.length === 0 ? (
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #9ca3af;">No hay oyentes activos actualmente</td>
+                        </tr>
+                    ) : (
+                        activeListeners.map((listener) => (
+                            <tr>
+                                <td>
+                                    <div class="user-cell">
+                                        {listener.userId ? (
+                                            <>
+                                                <img 
+                                                    src={listener.picture || `https://ui-avatars.com/api/?name=${listener.name}`} 
+                                                    alt={listener.name} 
+                                                    class="user-avatar" 
+                                                />
+                                                <div style="display: flex; flex-direction: column;">
+                                                    <span class="user-name">{listener.name}</span>
+                                                    <span style="font-size: 0.75rem; color: #9ca3af; font-family: monospace;">{listener.userId}</span>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div style="display: flex; flex-direction: column;">
+                                                <span class="user-name" style="color: #9ca3af;">Anónimo</span>
+                                                 <span style="font-size: 0.75rem; color: #6b7280; font-family: monospace;" title={listener.sessionId}>
+                                                    {listener.sessionId.substring(0, 8)}...
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span style="color: #d1d5db; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.85rem;">
+                                        {listener.path}
+                                    </span>
+                                </td>
+                                <td>
+                                    {Math.floor((Date.now() - new Date(listener.lastSeen).getTime()) / 1000)}s hace
+                                </td>
+                                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #6b7280; font-size: 0.8rem;" title={listener.userAgent}>
+                                   {listener.userAgent ? (listener.userAgent.includes('Mobile') ? '📱 Móvil' : '💻 Escritorio') : 'Desconocido'}
+                                </td>
+                            </tr>
+                        ))
+                    )}
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div class="users-section">
