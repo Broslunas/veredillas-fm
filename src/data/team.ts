@@ -16,8 +16,7 @@ export const teamMembers = [
     department: 'Tecnología',
     image: 'https://i.imgur.com/G4IX2d0.jpeg',
     links: [
-        { label: 'Instagram', url: 'https://www.instagram.com/_pablito_luna_/' },
-        { label: 'Web', url: 'https://broslunas.com' }
+        { label: 'Instagram', url: 'https://www.instagram.com/_pablito_luna_/' }
     ],
     bio: 'Responsable de la infraestructura técnica, calidad sonora y estrategia digital. Pablo lidera el desarrollo web, la redacción y asegura el crecimiento del proyecto.'
   },
