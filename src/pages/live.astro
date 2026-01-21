@@ -1,5 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import LiveChat from '../components/LiveChat.astro';
+import ListenerCount from '../components/ListenerCount.astro';
 ---
 
 <Layout 
@@ -46,10 +48,8 @@ import Layout from '../layouts/Layout.astro';
                         </div>
 
                         <!-- Viewer Count Widget (Top Left) -->
-                        <div class="viewer-widget" id="viewer-widget">
-                            <span class="live-dot-small"></span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                            <span class="viewer-count" id="viewer-count">--</span>
+                        <div class="viewer-widget-wrapper" style="position: absolute; top: 20px; left: 20px; z-index: 30;">
+                             <ListenerCount onlyCurrentPath={true} />
                         </div>
 
                         <!-- Custom Controls (Hidden initially) -->
@@ -102,22 +102,8 @@ import Layout from '../layouts/Layout.astro';
                 </div>
 
                 <!-- Live Chat Sidebar -->
-                <div class="chat-sidebar glass-panel">
-                    <div class="chat-header">
-                        <h3>Chat en Vivo</h3>
-                        <span class="online-badge">Online</span>
-                    </div>
-                    <div id="live-chat-messages" class="live-chat-messages">
-                        <div class="chat-message server">
-                            <span class="message-text">Bienvenido al chat de Veredillas FM. ¡Sé amable!</span>
-                        </div>
-                    </div>
-                    <form id="live-chat-form" class="live-chat-input">
-                        <input type="text" id="live-chat-input" placeholder="Di hola..." maxlength="100" autocomplete="off">
-                        <button type="submit" aria-label="Enviar">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                        </button>
-                    </form>
+                <div class="chat-sidebar">
+                    <LiveChat slug="live-stream-global-room" />
                 </div>
             </div>
 
@@ -151,12 +137,6 @@ import Layout from '../layouts/Layout.astro';
         const initialStartBtn = document.getElementById('initial-start-btn');
         const subtitle = document.querySelector('.page-subtitle');
         const debugInfo = document.getElementById('debug-info');
-        const viewerCountDisplay = document.getElementById('viewer-count');
-
-        // Chat Elements
-        const chatForm = document.getElementById('live-chat-form');
-        const chatInput = document.getElementById('live-chat-input') as HTMLInputElement;
-        const chatMessages = document.getElementById('live-chat-messages');
 
         // Controls
         const playPauseBtn = document.getElementById('play-pause-btn');
@@ -171,78 +151,12 @@ import Layout from '../layouts/Layout.astro';
         let retryCount = 0;
         const maxRetries = 5;
         let hls: Hls | null = null;
-        let isUserActive = false;
         let controlsTimeout: any;
-        let viewerInterval: any;
 
         function updateDebug(msg: string) {
             console.log(`[Stream] ${msg}`);
             if (debugInfo) debugInfo.textContent = msg;
         }
-
-        // Viewer Count Simulation (Random walk)
-        function startViewerSimulation() {
-            let count = Math.floor(Math.random() * (120 - 40 + 1) + 40); // Initial 40-120
-            if (viewerCountDisplay) viewerCountDisplay.innerText = count.toString();
-            
-            viewerInterval = setInterval(() => {
-                const change = Math.floor(Math.random() * 7) - 3; // -3 to +3
-                count = Math.max(12, count + change);
-                if (viewerCountDisplay) {
-                    // Animate change
-                    gsap.to(viewerCountDisplay, {
-                        innerText: count,
-                        duration: 1,
-                        snap: { innerText: 1 },
-                        ease: "power1.out"
-                    });
-                }
-            }, 5000);
-        }
-
-        function stopViewerSimulation() {
-            clearInterval(viewerInterval);
-            if (viewerCountDisplay) viewerCountDisplay.innerText = "--";
-        }
-
-        // Chat Logic (Local for now, could be WebSocket)
-        function addChatMessage(msg: string, isMe = false, username = 'Tú') {
-            if (!chatMessages) return;
-            
-            const div = document.createElement('div');
-            div.className = `chat-message ${isMe ? 'me' : 'other'}`;
-            
-            // Random color for other users
-            const hue = Math.floor(Math.random() * 360);
-            const userColor = isMe ? 'var(--color-primary)' : `hsl(${hue}, 70%, 60%)`;
-            
-            div.innerHTML = `
-                <span class="user-name" style="color: ${userColor}">${username}</span>
-                <span class="message-text">${msg.replace(/</g, "&lt;")}</span>
-            `;
-            
-            chatMessages.appendChild(div);
-            // Scroll to bottom
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        chatForm?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const msg = chatInput.value.trim();
-            if (msg) {
-                addChatMessage(msg, true);
-                chatInput.value = '';
-                
-                // Simulate reply occasionally
-                if (Math.random() > 0.8) {
-                    setTimeout(() => {
-                        const replies = ["¡Totalmente!", "Jajaja buena esa", "Saludos desde Madrid!", "Wow", "Crack!"];
-                        const randomReply = replies[Math.floor(Math.random() * replies.length)];
-                        addChatMessage(randomReply, false, "Usuario" + Math.floor(Math.random() * 99));
-                    }, 2000);
-                }
-            }
-        });
 
         // --- Player Logic ---
 
@@ -345,8 +259,6 @@ import Layout from '../layouts/Layout.astro';
                 }
                 if (loadingOverlay) loadingOverlay.style.opacity = '0';
                 
-                startViewerSimulation();
-
             } else {
                 statusBadge?.classList.remove('live');
                 statusBadge?.classList.add('offline');
@@ -358,8 +270,6 @@ import Layout from '../layouts/Layout.astro';
                 }
                 if (loadingOverlay) loadingOverlay.style.opacity = '0';
                 if (startOverlay) startOverlay.style.opacity = '0';
-                
-                stopViewerSimulation();
             }
         }
 
@@ -834,142 +744,22 @@ import Layout from '../layouts/Layout.astro';
         overflow: hidden;
     }
 
-    /* Viewer Widget */
-    .viewer-widget {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        z-index: 30;
-        background: rgba(0,0,0,0.6);
-        backdrop-filter: blur(4px);
-        padding: 6px 12px;
-        border-radius: 50px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: white;
-        font-weight: 600;
-        font-size: 0.9rem;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .live-dot-small {
-        width: 8px;
-        height: 8px;
-        background: #ef4444;
-        border-radius: 50%;
-        box-shadow: 0 0 10px #ef4444;
-        animation: pulse-red 1.5s infinite;
+    /* Viewer Widget Wrapper */
+    .viewer-widget-wrapper > div {
+        /* Ensure ListenerCount renders nicely on top */
     }
 
     /* Chat Sidebar */
     .chat-sidebar {
         display: flex;
         flex-direction: column;
-        background: rgba(0,0,0,0.2);
-        border: 1px solid rgba(255,255,255,0.1);
+        background: transparent;
         border-radius: 20px;
         overflow: hidden;
         max-height: 100%;
         min-height: 400px;
     }
 
-    .chat-header {
-        padding: 1rem;
-        background: rgba(255,255,255,0.05);
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .chat-header h3 {
-        font-size: 1rem;
-        font-weight: 700;
-        margin: 0;
-    }
-
-    .online-badge {
-        font-size: 0.75rem;
-        background: rgba(16, 185, 129, 0.2);
-        color: #10b981;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-weight: 600;
-    }
-
-    .live-chat-messages {
-        flex: 1;
-        overflow-y: auto;
-        padding: 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.8rem;
-        scroll-behavior: smooth;
-    }
-
-    .chat-message {
-        font-size: 0.9rem;
-        line-height: 1.4;
-    }
-
-    .chat-message.server {
-        text-align: center;
-        opacity: 0.6;
-        font-size: 0.8rem;
-        margin-bottom: 1rem;
-    }
-
-    .user-name {
-        font-weight: 700;
-        margin-right: 0.5rem;
-    }
-
-    .message-text {
-        color: rgba(255,255,255,0.9);
-    }
-
-    .live-chat-input {
-        padding: 1rem;
-        background: rgba(255,255,255,0.02);
-        border-top: 1px solid rgba(255,255,255,0.1);
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .live-chat-input input {
-        flex: 1;
-        background: rgba(0,0,0,0.3);
-        border: 1px solid rgba(255,255,255,0.1);
-        padding: 0.6rem 1rem;
-        border-radius: 50px;
-        color: white;
-        font-size: 0.9rem;
-    }
-
-    .live-chat-input input:focus {
-        outline: none;
-        border-color: var(--color-primary);
-    }
-
-    .live-chat-input button {
-        background: var(--color-primary);
-        border: none;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        color: white;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: transform 0.2s;
-    }
-
-    .live-chat-input button:hover {
-        transform: scale(1.1);
-    }
-    
     /* Responsive */
     @media (max-width: 1024px) {
         .live-grid-container {

@@ -17,32 +17,33 @@ const { onlyCurrentPath = false } = Astro.props;
     .listener-pill {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.35rem 0.8rem;
-        background: rgba(10, 10, 11, 0.6);
+        gap: 0.6rem;
+        padding: 0.4rem 0.9rem;
+        background: rgba(15, 15, 15, 0.85); /* More solid background */
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 9999px;
-        font-size: 0.825rem;
-        font-weight: 500;
-        color: var(--color-text-muted);
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #e5e5e5;
         transition: all 0.3s ease;
         opacity: 0;
         transform: translateY(-5px);
         cursor: default;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3); /* Better shadow */
     }
 
     :global([data-theme="light"]) .listener-pill {
-        background: rgba(255, 255, 255, 0.7);
-        border-color: rgba(0, 0, 0, 0.05);
-        color: var(--color-text-main);
+        background: rgba(255, 255, 255, 0.9);
+        border-color: rgba(0, 0, 0, 0.1);
+        color: #1a1a1a;
     }
 
     .listener-pill.visible {
         opacity: 1;
         transform: translateY(0);
-        display: flex; /* Ensure it's flex */
+        display: flex;
     }
 
     .listener-pill.hidden {
@@ -52,59 +53,52 @@ const { onlyCurrentPath = false } = Astro.props;
     .live-dot {
         width: 8px;
         height: 8px;
-        background-color: #ef4444; /* Red-500 */
+        background-color: #ef4444; 
         border-radius: 50%;
         position: relative;
-        box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+        flex-shrink: 0; /* Prevent squishing */
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
     }
-
+    
+    /* Improved pulse ring */
     .live-dot::after {
         content: '';
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100%;
-        height: 100%;
-        background-color: inherit;
+        inset: -4px; /* Uniform expansion */
         border-radius: 50%;
+        background-color: rgba(239, 68, 68, 0.4);
         animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        z-index: -1;
     }
-
+    
     .count-text {
         white-space: nowrap;
         font-variant-numeric: tabular-nums;
+        line-height: 1;
+        display: flex;
+        align-items: center;
     }
 
     #listener-number {
         font-weight: 700;
-        color: var(--color-text-main);
-        margin-right: 3px;
+        color: #fff;
+        margin-right: 4px;
+        font-size: 0.95rem;
+    }
+    
+    :global([data-theme="light"]) #listener-number {
+        color: #000;
     }
     
     .label-text {
-        opacity: 0.8;
-    }
-    
-    /* Mobile optimization: hide label if too narrow, or just rely on responsive header */
-    @media (max-width: 640px) {
-        .label-text {
-            display: none;
-        }
-        .count-text::after {
-            content: ' oyentes';
-        }
+        opacity: 0.7;
+        font-size: 0.8rem;
+        font-weight: 500;
     }
 
     @keyframes pulse-ring {
-        0% {
-            transform: translate(-50%, -50%) scale(0.5);
-            opacity: 1;
-        }
-        100% {
-            transform: translate(-50%, -50%) scale(2.5);
-            opacity: 0;
-        }
+        0% { transform: scale(0.5); opacity: 1; }
+        100% { transform: scale(2); opacity: 0; }
     }
 </style>
 
