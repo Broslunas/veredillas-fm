@@ -1034,30 +1034,42 @@ const isDropdownActive = (items: any[]) => {
   // Logic to handle Premiere Banner
   // Runs immediately
   
+  // Logic to handle Premiere Banner and Live Stream
+  // Runs immediately
+  
+  const STREAM_URL = 'https://live.veredillasfm.es/stream-pro.m3u8';
+  let isStreamOnline = false;
+
   function parseDuration(durStr) {
-      // Examples: "6min", "1h", "1h 30min", "2:30", "120" (seconds default?)
-      // Let's assume content duration format is like "6min" or "1h 20min"
       if(!durStr) return 0;
       let totalMs = 0;
-      
       const hours = durStr.match(/(\d+)\s*h/);
       const mins = durStr.match(/(\d+)\s*min/);
-      
       if(hours) totalMs += parseInt(hours[1]) * 60 * 60 * 1000;
       if(mins) totalMs += parseInt(mins[1]) * 60 * 1000;
-      
-      return totalMs || (10 * 60 * 1000); // Default 10 mins if fail
+      return totalMs || (10 * 60 * 1000);
   }
 
-  function checkPremieres() {
+  function updateBanner() {
       const banner = document.getElementById('premiere-banner');
       if(!banner) return;
       
+      const labelEl = document.getElementById('banner-label');
+      const titleEl = document.getElementById('banner-title');
+
+      // 1. Live Stream Support (Priority #1)
+      if (isStreamOnline) {
+          banner.classList.remove('hidden');
+          banner.classList.remove('coming-soon'); // Ensure it's live style (red)
+          banner.href = "/live";
+          if(labelEl) labelEl.textContent = "EN DIRECTO";
+          if(titleEl) titleEl.textContent = "Emisión en Directo desde el Estudio"; 
+          return; // Stop here, live stream takes precedence
+      }
+
+      // 2. Scheduled Premieres (Priority #2)
       const now = Date.now();
       const SOON_THRESHOLD = 2 * 60 * 60 * 1000; // 2 Hours
-      
-      // Find best candidate
-      // Priority: 1. Live Now, 2. Starting Soon (closest)
       
       let activePremiere = null;
       let soonPremiere = null;
@@ -1066,14 +1078,11 @@ const isDropdownActive = (items: any[]) => {
           const duration = parseDuration(p.duration);
           const endTime = p.date + duration;
           
-          // Is Live?
           if (now >= p.date && now < endTime) {
               activePremiere = p;
           }
           
-          // Is Soon?
           if (p.date > now && (p.date - now) <= SOON_THRESHOLD) {
-              // Should be the closest one
               if (!soonPremiere || p.date < soonPremiere.date) {
                   soonPremiere = p;
               }
@@ -1086,19 +1095,13 @@ const isDropdownActive = (items: any[]) => {
           banner.classList.remove('hidden');
           banner.href = `/ep/${target.slug}`;
           
-          const labelEl = document.getElementById('banner-label');
-          const titleEl = document.getElementById('banner-title');
-          
           if(titleEl) titleEl.textContent = target.title;
           
           if (activePremiere) {
-              // Live Mode
               banner.classList.remove('coming-soon');
               if(labelEl) labelEl.textContent = "EN DIRECTO";
           } else {
-              // Soon Mode
               banner.classList.add('coming-soon');
-              // Calc time remaining shorthand
               const minsLeft = Math.ceil((target.date - now) / 60000);
               let timeText = "";
               if(minsLeft >= 60) {
@@ -1115,7 +1118,24 @@ const isDropdownActive = (items: any[]) => {
       }
   }
   
-  // Run on load and every minute
-  checkPremieres();
-  setInterval(checkPremieres, 60000);
+  function checkStreamStatus() {
+       fetch(STREAM_URL, { method: 'HEAD' })
+       .then(res => {
+           const wasOnline = isStreamOnline;
+           isStreamOnline = res.ok;
+           if(wasOnline !== isStreamOnline) updateBanner();
+       })
+       .catch(() => {
+           isStreamOnline = false;
+           updateBanner();
+       });
+  }
+  
+  // Init
+  checkStreamStatus();
+  updateBanner(); // Run once immediately too (for premieres)
+  
+  // Poll
+  setInterval(checkStreamStatus, 15000); // Check stream every 15s
+  setInterval(updateBanner, 60000); // Check premieres every 1m
 </script>

@@ -1,0 +1,443 @@
+---
+---
+<div id="live-popup-widget" class="live-popup-widget hidden" aria-hidden="true">
+    <div class="popup-content">
+        <!-- Close Button (Top Right) -->
+        <button id="close-popup-btn" class="close-btn" aria-label="Cerrar reproductor">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        
+        <div class="video-wrapper" id="popup-video-container">
+            <video id="popup-video" playsinline></video>
+            
+            <!-- Custom Controls Overlay -->
+            <div class="popup-controls" id="popup-controls">
+                <div class="controls-bottom">
+                    <div class="left-controls">
+                        <button class="control-btn" id="popup-play-pause-btn" aria-label="Reproducir/Pausar">
+                            <!-- Pause Icon (Default when playing) -->
+                            <svg class="icon-pause" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                            <!-- Play Icon -->
+                            <svg class="icon-play" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M8 5v14l11-7z"/></svg>
+                        </button>
+                        
+                        <button class="control-btn" id="popup-mute-btn" aria-label="Silenciar">
+                             <!-- Vol High -->
+                             <svg class="icon-vol-high" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                             <!-- Muted -->
+                             <svg class="icon-vol-muted" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+                        </button>
+                        
+                        <div class="live-indicator-mini">
+                            <span class="live-dot-mini"></span>
+                            LIVE
+                        </div>
+                    </div>
+
+                    <div class="right-controls">
+                        <button class="control-btn" id="popup-fullscreen-btn" aria-label="Pantalla completa">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Click Overlay (Initial Interaction) -->
+             <div id="popup-click-overlay" class="popup-click-overlay">
+                <div class="overlay-content">
+                    <button class="mini-start-btn">
+                        <div class="mini-play-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+    import Hls from 'hls.js';
+    
+    // Configuration
+    const STREAM_URL = 'https://live.veredillasfm.es/stream-pro.m3u8';
+    const POLL_INTERVAL = 15000;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const widget = document.getElementById('live-popup-widget');
+        const closeBtn = document.getElementById('close-popup-btn');
+        const video = document.getElementById('popup-video') as HTMLVideoElement;
+        const container = document.getElementById('popup-video-container');
+        const clickOverlay = document.getElementById('popup-click-overlay');
+        const controls = document.getElementById('popup-controls');
+        
+        // Buttons
+        const playPauseBtn = document.getElementById('popup-play-pause-btn');
+        const muteBtn = document.getElementById('popup-mute-btn');
+        const fullscreenBtn = document.getElementById('popup-fullscreen-btn');
+        
+        // Icons
+        const iconPause = playPauseBtn?.querySelector('.icon-pause') as HTMLElement;
+        const iconPlay = playPauseBtn?.querySelector('.icon-play') as HTMLElement;
+        const iconVolHigh = muteBtn?.querySelector('.icon-vol-high') as HTMLElement;
+        const iconVolMuted = muteBtn?.querySelector('.icon-vol-muted') as HTMLElement;
+
+        if (window.location.pathname === '/live') return;
+        
+        let hls: Hls | null = null;
+        let isLive = false;
+        let hasUserClosed = sessionStorage.getItem('live-popup-closed') === 'true';
+        let controlsTimeout: any;
+
+        // --- Controls Logic ---
+
+        function updatePlayPauseUI() {
+            if (video.paused) {
+                if(iconPlay) iconPlay.style.display = 'block';
+                if(iconPause) iconPause.style.display = 'none';
+                if(clickOverlay) {
+                    clickOverlay.style.opacity = '1';
+                    clickOverlay.style.pointerEvents = 'auto';
+                }
+            } else {
+                if(iconPlay) iconPlay.style.display = 'none';
+                if(iconPause) iconPause.style.display = 'block';
+                if(clickOverlay) {
+                    clickOverlay.style.opacity = '0';
+                    clickOverlay.style.pointerEvents = 'none';
+                }
+            }
+        }
+
+        function updateMuteUI() {
+            if (video.muted) {
+                if(iconVolHigh) iconVolHigh.style.display = 'none';
+                if(iconVolMuted) iconVolMuted.style.display = 'block';
+            } else {
+                if(iconVolHigh) iconVolHigh.style.display = 'block';
+                if(iconVolMuted) iconVolMuted.style.display = 'none';
+            }
+        }
+        
+        function showControls() {
+            if(controls) controls.classList.add('visible');
+            clearTimeout(controlsTimeout);
+            controlsTimeout = setTimeout(() => {
+                if(!video.paused) {
+                    controls?.classList.remove('visible');
+                }
+            }, 2500);
+        }
+
+        // --- Event Listeners ---
+
+        closeBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (widget) {
+                widget.classList.add('hidden');
+                widget.setAttribute('aria-hidden', 'true');
+                video.pause();
+                if (hls) hls.destroy();
+            }
+            sessionStorage.setItem('live-popup-closed', 'true');
+            hasUserClosed = true;
+        });
+        
+        // Container Click -> Toggle Play/Pause if clicked on video (not controls) or standard interaction
+        // Actually, if we want it to behave like the big player, usually clicking video pauses it or shows controls.
+        // Let's make click on overlay start it (unmute).
+        
+        clickOverlay?.addEventListener('click', () => {
+            video.muted = false;
+            video.play().catch(e => console.error(e));
+            updateMuteUI();
+        });
+        
+        // Show controls on hover
+        container?.addEventListener('mousemove', showControls);
+        container?.addEventListener('click', showControls);
+
+        playPauseBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (video.paused) video.play();
+            else video.pause();
+        });
+
+        muteBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            video.muted = !video.muted;
+            updateMuteUI();
+        });
+
+        fullscreenBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!document.fullscreenElement) {
+                container?.requestFullscreen().catch(err => console.error(err));
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        video.addEventListener('play', updatePlayPauseUI);
+        video.addEventListener('pause', updatePlayPauseUI);
+        video.addEventListener('volumechange', updateMuteUI);
+
+        // --- Stream Logic ---
+
+        function initPlayer() {
+            if (!video) return;
+            
+            if (Hls.isSupported()) {
+                if(hls) hls.destroy();
+                hls = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                });
+                hls.loadSource(STREAM_URL);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    // Try to autoplay muted (preview)
+                    video.muted = true;
+                    video.play().catch(() => {});
+                    updateMuteUI();
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = STREAM_URL;
+                video.muted = true;
+                video.play().catch(() => {});
+                updateMuteUI();
+            }
+        }
+        
+        function checkStream() {
+            if (hasUserClosed) return;
+
+            fetch(STREAM_URL, { method: 'HEAD' })
+                .then(res => {
+                    if (res.ok) {
+                        if (!isLive) {
+                            isLive = true;
+                            // Show widget
+                            widget?.classList.remove('hidden');
+                            widget?.setAttribute('aria-hidden', 'false');
+                            initPlayer();
+                        }
+                    } else {
+                        if (isLive) {
+                            isLive = false;
+                            widget?.classList.add('hidden');
+                            widget?.setAttribute('aria-hidden', 'true');
+                            if (hls) hls.destroy();
+                        }
+                    }
+                })
+                .catch(() => {
+                    isLive = false;
+                });
+        }
+        
+        checkStream();
+        setInterval(checkStream, POLL_INTERVAL);
+    });
+</script>
+
+<style>
+    .live-popup-widget {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        width: 320px; /* Small size */
+        z-index: 9999;
+        font-family: var(--font-body, system-ui, sans-serif);
+        animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    
+    .live-popup-widget.hidden {
+        display: none;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(20px);
+    }
+    
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .popup-content {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
+        background: #000;
+        aspect-ratio: 16/9;
+    }
+    
+    /* Close Button - Floating Outside slightly or top right corner */
+    .close-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 50;
+        background: rgba(0,0,0,0.6);
+        border: none;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        backdrop-filter: blur(4px);
+        transition: background 0.2s, transform 0.2s;
+        opacity: 0; /* Hidden by default until hover */
+    }
+
+    .popup-content:hover .close-btn {
+        opacity: 1;
+    }
+    
+    .close-btn:hover {
+        background: rgba(239, 68, 68, 0.8); /* Red on hover */
+        transform: scale(1.1);
+    }
+    
+    .video-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background: #000;
+    }
+    
+    #popup-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    /* Controls Overlay */
+    .popup-controls {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        padding: 30px 10px 10px;
+        display: flex;
+        flex-direction: column;
+        z-index: 20;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+    
+    .popup-controls.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    
+    .controls-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .left-controls, .right-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .control-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        opacity: 0.8;
+        transition: opacity 0.2s, transform 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+    }
+    
+    .control-btn:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    
+    .live-indicator-mini {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: #ef4444;
+        font-weight: 700;
+        font-size: 0.75rem; /* Smaller font */
+        margin-left: 0.5rem;
+        letter-spacing: 0.05em;
+    }
+    
+    .live-dot-mini {
+        width: 6px;
+        height: 6px;
+        background: #ef4444;
+        border-radius: 50%;
+        box-shadow: 0 0 6px #ef4444;
+    }
+    
+    /* Click Overlay (Play centered) */
+    .popup-click-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        transition: opacity 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .mini-start-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .mini-play-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(4px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+    }
+    
+    .popup-content:hover .mini-play-icon {
+        background: var(--color-primary, #ec4899);
+        border-color: var(--color-primary, #ec4899);
+        transform: scale(1.1);
+    }
+    
+    .mini-play-icon svg {
+        width: 24px;
+        height: 24px;
+        margin-left: 2px;
+    }
+
+    @media (max-width: 768px) {
+        .live-popup-widget {
+            bottom: 80px; 
+            left: 10px;
+            width: 240px; /* Slightly bigger on mobile? or same logic */
+        }
+    }
+</style>
