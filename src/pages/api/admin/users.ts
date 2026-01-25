@@ -53,3 +53,119 @@ export const GET: APIRoute = async ({ request }) => {
     });
   }
 };
+
+export const PUT: APIRoute = async ({ request }) => {
+  try {
+    // 1. Authenticate & Authorize
+    const cookieHeader = request.headers.get('cookie');
+    const userPayload = getUserFromCookie(cookieHeader);
+
+    if (!userPayload) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    }
+
+    await dbConnect();
+    const currentUser = await User.findById(userPayload.userId);
+    if (!currentUser || currentUser.role !== 'admin') {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
+    }
+
+    // 2. Parse Body
+    const body = await request.json();
+    const { userId, name, role, bio, newsletter } = body;
+
+    if (!userId) {
+      return new Response(JSON.stringify({ error: 'Missing userId' }), { status: 400 });
+    }
+
+    // 3. Update User
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (role) updateData.role = role; 
+    if (bio !== undefined) updateData.bio = bio;
+    if (newsletter !== undefined) updateData.newsletter = newsletter;
+
+    // Check previous state for webhook trigger
+    const userBefore = await User.findById(userId);
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true }).select('-__v');
+
+    if (!updatedUser) {
+      return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 });
+    }
+
+    // 4. Trigger Webhook if newsletter changed
+    if (newsletter !== undefined && userBefore && userBefore.newsletter !== newsletter) {
+        const action = Boolean(newsletter) ? 'subscribe' : 'unsubscribe';
+        try {
+            await fetch('https://n8n.broslunas.com/webhook/veredillasfm-unsub-resub', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: updatedUser.name,
+                    email: updatedUser.email,
+                    action: action
+                })
+            });
+        } catch (webhookError) {
+            console.error('Webhook trigger failed:', webhookError);
+            // Don't fail the request just because webhook failed
+        }
+    }
+
+    return new Response(JSON.stringify({ success: true, user: updatedUser }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
+  }
+};
+
+export const DELETE: APIRoute = async ({ request }) => {
+  try {
+    // 1. Authenticate & Authorize
+    const cookieHeader = request.headers.get('cookie');
+    const userPayload = getUserFromCookie(cookieHeader);
+
+    if (!userPayload) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    }
+
+    await dbConnect();
+    const currentUser = await User.findById(userPayload.userId);
+    if (!currentUser || currentUser.role !== 'admin') {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
+    }
+
+    // 2. Parse Body (or URL search params if you prefer, but body is fine for simple internal usage)
+    const body = await request.json();
+    const { userId } = body;
+
+    if (!userId) {
+      return new Response(JSON.stringify({ error: 'Missing userId' }), { status: 400 });
+    }
+
+    // Prevent deleting yourself
+    if (userId === userPayload.userId) {
+        return new Response(JSON.stringify({ error: 'Cannot delete your own admin account' }), { status: 400 });
+    }
+
+    // 3. Delete User
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 });
+    }
+
+    return new Response(JSON.stringify({ success: true, message: 'User deleted' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
+  }
+};

@@ -1,0 +1,60 @@
+---
+const currentPath = Astro.url.pathname;
+---
+
+<nav class="admin-nav">
+  <div class="nav-content">
+    <a href="/dashboard/admin" class={currentPath === '/dashboard/admin' ? 'active' : ''}>
+      📊 Dashboard
+    </a>
+    <a href="/dashboard/admin/users" class={currentPath === '/dashboard/admin/users' ? 'active' : ''}>
+      👥 Usuarios
+    </a>
+    <a href="/dashboard/admin/content" class={currentPath === '/dashboard/admin/content' ? 'active' : ''}>
+      🎙️ Contenido
+    </a>
+    <a href="/dashboard/admin/live" class={currentPath === '/dashboard/admin/live' ? 'active' : ''}>
+      🔴 En Vivo
+    </a>
+  </div>
+</nav>
+
+<style>
+  .admin-nav {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .nav-content {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 1px;
+  }
+
+  a {
+    padding: 0.75rem 1.25rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  a:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 0.5rem 0.5rem 0 0;
+  }
+
+  a.active {
+    color: #a78bfa;
+    border-bottom-color: #a78bfa;
+  }
+</style>
+
+<script define:vars={{ currentPath: Astro.url.pathname }}>
+  // Optional: Client-side active state if not strictly SSR
+</script>

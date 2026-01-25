@@ -1,6 +1,7 @@
 
 ---
 import Layout from '../../../layouts/Layout.astro';
+import AdminNav from '../../../components/admin/AdminNav.astro';
 import { getUserFromCookie } from '../../../lib/auth';
 import User from '../../../models/User';
 import ActiveListener from '../../../models/ActiveListener';
@@ -26,12 +27,6 @@ if (!currentUser || currentUser.role !== 'admin') {
 }
 
 const users = await User.find({}).sort({ createdAt: -1 });
-
-// Fetch Active Listeners
-const threshold = new Date(Date.now() - 5 * 60 * 1000); // 5 minutes
-const activeListeners = await ActiveListener.find({ 
-    lastSeen: { $gt: threshold } 
-}).sort({ lastSeen: -1 });
 
 // Fetch Statistics
 const newsletterStats = {
@@ -101,34 +96,13 @@ const topFavorites = Array.from(episodeStats.entries())
     .slice(0, 3);
 
 
-const sortedEpisodeStats = Array.from(episodeStats.entries())
-    .map(([slug, stats]) => ({
-        slug,
-        title: episodesMap.get(slug) || slug,
-        ...stats
-    }))
-    .sort((a, b) => b.plays - a.plays); // Sort by popularity (starts)
-
 function formatTime(seconds: number) {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     return `${h}h ${m}m`;
 }
 
-function getPathLabel(path: string) {
-    if (!path) return '-';
-    if (path === '/') return '🏠 Inicio';
-    if (path.startsWith('/ep/')) {
-        const slug = path.replace('/ep/', '').replace(/\/$/, '');
-        if (episodesMap.has(slug)) {
-            return `${episodesMap.get(slug)}`;
-        }
-        return `Episodio (${slug})`;
-    }
-    if (path === '/perfil') return '👤 Perfil';
-    if (path === '/favoritos') return '❤️ Favoritos';
-    return path;
-}
+// Remove ActiveListener and getPathLabel import/usage
 ---
 
 <Layout title="Panel de Administración">
@@ -152,6 +126,8 @@ function getPathLabel(path: string) {
         </span>
       </div>
     </div>
+
+    <AdminNav />
 
     <div class="stats-grid">
       <div class="stat-card glass-panel interactive">
@@ -284,181 +260,458 @@ function getPathLabel(path: string) {
         </div>
     </div>
     </div>
-
-    <!-- Active Listeners Section -->
-    <div class="section-container glass-panel">
-        <div class="section-header-row">
-            <h2>
-                <span class="live-badge">LIVE</span> 
-                Oyentes en Línea 
-                <span class="count-pill">{activeListeners.length}</span>
-            </h2>
-        </div>
-        
-        <div class="table-container">
-            <table class="modern-table">
-                <thead>
-                    <tr>
-                        <th>Usuario / ID</th>
-                        <th>Ruta Actual</th>
-                        <th>Visto por última vez</th>
-                         <th>Dispositivo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {activeListeners.length === 0 ? (
-                        <tr>
-                            <td colspan="4" class="empty-cell">
-                                <div class="empty-state">
-                                    <span class="empty-icon">😴</span>
-                                    <p>No hay oyentes activos en este momento.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    ) : (
-                        activeListeners.map((listener) => (
-                            <tr>
-                                <td>
-                                    <div class="user-cell">
-                                        {listener.userId ? (
-                                            <>
-                                                <div class="avatar-wrapper">
-                                                    <img 
-                                                        src={listener.picture || `https://ui-avatars.com/api/?name=${listener.name}`} 
-                                                        alt={listener.name} 
-                                                        class="user-avatar" 
-                                                    />
-                                                    <div class="online-indicator"></div>
-                                                </div>
-                                                <div class="user-info">
-                                                    <span class="user-name">{listener.name}</span>
-                                                    <span class="user-id-sub">{listener.userId}</span>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div class="user-info">
-                                                <span class="user-name anonymous">Anónimo</span>
-                                                 <span class="user-id-sub" title={listener.sessionId}>
-                                                    {listener.sessionId.substring(0, 8)}...
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="path-badge">
-                                        {getPathLabel(listener.path)}
-                                    </span>
-                                </td>
-                                <td class="time-cell">
-                                    {Math.floor((Date.now() - new Date(listener.lastSeen).getTime()) / 1000)}s hace
-                                </td>
-                                <td class="device-cell" title={listener.userAgent}>
-                                   {listener.userAgent ? (listener.userAgent.includes('Mobile') ? '📱 Móvil' : '💻 Escritorio') : '❓ Desconocido'}
-                                </td>
-                            </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Episode Stats Section -->
-    <div class="section-container glass-panel">
-        <h2>Estadísticas de Contenido</h2>
-        <div class="table-container">
-            <table class="modern-table">
-                <thead>
-                    <tr>
-                        <th>Episodio</th>
-                        <th class="text-center">Alcance</th>
-                        <th class="text-center">Completados</th>
-                        <th class="text-center">Favoritos</th>
-                        <th style="width: 200px;">Retención</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sortedEpisodeStats.map((stat) => {
-                        const rate = stat.plays > 0 ? (stat.completions / stat.plays) * 100 : 0;
-                        return (
-                        <tr>
-                            <td>
-                                <div class="user-cell">
-                                    <span class="user-name">{stat.title}</span>
-                                </div>
-                            </td>
-                            <td class="text-center font-mono">{stat.plays}</td>
-                            <td class="text-center font-mono">{stat.completions}</td>
-                             <td class="text-center font-mono text-accent">{stat.favorites}</td>
-                            <td>
-                                <div class="progress-bar-container">
-                                    <div class="progress-info">
-                                        <span>{Math.round(rate)}%</span>
-                                    </div>
-                                    <div class="progress-track">
-                                        <div class="progress-fill" style={`width: ${rate}%; background-color: ${rate > 70 ? '#10b981' : rate > 40 ? '#f59e0b' : '#ef4444'};`}></div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    )})}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="section-container glass-panel">
-      <h2>Base de Usuarios</h2>
-      <div class="table-container">
-        <table class="modern-table">
-          <thead>
-            <tr>
-              <th>Usuario</th>
-              <th>Email</th>
-              <th>Rol</th>
-              <th>Registro</th>
-              <th>Último Acceso</th>
-              <th>Tiempo</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr>
-                <td>
-                  <div class="user-cell">
-                    <img src={user.picture || `https://ui-avatars.com/api/?name=${user.name}`} alt={user.name} class="user-avatar" />
-                    <span class="user-name">{user.name}</span>
-                  </div>
-                </td>
-                <td class="text-muted">{user.email}</td>
-                <td>
-                  <span class={`role-badge ${user.role}`}>
-                    {user.role}
-                  </span>
-                </td>
-                <td title={new Date(user.createdAt).toLocaleString()} class="text-sm">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                </td>
-                <td title={user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'N/A'} class="text-sm">
-                    {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : '-'}
-                </td>
-                <td class="font-mono text-sm">{formatTime(user.listeningTime || 0)}</td>
-                <td>
-                  <span class={`status-badge ${user.newsletter ? 'active' : 'inactive'}`}>
-                    {user.newsletter ? 'Suscrito' : 'Inactivo'}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
   </div>
 </Layout>
 
+<style>
+  .admin-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: var(--color-text-main);
+    animation: fadeInUp 0.8s ease-out;
+  }
+
+  /* Header */
+  .admin-header {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .admin-header h1 {
+    font-size: 3rem;
+    margin-bottom: 0.25rem;
+    background: linear-gradient(to right, #fff, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  
+  .admin-header p {
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+  }
+  
+  .live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 999px;
+    color: #34d399;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  
+  .pulse-dot {
+    width: 6px;
+    height: 6px;
+    background: #34d399;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .stat-card {
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  
+  .stat-card.interactive:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    border-color: rgba(255,255,255,0.15);
+  }
+
+  .stat-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .stat-icon-wrapper.primary { background: rgba(139, 92, 246, 0.1); color: #a78bfa; }
+  .stat-icon-wrapper.secondary { background: rgba(14, 165, 233, 0.1); color: #38bdf8; }
+  .stat-icon-wrapper.accent { background: rgba(236, 72, 153, 0.1); color: #f472b6; }
+
+  .stat-info h3 {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-value {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+    font-family: var(--font-display);
+  }
+
+  /* Bento Grid */
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .span-2 { grid-column: span 2; }
+  .span-1 { grid-column: span 1; }
+  
+  @media (max-width: 1024px) {
+    .bento-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .span-2, .span-1 { grid-column: span 1; }
+    .section-container.span-2 { grid-column: span 2; }
+  }
+
+  @media (max-width: 768px) {
+    .bento-grid {
+        grid-template-columns: 1fr;
+    }
+    .section-container.span-2 { grid-column: 1; }
+  }
+
+  .mt-4 { margin-top: 1rem; }
+  .w-full { width: 100%; }
+
+  .mb-12 { margin-bottom: 3rem; }
+  .no-margin { margin-bottom: 0 !important; }
+
+  /* Newsletter Revamped */
+  .newsletter-widget {
+      display: flex;
+      flex-direction: column;
+  }
+
+  .newsletter-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+    padding-top: 1rem;
+  }
+  
+  .chart-wrapper {
+    width: 140px;
+    height: 140px;
+    flex-shrink: 0;
+    position: relative;
+    filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.2));
+  }
+  
+  .circular-chart {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+  }
+  
+  .circle-bg {
+    fill: none;
+    stroke: rgba(255,255,255,0.03);
+    stroke-width: 2.5;
+  }
+  
+  .circle {
+    fill: none;
+    stroke: #10b981;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    transition: stroke-dasharray 1s ease-out;
+  }
+  
+  .percentage {
+    fill: #fff;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.5rem;
+    text-anchor: middle;
+  }
+  
+  .stats-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .nl-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.03);
+    border-radius: 0.75rem;
+    transition: background 0.2s;
+  }
+  
+  .nl-item:hover {
+      background: rgba(255,255,255,0.04);
+  }
+  
+  .nl-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--color-text-muted);
+      font-size: 0.9rem;
+  }
+
+  .nl-item .value { 
+      font-weight: 700; 
+      color: #fff; 
+      font-family: var(--font-display);
+      font-size: 1rem;
+  }
+
+  .nl-item .dot { width: 8px; height: 8px; border-radius: 50%; display: block; }
+  .nl-item .dot.active { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
+  .nl-item .dot.inactive { background: rgba(255,255,255,0.2); }
+  
+  .mt-auto { margin-top: auto; }
+  
+  .action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05));
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: #c4b5fd;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  
+  .action-btn:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
+  }
+
+  /* Activity Chart */
+  .chart-container {
+    padding-top: 2rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 160px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 0.5rem;
+  }
+  
+  .bar-group {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+  }
+  
+  .bar-fill {
+    width: 100%;
+    background: #a78bfa;
+    border-radius: 2px 2px 0 0;
+    transition: height 0.5s ease-out;
+  }
+  
+  .bar-label {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    color: var(--color-text-muted);
+  }
+
+  .chart-caption {
+     margin-top: 1.5rem;
+     text-align: center;
+     font-size: 0.8rem;
+     color: var(--color-text-dim);
+  }
+
+  /* Top Episodes */
+  .top-episodes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .top-episode-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255,255,255,0.02);
+    padding: 0.75rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: transform 0.2s;
+  }
+  
+  .top-episode-item:hover {
+    transform: translateX(5px);
+    background: rgba(255,255,255,0.05);
+  }
+  
+  .rank {
+    font-size: 1.5rem;
+    font-weight: 800;
+    width: 40px;
+    text-align: center;
+    font-family: var(--font-display);
+  }
+  
+  .episode-cover-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 0.5rem;
+    object-fit: cover;
+  }
+  
+  .episode-info-compact {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  
+  .ep-title { font-weight: 600; font-size: 0.9rem; line-height: 1.2; }
+  .ep-likes { font-size: 0.75rem; color: #ec4899; }
+  
+  .trophy-icon { font-size: 1.5rem; }
+
+  /* Comments */
+  .comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+  }
+  
+  .comment-item {
+    background: rgba(255,255,255,0.02);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255,255,255,0.03);
+  }
+  
+  .comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.35rem;
+    font-size: 0.8rem;
+  }
+  
+  .comment-author { font-weight: 600; color: #fff; }
+  .comment-date { color: var(--color-text-dim); }
+  
+  .comment-text {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+    margin-bottom: 0.5rem;
+  }
+  
+  .comment-slug {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--color-text-dim);
+    text-align: right;
+    font-family: monospace;
+  }
+
+  /* Section Container */
+  .section-container {
+    padding: 2rem;
+    border-radius: 1.5rem;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  
+  .section-container h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* Utils */
+  .text-center { text-align: center; }
+  .font-mono { font-family: monospace; letter-spacing: -0.5px; }
+  .text-muted { color: var(--color-text-muted); font-size: 0.9rem; }
+  .text-sm { font-size: 0.85rem; color: var(--color-text-muted); }
+  .text-accent { color: var(--color-accent); }
+
+  /* Background Blobs */
+  .blob {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.08;
+    z-index: -1;
+  }
+  
+  .blob-1 { top: -200px; left: -200px; background: var(--color-primary); }
+  .blob-2 { bottom: -200px; right: -200px; background: var(--color-secondary); }
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+    opacity: 0.5;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+</style>
 <style>
   .admin-container {
     max-width: 1400px;
@@ -1093,4 +1346,147 @@ function getPathLabel(path: string) {
     50% { transform: scale(1.5); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
   }
+
+  /* Actions */
+  .text-right { text-align: right; }
+  
+  .actions-cell {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+  
+  .icon-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 0.4rem;
+    border-radius: 0.5rem;
+    transition: background 0.2s;
+    filter: grayscale(1);
+    opacity: 0.7;
+  }
+  
+  .icon-btn:hover {
+    filter: grayscale(0);
+    opacity: 1;
+    background: rgba(255,255,255,0.1);
+  }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 1;
+    transition: opacity 0.3s;
+  }
+  
+  .modal-backdrop.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  .modal-content {
+    background: #0f172a; /* Fallback */
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+    border: 1px solid rgba(255,255,255,0.1);
+    width: 100%;
+    max-width: 500px;
+    padding: 2rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transform: translateY(0);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .modal-backdrop.hidden .modal-content {
+    transform: translateY(20px) scale(0.95);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .modal-header h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  
+  .close-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  
+  .close-btn:hover { color: #fff; }
+
+  .form-group { margin-bottom: 1.5rem; }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+  
+  .modern-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    color: #fff;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+  
+  .modern-input:focus {
+    outline: none;
+    border-color: #a78bfa;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  
+  .btn-cancel {
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--color-text-muted);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  .btn-save {
+    padding: 0.75rem 1.5rem;
+    background: #a78bfa;
+    border: none;
+    color: #fff;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+  }
+  
+  .btn-save:hover { background: #8b5cf6; }
 </style>
