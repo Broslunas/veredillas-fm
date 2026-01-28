@@ -1,107 +1,151 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-// Placeholder data - In a real app, this might come from a CMS or local folder scan
+// Enhanced Data with clearer categories
 const galleryImages = [
   {
+    src: "https://cdn.veredillasfm.es/img/008-v2.webp",
+    alt: "Charlas cotidianas - Carlos y Gustavo",
+    category: "Episodios"
+  },{
+    src: "https://cdn.veredillasfm.es/img/007-v2.webp",
+    alt: "Hablemos de Venezuela",
+    category: "Episodios"
+  },{
     src: "https://cdn.veredillasfm.es/img/006.webp",
-    alt: "Podcasts 006",
-    category: "Podcasts"
-  },{
-    src: "https://cdn.veredillasfm.es/img/005.webp",
-    alt: "Podcasts 005",
-    category: "Podcasts"
-  },{
-    src: "https://cdn.veredillasfm.es/img/004.webp",
-    alt: "Podcasts 004",
-    category: "Podcasts"
-  },{
-    src: "https://cdn.veredillasfm.es/img/003.webp",
-    alt: "Podcasts 003",
-    category: "Podcasts"
-  },{
-    src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjnLK1u1y6yDhK6yumKrztTdimUtq91FmdvK2mHJ9zZyRKmYO8JBZmrAuDorqXAKUVkayN4uV5EcG7sOPOTVZCTqeOISM7jrzSxEac-RItneKwC4Q3NS0S8eL0ioG2v5V8ys6YPOAD9RBjrlkbtWSDp1SmoBxOX46qPTppBbr-sqsBQuLvcCWw-TmEW8DI/w640-h640/Imagen%20de%20WhatsApp%202025-12-10%20a%20las%2012.07.00_ac94ad9a.jpg",
-    alt: "Podcasts 002",
-    category: "Podcasts"
+    alt: "Episodio 006",
+    category: "Episodios"
   },{
     src: "https://cdn.veredillasfm.es/galeria/001.jpg",
-    alt: "Equipo",
+    alt: "Nuestro Equipo Técnico",
     category: "Equipo"
+  },{
+    src: "https://cdn.veredillasfm.es/img/005.webp",
+    alt: "Episodio 005",
+    category: "Episodios"
   },{
     src: "https://cdn.veredillasfm.es/galeria/002.jpg",
-    alt: "Equipo",
-    category: "Equipo"
+    alt: "Grabación en vivo",
+    category: "Estudio"
   },{
-    src: "https://cdn.veredillasfm.es/galeria/003.jpg",
-    alt: "Equipo",
-    category: "Equipo"
-  },{
-    src: "https://cdn.veredillasfm.es/galeria/004.jpg",
-    alt: "Equipo",
-    category: "Equipo"
+    src: "https://cdn.veredillasfm.es/img/004.webp",
+    alt: "Episodio 004",
+    category: "Episodios"
   },{
     src: "https://cdn.veredillasfm.es/galeria/005.jpg",
-    alt: "Equipo",
-    category: "Equipo"
+    alt: "Mesa de mezclas",
+    category: "Estudio"
   },{
-    src: "https://cdn.veredillasfm.es/galeria/006.jpg",
-    alt: "Equipo",
-    category: "Equipo"
+    src: "https://cdn.veredillasfm.es/img/003.webp",
+    alt: "Episodio 003",
+    category: "Episodios"
   },{
     src: "https://cdn.veredillasfm.es/galeria/007.jpg",
-    alt: "Equipo",
+    alt: "Preparando el programa",
     category: "Equipo"
   },{
-    src: "https://cdn.veredillasfm.es/galeria/008.jpg",
-    alt: "Equipo",
+    src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjnLK1u1y6yDhK6yumKrztTdimUtq91FmdvK2mHJ9zZyRKmYO8JBZmrAuDorqXAKUVkayN4uV5EcG7sOPOTVZCTqeOISM7jrzSxEac-RItneKwC4Q3NS0S8eL0ioG2v5V8ys6YPOAD9RBjrlkbtWSDp1SmoBxOX46qPTppBbr-sqsBQuLvcCWw-TmEW8DI/w640-h640/Imagen%20de%20WhatsApp%202025-12-10%20a%20las%2012.07.00_ac94ad9a.jpg",
+    alt: "Entrevista Especial",
+    category: "Momentos"
+  },{
+    src: "https://cdn.veredillasfm.es/galeria/003.jpg",
+    alt: "El equipo de redacción",
     category: "Equipo"
   },{
     src: "https://cdn.veredillasfm.es/galeria/009.webp",
-    alt: "Equipo",
+    alt: "Momentos divertidos",
+    category: "Momentos"
+  },{
+    src: "https://cdn.veredillasfm.es/galeria/004.jpg",
+    alt: "Micrófonos listos",
+    category: "Estudio"
+  },{
+    src: "https://cdn.veredillasfm.es/galeria/006.jpg",
+    alt: "Debate en grupo",
     category: "Equipo"
-  },
+  },{
+    src: "https://cdn.veredillasfm.es/galeria/008.jpg",
+    alt: "Edición de audio",
+    category: "Estudio"
+  }
 ];
+
+const categories = ["Todos", ...new Set(galleryImages.map(img => img.category))];
 ---
 
 <Layout 
-  title="Galería"
-  description="Un vistazo visual a la vida en Veredillas FM. Fotos del estudio, eventos escolares y el equipo en acción."
+  title="Galería Premium"
+  description="Explora los momentos más destacados de Veredillas FM. Episodios, equipo, backstage y mucho más."
   image="/logo.png"
 >
-    <!-- Lightbox Modal -->
+    <!-- Premium Lightbox -->
     <div id="lightbox" class="lightbox">
-        <button class="close-lightbox" aria-label="Cerrar">&times;</button>
-        <div class="lightbox-content">
+        <div class="lightbox-backdrop"></div>
+        <button class="close-lightbox" aria-label="Cerrar">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+        
+        <div class="lightbox-container">
             <img id="lightbox-img" src="" alt="Vista previa" />
-            <div class="lightbox-caption"></div>
+            <div class="lightbox-details">
+                <span class="lightbox-category"></span>
+                <p class="lightbox-caption"></p>
+            </div>
         </div>
-        <button class="nav-btn prev" aria-label="Anterior">&#10094;</button>
-        <button class="nav-btn next" aria-label="Siguiente">&#10095;</button>
+
+        <button class="nav-btn prev" aria-label="Anterior">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <button class="nav-btn next" aria-label="Siguiente">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
     </div>
 
     <div class="container page-wrapper">
         <header class="page-header gs-reveal">
-            <span class="badge">Galería</span>
-            <h1>Momentos <span class="text-gradient">Veredillas</span></h1>
+            <div class="badge-container">
+                <span class="badge">Nuestra Historia</span>
+            </div>
+            <h1 class="gradient-text">Galería <span class="text-white">Visual</span></h1>
             <p class="subtitle">
-                Capturando la esencia de nuestra radio escolar, dentro y fuera del estudio.
+                Un recorrido visual por la esencia de Veredillas FM. Desde los episodios más icónicos hasta los momentos detrás de cámaras.
             </p>
+
+            <!-- Filter Categories -->
+            <div class="filters gs-reveal">
+                {categories.map((cat, index) => (
+                    <button 
+                        class={`filter-btn ${cat === 'Todos' ? 'active' : ''}`} 
+                        data-category={cat}
+                    >
+                        {cat}
+                    </button>
+                ))}
+            </div>
         </header>
 
-        <div class="masonry-grid gs-grid">
+        <div class="masonry-grid gs-grid" id="gallery-grid">
             {galleryImages.map((img, index) => (
-                <div class="grid-item zoom-trigger" data-index={index}>
-                    <div class="img-wrapper">
+                <div class="grid-item zoom-trigger" data-category={img.category} data-index={index}>
+                    <div class="card-inner">
                         <img src={img.src} alt={img.alt} loading="lazy" />
-                        <div class="overlay">
-                            <span class="category-tag">{img.category}</span>
-                            <span class="expand-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M14 10l6.1-6.1"/><path d="M9 21H3v-6"/><path d="M10 14l-6.1 6.1"/></svg>
-                            </span>
+                        <div class="card-overlay">
+                            <div class="overlay-content">
+                                <span class="cat-pill">{img.category}</span>
+                                <h3>{img.alt}</h3>
+                            </div>
+                            <button class="expand-btn" aria-label="Ver imagen">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M14 10l6.1-6.1M9 21H3v-6M10 14l-6.1 6.1"/></svg>
+                            </button>
                         </div>
                     </div>
                 </div>
             ))}
+        </div>
+        
+        <!-- Empty State for filters -->
+        <div id="no-results" class="hidden">
+            <p>No hay imágenes en esta categoría.</p>
         </div>
     </div>
 </Layout>
@@ -116,36 +160,98 @@ const galleryImages = [
             return;
         }
 
-        const gridItems = document.querySelectorAll('.zoom-trigger');
+        const grid = document.getElementById('gallery-grid');
+        const items = document.querySelectorAll('.grid-item');
+        const filters = document.querySelectorAll('.filter-btn');
+        const noResults = document.getElementById('no-results');
+
+        // Lightbox Elements
         const lightbox = document.getElementById('lightbox');
         const lightboxImg = document.getElementById('lightbox-img');
         const caption = document.querySelector('.lightbox-caption');
+        const categoryLabel = document.querySelector('.lightbox-category');
         const closeBtn = document.querySelector('.close-lightbox');
         const nextBtn = document.querySelector('.nav-btn.next');
         const prevBtn = document.querySelector('.nav-btn.prev');
         
         let currentIndex = 0;
+        // Helper to get visible items only for navigation
+        const getVisibleItems = () => Array.from(document.querySelectorAll('.grid-item:not(.hidden)'));
         
-        const getImageInfo = (index) => {
-            const item = gridItems[index];
+        // --- Filtering Logic ---
+        filters.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Active State
+                filters.forEach(f => f.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const category = btn.getAttribute('data-category');
+                
+                // Animate Out
+                const timeline = gsap.timeline({
+                    onComplete: () => {
+                        let visibleCount = 0;
+                        items.forEach(item => {
+                            if (category === 'Todos' || item.getAttribute('data-category') === category) {
+                                item.classList.remove('hidden');
+                                visibleCount++;
+                            } else {
+                                item.classList.add('hidden');
+                            }
+                        });
+
+                        // Show/Hide Empty State
+                        if (visibleCount === 0) {
+                            noResults.classList.remove('hidden');
+                            grid.style.display = 'none';
+                        } else {
+                            noResults.classList.add('hidden');
+                            grid.style.display = 'block'; // Or masonry display (block/column)
+                            
+                            // Animate In New Items
+                            gsap.fromTo('.grid-item:not(.hidden)', 
+                                { y: 20, opacity: 0, scale: 0.95 },
+                                { y: 0, opacity: 1, scale: 1, duration: 0.4, stagger: 0.05, ease: "back.out(1.2)" }
+                            );
+                        }
+                    }
+                });
+                
+                timeline.to('.grid-item', { opacity: 0, scale: 0.95, duration: 0.3 });
+            });
+        });
+
+
+        // --- Lightbox Logic ---
+        const getImageInfo = (item) => {
             if(!item) return null;
             const img = item.querySelector('img');
+            const title = item.querySelector('h3')?.textContent;
+            const cat = item.querySelector('.cat-pill')?.textContent;
             return {
                 src: img?.src || '',
-                alt: img?.alt || ''
+                alt: title || '',
+                category: cat || ''
             };
         };
 
-        const openLightbox = (index) => {
-            const info = getImageInfo(index);
+        const openLightbox = (item) => {
+            const info = getImageInfo(item);
             if (!info || !lightbox || !lightboxImg) return;
             
-            currentIndex = index;
+            // Find index in visible items for navigation
+            const visibleItems = getVisibleItems();
+            currentIndex = visibleItems.indexOf(item);
+            
             lightboxImg.src = info.src;
             if(caption) caption.textContent = info.alt;
+            if(categoryLabel) categoryLabel.textContent = info.category;
             
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            // Animate Image In
+            gsap.fromTo(lightboxImg, { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "power2.out" });
         };
 
         const closeLightboxModal = () => {
@@ -154,51 +260,45 @@ const galleryImages = [
             document.body.style.overflow = '';
         };
 
-        const nextImage = (e) => {
-            e.stopPropagation();
-            let newIndex = currentIndex + 1;
-            if (newIndex >= gridItems.length) newIndex = 0;
-            openLightbox(newIndex);
-        };
-        
-        const prevImage = (e) => {
-            e.stopPropagation();
-            let newIndex = currentIndex - 1;
-            if (newIndex < 0) newIndex = gridItems.length - 1;
-            openLightbox(newIndex);
+        const navigateLightbox = (direction) => {
+             const visibleItems = getVisibleItems();
+             if(visibleItems.length === 0) return;
+             
+             let newIndex = currentIndex + direction;
+             if (newIndex >= visibleItems.length) newIndex = 0;
+             if (newIndex < 0) newIndex = visibleItems.length - 1;
+             
+             openLightbox(visibleItems[newIndex]);
         };
 
-        // Event Listeners
-        gridItems.forEach((item, index) => {
-            // Remove old listeners to be safe? 
-            // Since this script runs on every nav (is:inline), and DOM is swapped, 
-            // the elements are fresh. No need to remove.
-            item.addEventListener('click', () => openLightbox(index));
+        // Listeners for Grid Items
+        items.forEach(item => {
+            item.addEventListener('click', () => openLightbox(item));
         });
 
         if (closeBtn) closeBtn.addEventListener('click', closeLightboxModal);
-        if (lightbox) {
-            lightbox.addEventListener('click', (e) => {
-               if(e.target === lightbox) closeLightboxModal();
-            });
-        }
         
-        if (nextBtn) nextBtn.addEventListener('click', nextImage);
-        if (prevBtn) prevBtn.addEventListener('click', prevImage);
+        // Backdrop click close
+        const backdrop = document.querySelector('.lightbox-backdrop');
+        if (backdrop) backdrop.addEventListener('click', closeLightboxModal);
+        
+        if (nextBtn) nextBtn.addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox(1); });
+        if (prevBtn) prevBtn.addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox(-1); });
         
         // Keyboard Nav
         document.addEventListener('keydown', (e) => {
              if (!lightbox?.classList.contains('active')) return;
              if (e.key === 'Escape') closeLightboxModal();
-             if (e.key === 'ArrowRight') nextBtn?.dispatchEvent(new Event('click'));
-             if (e.key === 'ArrowLeft') prevBtn?.dispatchEvent(new Event('click'));
+             if (e.key === 'ArrowRight') navigateLightbox(1);
+             if (e.key === 'ArrowLeft') navigateLightbox(-1);
         });
 
-        // Animations
+        // --- Initial Entrance Animation ---
          gsap.from(".gs-reveal", {
             y: 30,
             opacity: 0,
             duration: 0.8,
+            stagger: 0.2,
             ease: "power2.out"
         });
         
@@ -208,62 +308,108 @@ const galleryImages = [
             duration: 0.6,
             stagger: 0.1,
             ease: "power2.out",
-            delay: 0.2
+            delay: 0.4
         });
     }
 
     // Initialize immediately
     initGallery();
-    
-    // Also listen for re-renders if layout doesn't fully swap body? 
-    // But router swaps main. Inline script is in body (astro puts it there usually), 
-    // wait, astro puts scripts in head or body? 
-    // If it's `is:inline` inside the component, it renders where the component is.
-    // Layout renders <slot /> in <main>. So this script is in <main>.
-    // So it is re-executed. Perfect.
 </script>
 
 <style>
     .page-wrapper {
-        padding: 4rem var(--spacing-md);
-        max-width: 1200px;
+        padding: 6rem var(--spacing-md);
+        max-width: 1400px;
         margin: 0 auto;
     }
 
+    /* Header Styles */
     .page-header {
         text-align: center;
         max-width: 800px;
-        margin: 0 auto 4rem;
+        margin: 0 auto 5rem;
     }
 
+    .badge-container { margin-bottom: 1.5rem; }
+    
     .badge {
         display: inline-block;
         padding: 0.5rem 1.5rem;
         border-radius: 50px;
-        background: rgba(139, 92, 246, 0.1);
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
         color: var(--color-primary);
         font-weight: 600;
-        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
         border: 1px solid rgba(139, 92, 246, 0.2);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
     }
 
     h1 {
-        font-size: clamp(3rem, 5vw, 4.5rem);
-        line-height: 1.1;
-        margin-bottom: 1.5rem;
+        font-size: clamp(3rem, 6vw, 5rem);
+        line-height: 1;
+        margin-bottom: 0.5rem;
         font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+    
+    .gradient-text {
+        background: linear-gradient(135deg, #fff 30%, var(--color-primary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .text-white {
+        background: none;
+        -webkit-text-fill-color: white;
     }
 
     .subtitle {
         font-size: 1.25rem;
         color: var(--color-text-muted);
         line-height: 1.6;
+        margin-top: 1.5rem;
+    }
+
+    /* Filters */
+    .filters {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 3rem;
+    }
+
+    .filter-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--color-text-muted);
+        padding: 0.75rem 1.75rem;
+        border-radius: 100px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .filter-btn.active {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
     }
 
     /* Masonry Grid */
     .masonry-grid {
         column-count: 3;
-        column-gap: 20px;
+        column-gap: 24px;
+        padding-bottom: 2rem;
     }
     
     @media (max-width: 1024px) {
@@ -276,89 +422,119 @@ const galleryImages = [
 
     .grid-item {
         break-inside: avoid;
-        margin-bottom: 20px;
-        border-radius: 16px;
-        overflow: hidden;
-        position: relative;
+        margin-bottom: 24px;
         cursor: pointer;
     }
-
-    .img-wrapper {
-        position: relative;
-        width: 100%;
-        background: black;
+    
+    .grid-item.hidden {
+        display: none;
     }
 
-    .img-wrapper img {
+    .card-inner {
+        position: relative;
+        border-radius: 20px;
+        overflow: hidden;
+        background: #1a1a1a;
+        transform: translateZ(0); /* Hardware accel fix */
+    }
+
+    .card-inner img {
         width: 100%;
         height: auto;
         display: block;
-        transition: transform 0.5s ease;
+        transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
-    .grid-item:hover img {
-        transform: scale(1.05);
-        opacity: 0.8;
-    }
-
-    .overlay {
+    .card-overlay {
         position: absolute;
         inset: 0;
-        background: rgba(0,0,0,0.3);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        padding: 1.5rem;
+        background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0) 60%);
         opacity: 0;
         transition: opacity 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 1.5rem;
     }
 
-    .grid-item:hover .overlay {
+    .grid-item:hover .card-inner img {
+        transform: scale(1.08);
+    }
+
+    .grid-item:hover .card-overlay {
         opacity: 1;
     }
 
-    .category-tag {
-        align-self: flex-start;
-        background: rgba(0,0,0,0.6);
-        backdrop-filter: blur(4px);
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: white;
-    }
-
-    .expand-icon {
-        align-self: flex-end;
-        color: white;
-        background: var(--color-primary);
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .overlay-content {
         transform: translateY(20px);
         transition: transform 0.3s ease;
     }
 
-    .grid-item:hover .expand-icon {
+    .grid-item:hover .overlay-content {
         transform: translateY(0);
     }
 
-    /* Lightbox */
+    .cat-pill {
+        display: inline-block;
+        background: var(--color-primary);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+
+    .overlay-content h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: white;
+        line-height: 1.3;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    .expand-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(8px);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all 0.3s ease 0.1s;
+    }
+    
+    .grid-item:hover .expand-btn {
+        opacity: 1;
+        transform: scale(1);
+    }
+    
+    .expand-btn:hover {
+        background: white;
+        color: black;
+    }
+
+    /* Lightbox Premium */
     .lightbox {
         position: fixed;
         inset: 0;
         z-index: 10000;
-        background: rgba(0, 0, 0, 0.95);
-        display: flex; /* Flex but hidden initially */
+        display: flex;
         align-items: center;
         justify-content: center;
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.3s ease;
-        backdrop-filter: blur(5px);
     }
 
     .lightbox.active {
@@ -366,63 +542,106 @@ const galleryImages = [
         pointer-events: auto;
     }
 
-    .lightbox-content {
-        max-width: 90vw;
-        max-height: 85vh;
-        position: relative;
+    .lightbox-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(5, 5, 5, 0.95);
+        backdrop-filter: blur(10px);
     }
 
-    .lightbox-content img {
-        max-width: 100%;
+    .lightbox-container {
+        position: relative;
+        max-width: 90vw;
         max-height: 85vh;
-        border-radius: 8px;
-        box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .lightbox-container img {
+        max-width: 100%;
+        max-height: 80vh;
+        border-radius: 12px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        object-fit: contain;
+    }
+    
+    .lightbox-details {
+        margin-top: 1.5rem;
+        text-align: center;
+    }
+    
+    .lightbox-category {
+        display: block;
+        color: var(--color-primary);
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
     }
     
     .lightbox-caption {
-        position: absolute;
-        bottom: -40px;
-        left: 0;
-        width: 100%;
-        text-align: center;
         color: white;
-        font-size: 1.1rem;
+        font-size: 1.25rem;
+        margin: 0;
     }
 
     .close-lightbox {
         position: absolute;
-        top: 20px;
-        right: 30px;
-        font-size: 3rem;
-        color: white;
-        background: none;
+        top: 2rem;
+        right: 2rem;
+        background: rgba(255,255,255,0.1);
         border: none;
+        color: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
         cursor: pointer;
-        line-height: 0.5;
-        transition: color 0.2s;
-        z-index: 10001;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
     }
     
     .close-lightbox:hover {
-        color: var(--color-primary);
+        background: rgba(255,255,255,0.2);
+        transform: rotate(90deg);
     }
 
     .nav-btn {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
-        background: transparent;
+        background: rgba(0,0,0,0.3);
         color: white;
         border: none;
-        font-size: 3rem;
         cursor: pointer;
         padding: 1rem;
-        z-index: 10001;
-        opacity: 0.5;
-        transition: opacity 0.2s;
+        z-index: 10;
+        border-radius: 12px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
-    .nav-btn:hover { opacity: 1; }
-    .prev { left: 20px; }
-    .next { right: 20px; }
+    .nav-btn:hover { 
+        background: rgba(255,255,255,0.1);
+        transform: translateY(-50%) scale(1.1);
+    }
+    
+    .prev { left: 2rem; }
+    .next { right: 2rem; }
+    
+    #no-results {
+        text-align: center;
+        padding: 4rem;
+        font-size: 1.5rem;
+        color: var(--color-text-muted);
+    }
+    .hidden { display: none !important; }
 </style>
+
