@@ -107,6 +107,8 @@ import './player/SharedPlayerStyles.css';
             playerMeta: { title: string, image: string, author: string } | null;
             playerSlug: string | null;
             visualizerInterval: number;
+            YT: any;
+            onYouTubeIframeAPIReady: () => void;
         }
     }
 
@@ -142,6 +144,43 @@ import './player/SharedPlayerStyles.css';
             }
         } catch (e) {
             console.log("Ambient color check failed", e);
+        }
+    };
+
+    // ---- SHARED SYNC FUNCTIONS ----
+
+    const syncListeningTime = async (seconds: number) => {
+        if (seconds <= 0.1) return; // Ignore neg or tiny
+        try {
+            // Fire and forget, don't await blocking UI
+            fetch('/api/user/stats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ increment: seconds })
+            });
+        } catch(e) {
+            console.error("Stats sync error", e);
+        }
+    };
+
+    // SYNC PLAYBACK HISTORY
+    const syncPlaybackHistory = async (slug: string, currentTime: number, duration: number, completed: boolean = false) => {
+        if(!slug) return;
+        
+        try {
+            fetch('/api/history/update', {
+                method: 'POST',
+                credentials: 'include', // Ensure cookies are sent (localhost/cors safety)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    episodeSlug: slug,
+                    progress: currentTime,
+                    duration: isFinite(duration) ? duration : 0,
+                    completed
+                })
+            });
+        } catch(e) {
+            console.error("History sync error", e);
         }
     };
 
@@ -295,40 +334,8 @@ import './player/SharedPlayerStyles.css';
              let sessionAccumulator = 0;
              const SESSION_SYNC_THRESHOLD = 10; 
 
-             const syncListeningTime = async (seconds: number) => {
-                 if (seconds <= 0.1) return; // Ignore neg or tiny
-                 try {
-                     // Fire and forget, don't await blocking UI
-                     fetch('/api/user/stats', {
-                         method: 'POST',
-                         headers: { 'Content-Type': 'application/json' },
-                         body: JSON.stringify({ increment: seconds })
-                     });
-                 } catch(e) {
-                     console.error("Stats sync error", e);
-                 }
-             };
+// Moved to top level
 
-              // SYNC PLAYBACK HISTORY
-              const syncPlaybackHistory = async (slug: string, currentTime: number, duration: number, completed: boolean = false) => {
-                   if(!slug) return;
-                   
-                   try {
-                       fetch('/api/history/update', {
-                           method: 'POST',
-                           credentials: 'include', // Ensure cookies are sent (localhost/cors safety)
-                           headers: { 'Content-Type': 'application/json' },
-                           body: JSON.stringify({ 
-                               episodeSlug: slug,
-                               progress: currentTime,
-                               duration: isFinite(duration) ? duration : 0,
-                               completed
-                           })
-                       });
-                   } catch(e) {
-                       console.error("History sync error", e);
-                   }
-              };
 
               const updateSeek = () => {
                    const current = audioElement.currentTime;
@@ -742,24 +749,272 @@ import './player/SharedPlayerStyles.css';
                     const renderVideoMode = () => {
                         container.innerHTML = '';
                         
-                        // Video Iframe
-                        const iframe = document.createElement('iframe');
-                        iframe.style.borderRadius = '12px';
-                        iframe.src = videoUrl || '';
-                        iframe.width = "100%";
-                        iframe.height = "352";
-                        iframe.frameBorder = "0";
-                        iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
-                        iframe.loading = "lazy";
-                        iframe.style.display = 'block'; // Prevent inline-block spacing
-                        
-                        container.appendChild(iframe);
+                        const isYouTube = videoUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'));
+
+                        if (isYouTube) {
+                             // --- YOUTUBE PLAYER WITH CUSTOM SKIN ---
+                             const wrapper = document.createElement('div');
+                             wrapper.style.position = 'relative';
+                             wrapper.style.width = '100%';
+                             wrapper.style.height = '352px';
+                             wrapper.style.borderRadius = '12px';
+                             wrapper.style.overflow = 'hidden';
+                             wrapper.style.background = '#000';
+                             // Show controls on hover
+                             wrapper.addEventListener('mouseenter', () => {
+                                 const c = wrapper.querySelector('.yt-custom-controls') as HTMLElement;
+                                 if(c) c.style.opacity = '1';
+                             });
+                             wrapper.addEventListener('mouseleave', () => {
+                                 const c = wrapper.querySelector('.yt-custom-controls') as HTMLElement;
+                                 if(c) c.style.opacity = '0';
+                             });
+                             container.appendChild(wrapper);
+
+                             const ytDiv = document.createElement('div');
+                             ytDiv.id = 'yt-player-container';
+                             wrapper.appendChild(ytDiv);
+
+                             // Custom Controls UI
+                             const controlsOverlay = document.createElement('div');
+                             controlsOverlay.className = 'yt-custom-controls';
+                             controlsOverlay.style.cssText = `
+                                position: absolute;
+                                bottom: 0; left: 0; right: 0;
+                                padding: 16px 20px;
+                                background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+                                display: flex;
+                                align-items: center;
+                                gap: 12px;
+                                opacity: 0;
+                                transition: opacity 0.3s ease;
+                                pointer-events: auto;
+                             `;
+                             
+                             // Inner HTML for controls
+                             controlsOverlay.innerHTML = `
+                                <button id="yt-play-btn" style="background:none; border:none; color:white; cursor:pointer; padding:0; display:flex; align-items:center;">
+                                    <svg id="yt-icon-play" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                                    <svg id="yt-icon-pause" class="hidden" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                                </button>
+                                
+                                <span id="yt-time-current" style="font-size:12px; font-variant-numeric:tabular-nums; color:#ddd; min-width:35px;">0:00</span>
+                                
+                                <div style="flex:1; display:flex; align-items:center; position:relative; height:16px; cursor:pointer;" id="yt-seek-track">
+                                    <div style="position:absolute; top:7px; left:0; right:0; height:4px; background:rgba(255,255,255,0.3); border-radius:2px;"></div>
+                                    <div id="yt-seek-fill" style="position:absolute; top:7px; left:0; width:0%; height:4px; background:var(--color-primary, #8b5cf6); border-radius:2px;"></div>
+                                    <input type="range" id="yt-seek-input" min="0" max="100" step="0.1" value="0" style="
+                                        position:absolute; width:100%; height:100%; opacity:0; cursor:pointer; margin:0;
+                                    " />
+                                </div>
+                                
+                                <span id="yt-time-total" style="font-size:12px; font-variant-numeric:tabular-nums; color:#ddd; min-width:35px;">0:00</span>
+                             `;
+                             
+                             wrapper.appendChild(controlsOverlay);
+
+                             // Extract Video ID
+                             let videoId = '';
+                             try {
+                                 const vUrl = new URL(videoUrl!);
+                                 if(vUrl.hostname.includes('youtu.be')) {
+                                     videoId = vUrl.pathname.slice(1);
+                                 } else if (vUrl.pathname.includes('/embed/')) {
+                                     videoId = vUrl.pathname.split('/embed/')[1].split('?')[0];
+                                 } else {
+                                     const params = new URLSearchParams(vUrl.search);
+                                     videoId = params.get('v') || '';
+                                 }
+                             } catch(e) { console.error("Error parsing YT URL", e); }
+
+                             if (!videoId) {
+                                 container.innerHTML = '<div style="color:white; padding:20px;">Error: Invalid YouTube URL</div>';
+                                 return;
+                             }
+                             
+                             let ytPlayer: any = null;
+                             let isDragging = false;
+                             let ytTimer: NodeJS.Timeout | null = null;
+                             let ytAccumulator = 0;
+                             let ytLastTime = 0;
+
+                             // Elements
+                             const btnPlay = controlsOverlay.querySelector('#yt-play-btn') as HTMLElement;
+                             const iconPlay = controlsOverlay.querySelector('#yt-icon-play') as HTMLElement;
+                             const iconPause = controlsOverlay.querySelector('#yt-icon-pause') as HTMLElement;
+                             const seekInput = controlsOverlay.querySelector('#yt-seek-input') as HTMLInputElement;
+                             const seekFill = controlsOverlay.querySelector('#yt-seek-fill') as HTMLElement;
+                             const timeCurr = controlsOverlay.querySelector('#yt-time-current') as HTMLElement;
+                             const timeTotal = controlsOverlay.querySelector('#yt-time-total') as HTMLElement;
+                             
+                             const formatTime = (s: number) => {
+                                 const m = Math.floor(s / 60);
+                                 const sec = Math.floor(s % 60);
+                                 return `${m}:${sec < 10 ? '0'+sec : sec}`;
+                             };
+
+                             // Helper to init player
+                             const initYT = () => {
+                                 const startStr = placeholder.getAttribute('data-start-time');
+                                 const startTime = startStr ? Math.floor(parseFloat(startStr)) : 0;
+
+                                 // @ts-ignore
+                                 ytPlayer = new window.YT.Player('yt-player-container', {
+                                     height: '352',
+                                     width: '100%',
+                                     videoId: videoId,
+                                     playerVars: {
+                                         'playsinline': 1,
+                                         'autoplay': 0, 
+                                         'controls': 0, // HIDE NATIVE CONTROLS
+                                         'modestbranding': 1,
+                                         'rel': 0,
+                                         'showinfo': 0,
+                                         'iv_load_policy': 3,
+                                         'disablekb': 1,
+                                         'fs': 0,
+                                         'start': startTime
+                                     },
+                                     events: {
+                                         'onReady': (event: any) => {
+                                             if(timeTotal) timeTotal.textContent = formatTime(event.target.getDuration());
+                                             if(seekInput) seekInput.max = event.target.getDuration().toString();
+                                         },
+                                         'onStateChange': (event: any) => {
+                                             onYTStateChange(event.target);
+                                         }
+                                     }
+                                 });
+                             };
+                             
+                             // Controls Logic
+                             btnPlay.onclick = () => {
+                                 if(!ytPlayer || typeof ytPlayer.getPlayerState !== 'function') return;
+                                 const state = ytPlayer.getPlayerState();
+                                 if(state === 1) ytPlayer.pauseVideo();
+                                 else ytPlayer.playVideo();
+                             };
+                             
+                             seekInput.oninput = () => {
+                                 isDragging = true;
+                                 const val = parseFloat(seekInput.value);
+                                 if(seekFill && ytPlayer) {
+                                     const d = ytPlayer.getDuration();
+                                     if(d > 0) seekFill.style.width = `${(val/d)*100}%`;
+                                 }
+                                 if(timeCurr) timeCurr.textContent = formatTime(val);
+                             };
+                             
+                             seekInput.onchange = () => {
+                                 if(ytPlayer) ytPlayer.seekTo(parseFloat(seekInput.value), true);
+                                 isDragging = false;
+                             };
+
+                             const updateUI = (curr: number, duration: number) => {
+                                 if(!isDragging) {
+                                     seekInput.value = curr.toString();
+                                     if(seekFill && duration > 0) seekFill.style.width = `${(curr/duration)*100}%`;
+                                     if(timeCurr) timeCurr.textContent = formatTime(curr);
+                                 }
+                                 if(timeTotal && duration > 0) timeTotal.textContent = formatTime(duration);
+                                 seekInput.max = duration.toString();
+                             };
+
+                             const onYTStateChange = (player: any) => {
+                                 const state = player.getPlayerState();
+                                 // 1 = PLAYING
+                                 if (state === 1) {
+                                     iconPlay.classList.add('hidden');
+                                     iconPause.classList.remove('hidden');
+                                     controlsOverlay.style.opacity = '1'; // Show UI briefly on play
+                                     setTimeout(() => { 
+                                         if(!wrapper.matches(':hover')) controlsOverlay.style.opacity = '0';
+                                     }, 2000);
+
+                                     ytLastTime = player.getCurrentTime();
+                                     
+                                     if (ytTimer) clearInterval(ytTimer);
+                                     ytTimer = setInterval(() => {
+                                         const curr = player.getCurrentTime();
+                                         const dur = player.getDuration();
+                                         updateUI(curr, dur);
+
+                                         const delta = curr - ytLastTime;
+                                         if (delta > 0 && delta < 5) {
+                                             ytAccumulator += delta;
+                                             if (ytAccumulator >= 10) {
+                                                 syncListeningTime(ytAccumulator);
+                                                 if (window.playerSlug) syncPlaybackHistory(window.playerSlug, curr, dur);
+                                                 ytAccumulator = 0;
+                                             }
+                                         }
+                                         ytLastTime = curr;
+                                     }, 500); // 500ms for smoother UI
+                                 } else {
+                                     // Paused or Ended
+                                     iconPlay.classList.remove('hidden');
+                                     iconPause.classList.add('hidden');
+                                     controlsOverlay.style.opacity = '1'; // Show UI when paused
+                                     
+                                     if (ytTimer) {
+                                         clearInterval(ytTimer);
+                                         ytTimer = null;
+                                     }
+                                     if (ytAccumulator > 0.5) {
+                                         syncListeningTime(ytAccumulator);
+                                         ytAccumulator = 0;
+                                     }
+                                     if (window.playerSlug && (state === 2 || state === 0)) {
+                                         syncPlaybackHistory(
+                                             window.playerSlug, 
+                                             player.getCurrentTime(), 
+                                             player.getDuration(), 
+                                             state === 0
+                                         );
+                                     }
+                                 }
+                             };
+
+                             
+                             // Load API if needed
+                             if (!window.YT) {
+                                 const tag = document.createElement('script');
+                                 tag.src = "https://www.youtube.com/iframe_api";
+                                 const firstScriptTag = document.getElementsByTagName('script')[0];
+                                 firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+                                 
+                                 window.onYouTubeIframeAPIReady = () => {
+                                     initYT();
+                                 };
+                             } else {
+                                 initYT();
+                             }
+
+                        } else {
+                             // EXISTING IFRAME LOGIC (Generic/Spotify)
+                            const iframe = document.createElement('iframe');
+                            iframe.style.borderRadius = '12px';
+                            iframe.src = videoUrl || '';
+                            iframe.width = "100%";
+                            iframe.height = "352";
+                            iframe.frameBorder = "0";
+                            iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
+                            iframe.loading = "lazy";
+                            iframe.style.display = 'block'; // Prevent inline-block spacing
+                            
+                            container.appendChild(iframe);
+                        }
+
                         
                         // Overlay "Headphones" Button to switch back
                         const switchBtn = document.createElement('button');
                         switchBtn.className = 'media-toggle-overlay';
                         switchBtn.title = "Escuchar Audio";
                         switchBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>`;
+                        // Ensure it's absolutely positioned on top of the wrapper if wrapper exists
+                        if (isYouTube) {
+                            switchBtn.style.zIndex = '10'; // Above video controls
+                        }
                         
                         switchBtn.onclick = () => renderAudioMode();
                         container.appendChild(switchBtn);

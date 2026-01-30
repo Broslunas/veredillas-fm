@@ -8,7 +8,7 @@ season: 1
 episode: 8
 image: "https://cdn.veredillasfm.es/img/008-v2.webp"
 audioUrl: "https://d3ctxlq1ktw2nl.cloudfront.net/staging/2026-0-29/417069938-44100-2-bdb88e185d608.mp3"
-videoUrl: "https://open.spotify.com/embed/episode/7jEfqs4AshZZ9rTC5opfxp/video"
+videoUrl: "https://www.youtube.com/embed/02fWDRgSuNw?si=qZbH5kri82fj6aVs"
 tags: ["Experiencias", "Vida Diaria", "Charla", "Anécdotas"]
 participants: ["Carlos", "Gustavo"]
 sections:
