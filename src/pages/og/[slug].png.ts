@@ -46,8 +46,8 @@ const loadImage = async (imagePath: string): Promise<ArrayBuffer | null> => {
             buffer = await readFile(fullPath);
         }
 
-        // Convert key format to Buffer if needed (node:fs return Buffer, fetch returns ArrayBuffer)
-        const inputBuffer = Buffer.from(buffer);
+        // Convert to Buffer if needed (node:fs returns Buffer, fetch returns ArrayBuffer)
+        const inputBuffer = Buffer.isBuffer(buffer) ? buffer : Buffer.from(new Uint8Array(buffer as ArrayBuffer));
 
         // Convert to PNG using sharp to ensure compatibility (handles WebP, etc.)
         const pngBuffer = await sharp(inputBuffer)
@@ -244,7 +244,7 @@ export const GET: APIRoute = async ({ props }) => {
     const pngData = resvg.render();
     const pngBuffer = pngData.asPng();
 
-    return new Response(pngBuffer, {
+    return new Response(new Uint8Array(pngBuffer), {
         headers: {
             'Content-Type': 'image/png',
             'Cache-Control': 'public, max-age=31536000, immutable',

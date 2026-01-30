@@ -193,7 +193,7 @@ function formatTime(seconds: number): string {
         const closeBtn = document.getElementById('close-modal-btn');
 
         if (modal) {
-            const openModal = (e) => {
+            const openModal = (e: Event) => {
                 e.preventDefault();
                 modal.classList.add('open');
                 document.body.style.overflow = 'hidden';
