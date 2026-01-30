@@ -1,6 +1,14 @@
 ---
-import { getEntry } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
 import '../../styles/global.css';
+
+// Required for dynamic routes in static builds
+export async function getStaticPaths() {
+  const episodes = await getCollection('episodios');
+  return episodes.map((episode) => ({
+    params: { slug: episode.slug },
+  }));
+}
 
 const { slug } = Astro.params;
 
