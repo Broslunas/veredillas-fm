@@ -1,0 +1,319 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const faqs = [
+    {
+        category: "🚀 Sobre Veredillas FM",
+        icon: "🎙️",
+        items: [
+            { question: "¿Qué es exactamente Veredillas FM?", answer: "Veredillas FM es la plataforma de radio oficial del IES Veredillas (Torrejón de Ardoz). Es un proyecto educativo transversal donde los estudiantes de 2º de Bachillerato crean, producen y gestionan todo el contenido, desde podcasts hasta artículos de blog y entrevistas." },
+            { question: "¿Quién está detrás del proyecto?", answer: "El equipo está formado principalmente por alumnos de la asignatura de Proyecto, pero cuenta con la colaboración de profesores y estudiantes de otros cursos. Es una iniciativa 100% escolar con calidad profesional." },
+            { question: "¿Cuál es vuestro objetivo?", answer: "Queremos dar voz a la comunidad educativa, fomentar la creatividad y el pensamiento crítico, y ofrecer una experiencia real de trabajo en medios de comunicación digitales." },
+            { question: "¿Con qué frecuencia publicáis?", answer: "Publicamos nuevos episodios de podcast semanalmente (normalmente los viernes), y artículos en el blog varias veces a la semana, dependiendo de la actualidad del centro." }
+        ]
+    },
+    {
+        category: "🎧 Cómo Escucharnos",
+        icon: "📱",
+        items: [
+            { question: "¿Dónde puedo escuchar los episodios?", answer: "Tienes muchas opciones: directamente en esta web con nuestro reproductor integrado, en Spotify, Amazon Music, Apple Podcasts, o instalando nuestra App (PWA) en tu móvil." },
+            { question: "¿Necesito una cuenta para escuchar?", answer: "¡No! Todo nuestro contenido es público y abierto. No necesitas registrarte ni iniciar sesión para escuchar los podcasts o leer el blog." },
+            { question: "¿Cómo instalo la App en mi móvil?", answer: "Es muy fácil y no ocupa espacio. En Android (Chrome): Abre el menú y selecciona 'Instalar aplicación'. En iOS (Safari): Pulsa el botón 'Compartir' y elige 'Añadir a pantalla de inicio'." },
+            { question: "¿Puedo descargarlos para escuchar offline?", answer: "Sí, si utilizas plataformas como Spotify o Apple Podcasts y tienes una cuenta que lo permita, puedes descargarlos. Desde la web consumen datos en streaming." },
+            { question: "¿Tenéis programas en directo?", answer: "¡Sí! Ocasionalmente realizamos emisiones en directo durante eventos escolares especiales. Aparecerá un aviso de 'EN VIVO' en la cabecera de la web cuando estemos emitiendo." }
+        ]
+    },
+    {
+        category: "🤝 Participación y Comunidad",
+        icon: "👥",
+        items: [
+            { question: "¿Puedo participar en un podcast?", answer: "¡Nos encantaría! Si eres alumno, profesor o formas parte del personal del IES Veredillas, puedes solicitar una entrevista o proponer un tema en la sección de 'Participar'." },
+            { question: "¿Aceptáis propuestas de temas?", answer: "Absolutamente. Queremos hablar de lo que te interesa. Escríbenos a través del formulario de contacto o por Instagram con tus sugerencias." },
+            { question: "¿Puedo unirme al equipo organizador?", answer: "El equipo principal se renueva cada curso escolar con los alumnos de la asignatura. Sin embargo, siempre buscamos colaboradores para secciones específicas. Habla con los profesores responsables si estás interesado." },
+            { question: "¿Hacéis entrevistas a gente de fuera?", answer: "Sí, invitamos regularmente a antiguos alumnos, expertos y personalidades locales que tengan historias interesantes que aportar a nuestra comunidad." }
+        ]
+    },
+    {
+        category: "🛠️ Soporte Técnico",
+        icon: "⚙️",
+        items: [
+            { question: "¿La web va lenta o no carga?", answer: "Nuestra web utiliza tecnología moderna (Astro) para ser ultra-rápida. Si tienes problemas, prueba a borrar la caché de tu navegador o comprueba tu conexión a internet. Si el problema persiste, infórmanos en la sección de Contacto." },
+            { question: "¿El reproductor se corta?", answer: "Asegúrate de tener una conexión estable. El reproductor de la web stream de Spotify, por lo que a veces puede depender de su servicio. Prueba a recargar la página." },
+            { question: "¿Es compatible con todos los navegadores?", answer: "Sí, Veredillas FM funciona perfectamente en Chrome, Firefox, Safari, Edge y la mayoría de navegadores móviles modernos." },
+            { question: "¿Usáis Cookies?", answer: "Solo las esenciales para el funcionamiento técnico y analíticas anónimas para saber qué contenidos gustan más. Puedes revisar nuestra política de cookies en el pie de página." }
+        ]
+    },
+    {
+        category: "🔒 Privacidad y Legal",
+        icon: "⚖️",
+        items: [
+            { question: "¿Qué hacéis con mis datos?", answer: "Si nos contactas o solicitas una entrevista, tus datos se usan exclusivamente para responderte. No compartimos tu información con terceros ni te enviaremos spam." },
+            { question: "¿Puedo usar vuestro contenido?", answer: "Nuestro contenido tiene derechos de autor, pero nos encanta que lo compartas. Puedes difundir los episodios y artículos siempre que nos cites como fuente. Para usos comerciales o reedición, contáctanos primero." }
+        ]
+    }
+];
+---
+
+<Layout 
+  title="Preguntas Frecuentes | Veredillas FM" 
+  description="Resolvemos todas tus dudas sobre Veredillas FM, el proyecto, cómo escuchar y cómo participar."
+>
+    <div class="faq-page container">
+        <header class="page-header gs-fade-up">
+            <span class="badge">Centro de Ayuda</span>
+            <h1>Preguntas Frecuentes</h1>
+            <p class="subtitle">Todo lo que necesitas saber sobre el proyecto radiofónico del IES Veredillas.</p>
+        </header>
+
+        <div class="faq-content">
+            {faqs.map((section, sIndex) => (
+                <div class="faq-section gs-fade-up" style={`--delay: ${sIndex * 0.1}s`}>
+                    <div class="section-header">
+                        <span class="section-icon">{section.icon}</span>
+                        <h2 class="section-title">{section.category}</h2>
+                    </div>
+                    <div class="accordion-group">
+                        {section.items.map((item, iIndex) => (
+                            <details class="accordion-item glass-panel">
+                                <summary>
+                                    <span class="accordion-question">{item.question}</span>
+                                    <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                                </summary>
+                                <div class="accordion-answer">
+                                    <p>{item.answer}</p>
+                                </div>
+                            </details>
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+        
+        <div class="support-check glass-panel gs-fade-up">
+            <h3>¿Sigues con dudas?</h3>
+            <p>Estamos aquí para ayudarte en lo que necesites, ya sea una propuesta, un problema técnico o simplemente para saludar.</p>
+            <div class="support-actions">
+                <a href="/contacto" class="btn btn-primary">Formulario de Contacto</a>
+                <a href="mailto:contacto@veredillasfm.es" class="btn btn-outline">Enviar Email</a>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { gsap } from "gsap";
+
+    document.addEventListener('astro:page-load', () => {
+        gsap.from(".gs-fade-up", {
+            y: 30,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: "power2.out"
+        });
+
+        // Close other details when opening one (Exclusive accordion)
+        const details = document.querySelectorAll("details");
+        details.forEach((targetDetail) => {
+            targetDetail.addEventListener("click", () => {
+                details.forEach((detail) => {
+                    if (detail !== targetDetail) {
+                        detail.removeAttribute("open");
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+<style>
+    .faq-page {
+        padding-bottom: 6rem;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 4rem;
+        padding-top: 2rem;
+    }
+
+    .badge {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        display: inline-block;
+    }
+
+    h1 {
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+        color: var(--color-text-muted);
+        font-size: 1.2rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .faq-content {
+        max-width: 800px;
+        margin: 0 auto 4rem;
+    }
+
+    .faq-section {
+        margin-bottom: 3.5rem;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-icon {
+        font-size: 1.5rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        color: var(--color-text-main);
+        margin: 0;
+    }
+
+    .accordion-group {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .accordion-item {
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .accordion-item:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .accordion-item[open] {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(139, 92, 246, 0.3);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    summary {
+        list-style: none;
+        padding: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .accordion-question {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--color-text-main);
+        line-height: 1.4;
+    }
+
+    .accordion-icon {
+        color: var(--color-text-muted);
+        transition: transform 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    details[open] .accordion-icon {
+        transform: rotate(180deg);
+        color: var(--color-primary);
+    }
+
+    .accordion-answer {
+        padding: 0 1.5rem 1.5rem 1.5rem;
+        color: var(--color-text-muted);
+        line-height: 1.7;
+        font-size: 1rem;
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Support CTA */
+    .support-check {
+        text-align: center;
+        padding: 3rem 2rem;
+        max-width: 600px;
+        margin: 0 auto;
+        border-radius: var(--radius-lg);
+        background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+    }
+    
+    .support-check h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .support-check p {
+        color: var(--color-text-muted);
+        margin-bottom: 2rem;
+    }
+
+    .support-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-outline {
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.2);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .btn-outline:hover {
+        background: rgba(255,255,255,0.05);
+        border-color: white;
+    }
+
+</style>
+<script>
+    import { gsap } from "gsap";
+
+    document.addEventListener('astro:page-load', () => {
+        gsap.from(".gs-fade-up", {
+            y: 30,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: "power2.out"
+        });
+    });
+</script>
