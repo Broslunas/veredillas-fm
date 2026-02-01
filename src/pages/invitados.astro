@@ -1,0 +1,838 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+// 1. Fetch Data
+const allGuests = await getCollection('guests');
+const allEpisodes = await getCollection('episodios');
+
+// 2. Helper to Parse Duration
+function parseDurationToMinutes(durationStr: string | undefined): number {
+    if (!durationStr) return 0;
+    
+    // Normalize
+    const str = durationStr.toLowerCase().trim();
+    let minutes = 0;
+
+    // "36 min" or "36min"
+    const minMatch = str.match(/(\d+)\s*min/);
+    if (minMatch) {
+        minutes += parseInt(minMatch[1], 10);
+    }
+    // "1 h 20 min" or just "1h"
+    const hourMatch = str.match(/(\d+)\s*h/);
+    if (hourMatch) {
+        minutes += parseInt(hourMatch[1], 10) * 60;
+    }
+    
+    // "MM:SS" (e.g. 45:10)
+    if (str.includes(':')) {
+        const parts = str.split(':').map(p => parseInt(p, 10));
+        if (parts.length === 2) {
+            minutes = parts[0]; // Ignore seconds for simplicity or round up?
+        } else if (parts.length === 3) {
+            minutes = parts[0] * 60 + parts[1];
+        }
+    }
+
+    // Default fallback if logic fails but number exists (e.g. just "45")
+    if (minutes === 0) {
+       const simpleNum = parseInt(str);
+       if (!isNaN(simpleNum)) minutes = simpleNum;
+    }
+
+    return minutes;
+}
+
+// 3. Process Guests with Stats
+const guestsWithStats = allGuests.map(guest => {
+    // Find episodes where guest is a participant
+    const guestEpisodes = allEpisodes.filter(ep => 
+        ep.data.participants?.some(p => 
+            p.toLowerCase().trim() === guest.data.name.toLowerCase().trim() ||
+            p.toLowerCase().trim().includes(guest.data.name.toLowerCase().trim())
+        )
+    );
+
+    const episodeCount = guestEpisodes.length;
+    
+    const totalMinutes = guestEpisodes.reduce((acc, ep) => {
+        return acc + parseDurationToMinutes(ep.data.duration);
+    }, 0);
+
+    // Get last appearance date
+    const sortedEpisodes = guestEpisodes.sort((a,b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+    const lastAppearance = sortedEpisodes.length > 0 ? sortedEpisodes[0].data.pubDate : null;
+
+    // Badges Logic with SVG Icons
+    const badges = [];
+    const roleLower = (guest.data.role || "").toLowerCase();
+    
+    // Icon: Mic
+    if (episodeCount >= 3) badges.push({ 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/><line x1="8" x2="16" y1="22" y2="22"/></svg>`, 
+        label: "Habitual", 
+        class: "badge-regular" 
+    });
+    
+    // Icon: Clock
+    if (totalMinutes > 60) badges.push({ 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`, 
+        label: "+1 Hora", 
+        class: "badge-time" 
+    });
+    
+    // Icon: Graduation Cap
+    if (roleLower.includes('profes') || roleLower.includes('docente')) badges.push({ 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>`, 
+        label: "Profe", 
+        class: "badge-profe" 
+    });
+    
+    // Icon: Flame
+    if (lastAppearance && (new Date().getTime() - lastAppearance.getTime()) < (1000 * 60 * 60 * 24 * 60)) { // ~2 months
+         badges.push({ 
+             icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`, 
+             label: "Activo", 
+             class: "badge-hot" 
+         });
+    }
+
+    return {
+        ...guest,
+        episodes: sortedEpisodes.map(e => ({
+            title: e.data.title,
+            slug: e.slug,
+            date: e.data.pubDate,
+            image: e.data.image
+        })),
+        stats: {
+            episodeCount,
+            totalMinutes,
+            lastAppearance
+        },
+        badges
+    };
+});
+
+// 4. Sort: Most episodes first, then by duration
+guestsWithStats.sort((a, b) => {
+    if (b.stats.episodeCount !== a.stats.episodeCount) {
+        return b.stats.episodeCount - a.stats.episodeCount;
+    }
+    return b.stats.totalMinutes - a.stats.totalMinutes;
+});
+
+
+// Format utility
+function formatTime(minutes: number) {
+    if (minutes < 60) return `${minutes} min`;
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return `${h}h ${m}m`;
+}
+
+// Date formatter
+const dateFormatter = new Intl.DateTimeFormat('es-ES', { month: 'short', year: 'numeric' });
+---
+
+<Layout 
+  title="Invitados"
+  description="Hall of Fame de Veredillas FM. Descubre quiénes son los que más han aportado a nuestros micrófonos."
+  image="/logo.png"
+>
+    <!-- Background Decor -->
+    <div class="page-bg"></div>
+
+    <div class="container page-wrapper">
+        <header class="page-header gs-reveal">
+            <span class="badge">Hall of Fame</span>
+            <h1>Voces que <br><span class="text-gradient">Dejan Huella</span></h1>
+            
+            <!-- Search Widget -->
+            <div class="search-container">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" id="guest-search" placeholder="Buscar invitado..." class="search-input" />
+            </div>
+        </header>
+
+        <div class="team-grid gs-reveal" id="guests-grid">
+            {guestsWithStats.map((guest, index) => (
+                <div 
+                    class="member-card" 
+                    data-name={guest.data.name.toLowerCase()}
+                    data-role={guest.data.role?.toLowerCase()}
+                    id={`guest-${index}`}
+                >
+                    <div class="card-inner glass-panel">
+                        
+                        <!-- Rank Badge -->
+                        {index < 3 && guest.stats.episodeCount > 0 && (
+                            <div class={`rank-badge rank-${index + 1}`} title={`Top #${index+1}`}>
+                                <span>#{index + 1}</span>
+                            </div>
+                        )}
+
+                        <div class="image-box">
+                            <img 
+                                src={guest.data.image || '/logo.png'} 
+                                alt={guest.data.name} 
+                                loading={index < 3 ? "eager" : "lazy"} 
+                            />
+                            {/* Overlay Stats */}
+                            <div class="ep-count-badge">
+                                <span class="count">{guest.stats.episodeCount}</span>
+                                <span class="label">Eps</span>
+                            </div>
+                        </div>
+
+                        <div class="info-box">
+                            <div class="badges-row">
+                                {guest.badges.map(b => (
+                                    <div class={`mini-badge ${b.class}`} data-tooltip={b.label} set:html={b.icon}></div>
+                                ))}
+                            </div>
+                            <h3>{guest.data.name}</h3>
+                            <span class="role">{guest.data.role}</span>
+                        </div>
+
+                        {/* Stats Grid */}
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-value">{formatTime(guest.stats.totalMinutes)}</span>
+                                <span class="stat-label">En Aire</span>
+                            </div>
+                            <div class="stat-divider"></div>
+                             <div class="stat-item">
+                                <span class="stat-value">
+                                    {guest.stats.lastAppearance 
+                                        ? dateFormatter.format(guest.stats.lastAppearance) 
+                                        : '-'}
+                                </span>
+                                <span class="stat-label">Último</span>
+                            </div>
+                        </div>
+
+                        {/* Episodes Dropdown Toggle */}
+                        {guest.episodes.length > 0 && (
+                            <button class="toggle-episodes-btn" aria-label="Ver episodios">
+                                <span>Ver participaciones</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron"><path d="m6 9 6 6 6-6"/></svg>
+                            </button>
+                        )}
+                        
+                        {/* Hidden Episodes List */}
+                        <div class="episodes-list hidden">
+                            {guest.episodes.map(ep => (
+                                <a href={`/ep/${ep.slug}`} class="episode-mini-link">
+                                    <div class="ep-mini-poster">
+                                        {ep.image && <img src={ep.image} alt="" />}
+                                    </div>
+                                    <div class="ep-mini-info">
+                                        <span class="ep-mini-title">{ep.title}</span>
+                                        <span class="ep-mini-date">{dateFormatter.format(ep.date)}</span>
+                                    </div>
+                                </a>
+                            ))}
+                        </div>
+
+                        {guest.data.social && (
+                            <div class="social-links">
+                                {guest.data.social.twitter && (
+                                    <a href={guest.data.social.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
+                                    </a>
+                                )}
+                                {guest.data.social.instagram && (
+                                    <a href={guest.data.social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                                    </a>
+                                )}
+                                {guest.data.social.website && (
+                                    <a href={guest.data.social.website} target="_blank" rel="noopener noreferrer" aria-label="Website">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                                    </a>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            ))}
+        </div>
+    </div>
+
+    <!-- Script that uses a more robust loading strategy -->
+    <script>
+        import { gsap } from "gsap";
+        
+        // Define the initialization function
+        function initInvitedPage() {
+            // Animación de entrada
+            gsap.from(".gs-reveal", {
+                y: 30,
+                opacity: 0,
+                duration: 0.8,
+                stagger: 0.1,
+                ease: "power2.out",
+                clearProps: "all" // Avoid conflicts after animation
+            });
+
+            // Lógica de búsqueda
+            const searchInput = document.getElementById('guest-search');
+            // Re-query cards to ensure we find them
+            const guestCards = document.querySelectorAll('.member-card');
+
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const term = (e.target as HTMLInputElement).value.toLowerCase();
+                    
+                    guestCards.forEach(card => {
+                        const name = (card as HTMLElement).dataset.name || '';
+                        const role = (card as HTMLElement).dataset.role || '';
+                        
+                        if (name.includes(term) || role.includes(term)) {
+                            (card as HTMLElement).style.display = 'block';
+                            // Re-animate appearance if needed, but simple block/none is faster/better UX for search
+                        } else {
+                            (card as HTMLElement).style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // Lógica de Toggle Episodios (Delegate approach is safer if DOM changes, but static here)
+            const toggleBtns = document.querySelectorAll('.toggle-episodes-btn');
+            
+            toggleBtns.forEach(btn => {
+                // Clone to remove previous listeners if re-run
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode?.replaceChild(newBtn, btn);
+                
+                newBtn.addEventListener('click', (e) => {
+                    const button = e.currentTarget as HTMLElement;
+                    const cardInner = button.closest('.card-inner');
+                    const list = cardInner?.querySelector('.episodes-list');
+                    const chevron = button.querySelector('.chevron');
+                    
+                    if (list && list.classList.contains('hidden')) {
+                        // Open
+                        list.classList.remove('hidden');
+                        button.classList.add('active');
+                        gsap.fromTo(list, { height: 0, opacity: 0 }, { height: 'auto', opacity: 1, duration: 0.3 });
+                        gsap.to(chevron, { rotation: 180, duration: 0.3 });
+                    } else if (list && !list.classList.contains('hidden')) {
+                        // Close
+                        gsap.to(list, { height: 0, opacity: 0, duration: 0.3, onComplete: () => list.classList.add('hidden') });
+                        button.classList.remove('active');
+                        gsap.to(chevron, { rotation: 0, duration: 0.3 });
+                    }
+                });
+            });
+        }
+
+        // Run immediately if DOM is ready, otherwise wait.
+        // Also support Astro Page Load for view transitions.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initInvitedPage);
+        } else {
+            initInvitedPage();
+        }
+        
+        document.addEventListener('astro:page-load', initInvitedPage);
+    </script>
+</Layout>
+
+<style>
+    .page-bg {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100vh;
+        background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.08), transparent 60%);
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    .page-wrapper {
+        padding: 6rem var(--spacing-md);
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        text-align: center;
+        max-width: 700px;
+        margin: 0 auto 5rem;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        background: rgba(139, 92, 246, 0.1);
+        color: var(--color-primary);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+
+    h1 {
+        font-size: clamp(3rem, 6vw, 4.5rem);
+        line-height: 1;
+        margin-bottom: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    /* SEARCH INPUT */
+    .search-container {
+        position: relative;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .search-input {
+        width: 100%;
+        background: rgba(10, 10, 11, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.8rem 1rem 0.8rem 2.8rem;
+        border-radius: 12px;
+        color: var(--color-text-main);
+        font-size: 1rem;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+        outline: none;
+        background: rgba(10, 10, 11, 0.8);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--color-text-muted);
+        pointer-events: none;
+    }
+
+    /* Grid Layout */
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+        margin-bottom: 6rem;
+    }
+
+    .member-card {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        perspective: 1000px;
+    }
+
+    .card-inner {
+        position: relative;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 24px;
+        padding: 2rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        transition: all 0.3s ease;
+        height: auto;
+        overflow: hidden; 
+    }
+
+    .member-card:hover .card-inner {
+        background: rgba(255,255,255,0.06);
+        border-color: rgba(255,255,255,0.15);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    }
+
+    /* Rank Badge */
+    .rank-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        z-index: 10;
+        color: #000;
+        cursor: help;
+    }
+
+    .rank-1 { background: linear-gradient(135deg, #FFD700, #FDB931); border: 2px solid #FFF8D5; }
+    .rank-2 { background: linear-gradient(135deg, #E0E0E0, #BDBDBD); border: 2px solid #F5F5F5; }
+    .rank-3 { background: linear-gradient(135deg, #CD7F32, #A0522D); border: 2px solid #E6C2AA; }
+
+    .image-box {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        position: relative;
+        margin-bottom: 1rem;
+        margin-top: 1rem;
+    }
+
+    .image-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 4px solid rgba(255,255,255,0.1);
+        transition: border-color 0.3s;
+    }
+
+    .member-card:hover .image-box img {
+        border-color: var(--color-primary);
+    }
+    
+    .ep-count-badge {
+        position: absolute;
+        bottom: -5px;
+        right: -10px;
+        background: var(--color-bg);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 4px 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        line-height: 1;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    
+    .ep-count-badge .count {
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: var(--color-primary);
+    }
+    
+    .ep-count-badge .label {
+        font-size: 0.55rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.7;
+    }
+
+    /* Mini Badges */
+    .badges-row {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 0.75rem;
+        min-height: 24px;
+    }
+
+    .mini-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: var(--color-text-muted);
+        transition: all 0.2s;
+        cursor: help;
+        position: relative;
+    }
+    
+    .mini-badge:hover { 
+        transform: translateY(-3px); 
+        background: rgba(255,255,255,0.1);
+        color: var(--color-primary);
+        border-color: var(--color-primary);
+    }
+
+    /* CUSTOM TOOLTIP */
+    .mini-badge::before {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-5px);
+        padding: 4px 8px;
+        background: rgba(10, 10, 11, 0.95);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 500;
+        white-space: nowrap;
+        border-radius: 6px;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: all 0.2s ease;
+        z-index: 100;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .mini-badge::after {
+        content: '';
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-1px);
+        border-width: 4px;
+        border-style: solid;
+        border-color: rgba(10, 10, 11, 0.95) transparent transparent transparent;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s ease;
+        z-index: 100;
+    }
+
+    .mini-badge:hover::before,
+    .mini-badge:hover::after {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(-8px); /* Move up slightly */
+    }
+    .mini-badge:hover::after {
+        transform: translateX(-50%) translateY(-4px);
+    }
+    
+    .badge-regular { color: #60a5fa; border-color: rgba(96, 165, 250, 0.3); } /* Blue */
+    .badge-time { color: #f59e0b; border-color: rgba(245, 158, 11, 0.3); } /* Amber */
+    .badge-profe { color: #10b981; border-color: rgba(16, 185, 129, 0.3); } /* Green */
+    .badge-hot { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); } /* Red */
+    
+    .mini-badge svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .info-box h3 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: var(--color-text-main);
+    }
+
+    .info-box .role {
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+        display: block;
+        margin-bottom: 1.25rem;
+        font-weight: 500;
+        min-height: 2.5em;
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        background: rgba(0,0,0,0.2);
+        padding: 0.75rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        gap: 1rem;
+    }
+    
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 50%;
+    }
+    
+    .stat-divider {
+        width: 1px;
+        height: 20px;
+        background: rgba(255,255,255,0.1);
+    }
+    
+    .stat-value {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--color-text-main);
+    }
+    
+    .stat-label {
+        font-size: 0.7rem;
+        color: var(--color-text-muted);
+    }
+
+    /* EPISODE LIST TOGGLE */
+    .toggle-episodes-btn {
+        background: transparent;
+        border: none;
+        color: var(--color-primary);
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center; /* Center content */
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+        transition: all 0.2s;
+        padding: 0.5rem;
+        border-radius: 8px;
+        width: 100%; /* Full width click area */
+    }
+
+    .toggle-episodes-btn:hover {
+        opacity: 1;
+        background: rgba(139, 92, 246, 0.1);
+    }
+    
+    .episodes-list {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .episodes-list.hidden {
+        display: none;
+    }
+    
+    .episode-mini-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(255,255,255,0.03);
+        padding: 0.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: background 0.2s;
+        text-align: left;
+    }
+    
+    .episode-mini-link:hover {
+        background: rgba(255,255,255,0.08);
+    }
+    
+    .ep-mini-poster {
+        width: 40px;
+        height: 40px;
+        border-radius: 6px;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: #2a2a2a;
+    }
+    
+    .ep-mini-poster img {
+        width: 100%; height: 100%; object-fit: cover;
+    }
+    
+    .ep-mini-info {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    .ep-mini-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .ep-mini-date {
+        font-size: 0.7rem;
+        color: var(--color-text-muted);
+    }
+
+    /* Social Links */
+    .social-links {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: auto;
+        opacity: 0.5;
+        transition: opacity 0.3s;
+        justify-content: center; /* Center icons */
+        width: 100%;
+    }
+    
+    .social-links a:hover {
+        color: var(--color-primary);
+    }
+    
+    .member-card:hover .social-links {
+        opacity: 1;
+    }
+
+    /* CTA Styles */
+    .join-cta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4rem;
+        border-radius: 30px;
+        position: relative;
+        overflow: hidden;
+        margin-top: 4rem;
+        background: radial-gradient(circle at right bottom, rgba(139, 92, 246, 0.15), rgba(255, 255, 255, 0.02));
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .cta-content {
+        max-width: 500px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .cta-content h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .cta-content p {
+        color: var(--color-text-muted);
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+    }
+
+    .cta-decoration {
+        position: absolute;
+        right: -20px;
+        bottom: -40px;
+        opacity: 0.05;
+        transform: rotate(-15deg);
+        pointer-events: none;
+    }
+    
+    .mic-icon {
+        width: 300px;
+        height: 300px;
+    }
+
+    @media (max-width: 768px) {
+        .join-cta {
+            flex-direction: column;
+            text-align: center;
+            padding: 3rem 1.5rem;
+        }
+        
+        .team-grid {
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+        }
+    }
+</style>
