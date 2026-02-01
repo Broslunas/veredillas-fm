@@ -47,7 +47,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Trigger Webhook
-    const webhookUrl = "https://n8n.broslunas.com/webhook-test/veredillasfm-interview-response";
+    const webhookUrl = "https://n8n.broslunas.com/webhook/veredillasfm-interview-response";
     const secret = import.meta.env.CONTACT_WEBHOOK_SECRET;
 
     if (secret) {
