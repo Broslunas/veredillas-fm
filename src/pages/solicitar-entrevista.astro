@@ -1,0 +1,371 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout 
+  title="Solicitar Entrevista" 
+  description="Solicita una entrevista en Veredillas FM. Cuéntanos tu historia y participa en nuestro podcast."
+  image="/logo.png"
+  imageAlt="Solicitar entrevista en Veredillas FM" 
+>
+    <div class="interview-page container">
+        <header class="page-header gs-fade-up">
+            <h1>Participa en Veredillas FM</h1>
+        </header>
+
+        <div class="form-wrapper glass-panel gs-fade-up">
+            <div class="header" style="margin-bottom: 2rem; text-align: center;">
+                <h2>Formulario de Solicitud</h2>
+                <p class="subtitle">Completa los datos y nos pondremos en contacto contigo.</p>
+            </div>
+
+            <form class="interview-form" id="interviewForm" method="POST">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            Nombre *
+                        </label>
+                        <input type="text" id="name" name="name" placeholder="Tu nombre" required />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                            Email *
+                        </label>
+                        <input type="email" id="email" name="email" placeholder="tu@email.com" required />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="topic">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                            Tema *
+                        </label>
+                        <input type="text" id="topic" name="topic" placeholder="¿De qué quieres hablar?" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="preferredDate">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            Fecha preferida
+                        </label>
+                        <input type="text" id="preferredDate" name="preferredDate" placeholder="Selecciona fecha" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        Detalles Adicionales
+                    </label>
+                    <textarea id="description" name="description" rows="3" placeholder="Cuéntanos un poco más..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary submit-btn">
+                    <span class="btn-text">Solicitar Entrevista</span>
+                    <span class="btn-loader" style="display: none;">
+                        <svg class="spinner" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle></svg>
+                    </span>
+                </button>
+            </form>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { gsap } from "gsap";
+    import flatpickr from "flatpickr";
+    import "flatpickr/dist/flatpickr.min.css";
+    import "flatpickr/dist/themes/dark.css"; // Premium dark theme
+    
+    // Define the setup function
+    function setupPage() {
+        // Animation
+        gsap.from(".gs-fade-up", {
+            y: 30,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.2,
+            ease: "power2.out"
+        });
+
+        // Form Logic
+        const form = document.getElementById('interviewForm') as HTMLFormElement;
+        const submitBtn = form?.querySelector('.submit-btn') as HTMLButtonElement;
+        const btnText = submitBtn?.querySelector('.btn-text') as HTMLElement;
+        const btnLoader = submitBtn?.querySelector('.btn-loader') as HTMLElement;
+
+        // Cleanup existing listeners if any
+        const newForm = form?.cloneNode(true) as HTMLFormElement;
+        if (form && newForm) {
+             form.parentNode?.replaceChild(newForm, form);
+        }
+        
+        const activeForm = document.getElementById('interviewForm') as HTMLFormElement;
+        const activeSubmitBtn = activeForm?.querySelector('.submit-btn') as HTMLButtonElement;
+        const activeBtnText = activeSubmitBtn?.querySelector('.btn-text') as HTMLElement;
+        const activeBtnLoader = activeSubmitBtn?.querySelector('.btn-loader') as HTMLElement;
+
+        // Initialize Flatpickr
+        const dateInput = document.getElementById('preferredDate');
+        if (dateInput) {
+            flatpickr(dateInput, {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                minDate: "today",
+                time_24hr: true,
+                minuteIncrement: 1,
+                disable: [
+                    function(date) {
+                        // Enable only Tue (2), Wed (3), Fri (5)
+                        return (date.getDay() !== 2 && date.getDay() !== 3 && date.getDay() !== 5);
+                    }
+                ],
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length > 0) {
+                        const date = selectedDates[0];
+                        const day = date.getDay();
+                        
+                        // Martes y Miércoles -> 11:15
+                        if (day === 2 || day === 3) {
+                            date.setHours(11);
+                            date.setMinutes(15);
+                            instance.setDate(date, false); // Update internal date without firing change to avoid loop
+                            instance.set('minTime', '11:15');
+                            instance.set('maxTime', '11:15');
+                        } 
+                        // Viernes -> 09:50
+                        else if (day === 5) {
+                            date.setHours(9);
+                            date.setMinutes(50);
+                            instance.setDate(date, false);
+                            instance.set('minTime', '09:50');
+                            instance.set('maxTime', '09:50');
+                        }
+                    }
+                }
+            });
+        }
+
+        if (activeForm) {
+            // Function to validate date
+            const validateDate = (dateString: string) => {
+                const date = new Date(dateString);
+                const day = date.getDay(); 
+                const hours = date.getHours();
+                const minutes = date.getMinutes();
+                const time = hours * 60 + minutes;
+
+                // Martes (2) y Miércoles (3): 11:15 (675)
+                if (day === 2 || day === 3) {
+                    return time === 675;
+                }
+
+                // Viernes (5): 09:50 (590)
+                if (day === 5) {
+                    return time === 590;
+                }
+
+                return false;
+            };
+
+            const dateInput = activeForm.querySelector('#preferredDate') as HTMLInputElement;
+            
+            dateInput?.addEventListener('change', (e) => {
+                const target = e.target as HTMLInputElement;
+                if (target.value && !validateDate(target.value)) {
+                    (window as any).showToast('Horario no disponible. Por favor selecciona:\n• Martes o Miércoles: 11:15 - 12:10\n• Viernes: 09:50 - 10:45', 'error');
+                    target.value = ''; // Reset
+                }
+            });
+
+            activeForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if (!activeSubmitBtn || !activeBtnText || !activeBtnLoader) return;
+                
+                const formData = new FormData(activeForm);
+                const data = Object.fromEntries(formData);
+
+                // Start Validation
+                if (data.preferredDate && !validateDate(data.preferredDate as string)) {
+                     (window as any).showToast('Por favor selecciona un horario válido dentro de los turnos disponibles.', 'error');
+                     return;
+                }
+                // End Validation
+
+                // Lock UI
+                const inputs = activeForm.querySelectorAll('input, textarea');
+                inputs.forEach(input => (input as HTMLInputElement).disabled = true);
+                activeSubmitBtn.disabled = true;
+                activeBtnText.style.display = 'none';
+                activeBtnLoader.style.display = 'inline-block';
+
+                try {
+                    const response = await fetch('/api/interviews/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        (window as any).showToast('¡Solicitud enviada con éxito! Nos pondremos en contacto contigo.', 'success');
+                        activeForm.reset();
+                        // Reset Flatpickr if instance exists attached to the element
+                        const fp = (dateInput as any)._flatpickr;
+                        if (fp) fp.clear();
+                    } else {
+                        (window as any).showToast(result.message || 'Error al enviar la solicitud.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    (window as any).showToast('Error de conexión. Intenta de nuevo.', 'error');
+                } finally {
+                    // Unlock UI
+                    inputs.forEach(input => (input as HTMLInputElement).disabled = false);
+                    activeSubmitBtn.disabled = false;
+                    activeBtnText.style.display = 'inline-block';
+                    activeBtnLoader.style.display = 'none';
+                }
+            });
+        }
+    }
+
+    // Run on initial load
+    setupPage();
+
+    // Run on Astro navigation
+    document.addEventListener('astro:page-load', setupPage);
+</script>
+
+<style>
+    .interview-page {
+        padding-bottom: 6rem;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding-top: 2rem;
+    }
+
+    h1 {
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+        font-size: 1.25rem;
+        color: var(--color-text-muted);
+    }
+
+    .form-wrapper {
+        width: 100%;
+        max-width: 800px;
+        margin: 2rem auto 0;
+        padding: 2rem;
+        border-radius: var(--radius-lg);
+    }
+
+    .interview-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--color-text-main);
+    }
+
+    label svg {
+        color: var(--color-text-muted);
+    }
+
+    input, textarea {
+        width: 100%;
+        padding: 1rem;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        color: var(--color-text-main);
+        font-family: var(--font-body);
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    input:focus, textarea:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 2px var(--color-primary-glow);
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .spinner {
+        animation: rotate 2s linear infinite;
+        width: 24px;
+        height: 24px;
+    }
+    
+    .spinner .path {
+        stroke: currentColor;
+        stroke-linecap: round;
+        animation: dash 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes rotate {
+        100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes dash {
+        0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+        50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+        100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+    }
+
+    .text-xs { font-size: 0.75rem; }
+    .text-muted { color: var(--color-text-muted); }
+    .mb-2 { margin-bottom: 0.5rem; }
+</style>

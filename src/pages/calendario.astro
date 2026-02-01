@@ -23,13 +23,24 @@ import Layout from '../layouts/Layout.astro';
                 </iframe>
             </div>
         </div>
+        <div class="cta-wrapper glass-panel gs-fade-up">
+            <div class="cta-content">
+                <h2>¿Quieres participar en Veredillas FM?</h2>
+                <p class="subtitle">Si tienes algo que contar, quieres proponer un tema o te gustaría ser entrevistado, ¡nos encantaría escucharte!</p>
+                <a href="/solicitar-entrevista" class="btn btn-primary cta-btn">
+                    Solicitar Entrevista
+                </a>
+            </div>
+        </div>
     </div>
 </Layout>
 
 <script>
     import { gsap } from "gsap";
     
-    document.addEventListener('astro:page-load', () => {
+    // Define the setup function
+    function setupPage() {
+        // Animation
         gsap.from(".gs-fade-up", {
             y: 30,
             opacity: 0,
@@ -37,7 +48,13 @@ import Layout from '../layouts/Layout.astro';
             stagger: 0.2,
             ease: "power2.out"
         });
-    });
+    }
+
+    // Run on initial load
+    setupPage();
+
+    // Run on Astro navigation
+    document.addEventListener('astro:page-load', setupPage);
 </script>
 
 <style>
@@ -101,5 +118,36 @@ import Layout from '../layouts/Layout.astro';
         .iframe-container {
             padding-bottom: 600px; /* Fixed height on desktop */
         }
+    }
+
+    .cta-wrapper {
+        width: 100%;
+        max-width: 1000px;
+        margin: 4rem auto 0;
+        padding: 4rem 2rem;
+        border-radius: var(--radius-lg);
+        text-align: center;
+    }
+
+    .cta-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .cta-content h2 {
+        font-size: 2rem;
+        color: var(--color-text-main);
+    }
+
+    .cta-btn {
+        padding: 1rem 2.5rem;
+        font-size: 1.1rem;
+        margin-top: 1rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 </style>

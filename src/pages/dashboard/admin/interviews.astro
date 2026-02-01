@@ -1,0 +1,498 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import AdminNav from '../../../components/admin/AdminNav.astro';
+import { getUserFromCookie } from '../../../lib/auth';
+import User from '../../../models/User';
+import InterviewRequest from '../../../models/InterviewRequest';
+import dbConnect from '../../../lib/mongodb';
+
+export const prerender = false;
+
+const cookieHeader = Astro.request.headers.get('cookie');
+const userPayload = getUserFromCookie(cookieHeader);
+
+if (!userPayload) {
+  return Astro.redirect('/404');
+}
+
+// Connect to DB
+await dbConnect();
+
+const currentUser = await User.findById(userPayload.userId);
+if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'owner')) {
+  return Astro.redirect('/404'); 
+}
+
+const requests = await InterviewRequest.find({}).sort({ createdAt: -1 });
+
+function formatDate(date: string | Date | undefined) {
+    if (!date) return '-';
+    return new Date(date).toLocaleString('es-ES', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+}
+---
+
+<Layout title="Gestión de Entrevistas">
+    <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <div class="admin-container fade-in-up">
+        <div class="admin-header">
+            <div class="header-content">
+                <h1>Solicitudes de Entrevista</h1>
+                <p>Gestiona las peticiones de entrevistas del calendario.</p>
+            </div>
+            <div class="header-actions">
+                <a href="https://n8n.broslunas.com" target="_blank" class="action-btn">
+                    <span>⚡ Ver en n8n</span>
+                </a>
+            </div>
+        </div>
+
+        <AdminNav />
+
+        <div class="glass-panel table-wrapper">
+            <table class="requests-table">
+                <thead>
+                    <tr>
+                        <th>Estado</th>
+                        <th>Fecha Solicitud</th>
+                        <th>Solicitante</th>
+                        <th>Tema</th>
+                        <th>Fecha Preferida</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {requests.length === 0 ? (
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No hay solicitudes pendientes.</td>
+                        </tr>
+                    ) : (
+                        requests.map((req) => (
+                            <tr class="request-row">
+                                <td>
+                                    <span class={`status-badge ${req.status}`}>
+                                        {req.status === 'pending' && '⏳ Pendiente'}
+                                        {req.status === 'approved' && '✅ Aprobada'}
+                                        {req.status === 'rejected' && '❌ Rechazada'}
+                                        {req.status === 'completed' && '🏁 Completada'}
+                                    </span>
+                                </td>
+                                <td class="text-sm text-muted">{new Date(req.createdAt).toLocaleDateString()}</td>
+                                <td>
+                                    <div class="user-info">
+                                        <span class="font-medium">{req.name}</span>
+                                        <span class="text-sm text-muted">{req.email}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="topic-info">
+                                        <span class="font-medium">{req.topic}</span>
+                                        {req.description && (
+                                            <span class="text-sm text-dim truncate" title={req.description}>
+                                                {req.description.substring(0, 30)}...
+                                            </span>
+                                        )}
+                                    </div>
+                                </td>
+                                <td class="text-sm">{formatDate(req.preferredDate)}</td>
+                                <td>
+                                    <div class="actions">
+                                        {req.status === 'pending' && (
+                                            <>
+                                                <button class="btn-icon approve" title="Aprobar" onclick={`updateStatus('${req._id}', 'approved')`}>✅</button>
+                                                <button class="btn-icon reject" title="Rechazar" onclick={`updateStatus('${req._id}', 'rejected')`}>❌</button>
+                                            </>
+                                        )}
+                                        {req.status === 'approved' && (
+                                            <button class="btn-icon complete" title="Marcar completada" onclick={`updateStatus('${req._id}', 'completed')`}>🏁</button>
+                                        )}
+                                        {req.status !== 'pending' && (
+                                            <button class="btn-icon reset" title="Restablecer" onclick={`updateStatus('${req._id}', 'pending')`}>🔄</button>
+                                        )}
+                                        <button class="btn-icon delete" title="Eliminar" onclick={`deleteRequest('${req._id}')`}>🗑️</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))
+                    )}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</Layout>
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" class="modal-backdrop">
+    <div class="modal-content glass-panel">
+        <h3 id="modalTitle">Confirmar Acción</h3>
+        <p id="modalMessage">¿Estás seguro de continuar?</p>
+        <div class="modal-actions">
+            <button id="modalCancel" class="btn-modal cancel">Cancelar</button>
+            <button id="modalConfirm" class="btn-modal confirm">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<script is:inline>
+    let currentAction = null;
+    const modal = document.getElementById('confirmModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const cancelBtn = document.getElementById('modalCancel');
+    const confirmBtn = document.getElementById('modalConfirm');
+
+    function openModal(title, message, action) {
+        if (!modal) return;
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        currentAction = action;
+        modal.classList.add('active');
+    }
+
+    function closeModal() {
+        if (!modal) return;
+        modal.classList.remove('active');
+        currentAction = null;
+    }
+
+    // Event Listeners
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', async () => {
+            if (currentAction) {
+                const action = currentAction;
+                // UI Loading state could be added here
+                await action(); 
+                closeModal();
+            }
+        });
+    }
+
+    // Close on click outside
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+    }
+
+    function updateStatus(id, status) {
+        const actionLabels = {
+            'approved': 'Aprobar',
+            'rejected': 'Rechazar',
+            'completed': 'Completar',
+            'pending': 'Restablecer'
+        };
+
+        const label = actionLabels[status] || status;
+
+        openModal(
+            `Confirmar ${label}`,
+            `¿Estás seguro de cambiar el estado de la solicitud a "${status}"?`,
+            async () => {
+                try {
+                    const response = await fetch('/api/interviews/update', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ id, status })
+                    });
+
+                    if (response.ok) {
+                        window.showToast('Estado actualizado correctamente', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        const data = await response.json();
+                        window.showToast(data.message || 'Error al actualizar', 'error');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    window.showToast('Error de conexión', 'error');
+                }
+            }
+        );
+    }
+
+    function deleteRequest(id) {
+        openModal(
+            'Eliminar Solicitud',
+            '¿Estás seguro de eliminar esta solicitud permanentemente? Esta acción no se puede deshacer.',
+            async () => {
+                try {
+                    const response = await fetch('/api/interviews/delete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ id })
+                    });
+
+                    if (response.ok) {
+                        window.showToast('Solicitud eliminada correctamente', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        const data = await response.json();
+                        window.showToast(data.message || 'Error al eliminar', 'error');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    window.showToast('Error de conexión', 'error');
+                }
+            }
+        );
+    }
+</script>
+
+<style>
+  .admin-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: var(--color-text-main);
+    animation: fadeInUp 0.8s ease-out;
+  }
+
+  .admin-header {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .admin-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.25rem;
+    background: linear-gradient(to right, #fff, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .admin-header p {
+    color: var(--color-text-muted);
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .requests-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+  }
+
+  .requests-table th, .requests-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .requests-table th {
+    font-weight: 600;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: rgba(0,0,0,0.2);
+  }
+
+  .requests-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .requests-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .user-info, .topic-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .text-sm { font-size: 0.85rem; }
+  .text-muted { color: var(--color-text-muted); }
+  .text-dim { color: var(--color-text-dim); }
+  .font-medium { font-weight: 500; }
+  .truncate {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+  }
+
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+  }
+
+  .status-badge.pending { background: rgba(250, 204, 21, 0.1); color: #facc15; border-color: rgba(250, 204, 21, 0.2); }
+  .status-badge.approved { background: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.2); }
+  .status-badge.rejected { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
+  .status-badge.completed { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border-color: rgba(59, 130, 246, 0.2); }
+
+  .actions {
+      display: flex;
+      gap: 0.5rem;
+  }
+
+  .btn-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 1rem;
+  }
+
+  .btn-icon:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-1px);
+  }
+
+  .btn-icon.delete:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: rgba(139, 92, 246, 0.1);
+    color: #a78bfa;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  .action-btn:hover {
+      background: rgba(139, 92, 246, 0.2);
+  }
+
+  /* Blob Background */
+  .blob {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.08;
+    z-index: -1;
+  }
+  
+  .blob-1 { top: -200px; left: -200px; background: var(--color-primary); }
+  .blob-2 { bottom: -200px; right: -200px; background: var(--color-secondary); }
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+    opacity: 0.5;
+  }
+
+  /* Modal */
+  .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+  }
+
+  .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+  }
+
+  .modal-content {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      padding: 2rem;
+      border-radius: 1.5rem;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      transform: scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .modal-backdrop.active .modal-content {
+      transform: scale(1);
+  }
+
+  .modal-content h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--color-text-main);
+  }
+
+  .modal-content p {
+      color: var(--color-text-muted);
+      margin-bottom: 2rem;
+  }
+
+  .modal-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+  }
+
+  .btn-modal {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+  }
+
+  .btn-modal.cancel {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--color-text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .btn-modal.cancel:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+  }
+
+  .btn-modal.confirm {
+      background: var(--color-primary);
+      color: white;
+      border: 1px solid var(--color-primary);
+  }
+
+  .btn-modal.confirm:hover {
+      background: var(--color-secondary);
+      border-color: var(--color-secondary);
+  }
+</style>
