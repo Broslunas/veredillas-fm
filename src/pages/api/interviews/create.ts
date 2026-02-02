@@ -48,7 +48,7 @@ export const POST: APIRoute = async ({ request }) => {
     
     // Switch webhook if admin invite
     if (source === 'admin') {
-        webhookUrl = "https://n8n.broslunas.com/webhook-test/veredillasfm-interview-invite";
+        webhookUrl = "https://n8n.broslunas.com/webhook/veredillasfm-interview-invite";
     }
 
     const secret = import.meta.env.CONTACT_WEBHOOK_SECRET;
