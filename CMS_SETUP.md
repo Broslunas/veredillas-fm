@@ -1,44 +1,32 @@
 # Configuración del CMS (Keystatic)
 
-## 🚨 GUÍA DE SOLUCIÓN DE ERRORES: "Authorization Failed"
+## 🚨 "Authorization Failed": Últimos Chequeos
 
-He detectado que estás teniendo problemas con la autorización (Error 401). Esto ocurre el 99% de las veces por una de estas tres razones. Por favor, verifica una a una:
+Si has regenerado el secreto y sigue fallando, el error suele estar en uno de estos puntos sutiles.
 
-### 1. Variables de Entorno en Vercel (CRÍTICO)
+### 1. ¿Client ID o App ID? (Error Común)
 
-Asegúrate de que en **Vercel > Project Settings > Environment Variables** tienes estas TRES variables exactas:
+Es muy común confundir el **App ID** con el **Client ID**. Son números parecidos pero diferentes.
 
-1. `KEYSTATIC_GITHUB_CLIENT_ID`
-   - Debe coincidir con el **Client ID** de tu GitHub App.
-   - Ejemplo: `Iv23...`
+- Ve a GitHub App Settings > General.
+- Busca **Client ID** (Suele empezar por letras, ej: `Ov23...` o `Iv1...`).
+- **NO COPIES** el "App ID" (que es solo números).
+- Verifica que en Vercel `KEYSTATIC_GITHUB_CLIENT_ID` sea el Client ID correcto.
 
-2. `KEYSTATIC_GITHUB_CLIENT_SECRET` 
-   - ⚠️ **ES LA CAUSA MÁS PROBABLE DEL ERROR.**
-   - Si creaste la App hace un tiempo, el secret original ya no se puede ver. **Debes generar uno nuevo**.
-   - Ve a GitHub App > Settings > Client secrets > **Generate a new client secret**.
-   - Copia el nuevo valor y actualízalo en Vercel.
-   - **¡Cuidado con los espacios!** A veces al copiar se cuela un espacio al final.
+### 2. ¿La App está INSTALADA?
 
-3. `KEYSTATIC_SECRET`
-   - Esta variable es necesaria para encriptar las cookies de sesión.
-   - Puede ser cualquier cadena aleatoria larga (números y letras).
-   - Si no la tienes puesta, la autenticación fallará siempre.
+Crear la App no es suficiente, tienes que instalarla en el repositorio.
 
-### 2. Dominios "www" vs "no-www"
+1. En GitHub App Settings, ve a **Install App** (menú lateral izquierdo).
+2. Asegúrate de que está instalada en la cuenta `Broslunas`.
+3. Dale permisos al repositorio `veredillas-fm` (o "All repositories").
 
-He actualizado tu código para forzar el uso de `www.veredillasfm.es`.
-- En GitHub App > Callback URL: debe ser `https://www.veredillasfm.es/api/keystatic/github/oauth/callback`.
-- En tu navegador, asegúrate de entrar por `https://www.veredillasfm.es/keystatic`.
+### 3. Permisos de Organización
 
-### 3. Cookies Antiguas
+Si `Broslunas` es una Organización, es posible que la App necesite **"Grant"** o **"Authorize"** en los ajustes de la organización (Settings > Third-party access > GitHub Apps).
 
-A veces, el navegador se queda con una cookie corrupta de un intento anterior.
-1. Ve a `www.veredillasfm.es`.
-2. Abre las herramientas de desarrollador (F12) > Application > Cookies.
-3. Borra todas las cookies asociadas al dominio.
-4. Intenta entrar de nuevo.
+### 4. Limpieza Final
 
-### IMPORTANTE: REDEPLOY
-
-**Despues de cambiar cualquier variable en Vercel, debes hacer un REDEPLOY.**
-Ve a Vercel > Deployments, haz clic en los tres puntos del último deployment y selecciona **Redeploy**. Si no lo haces, los cambios de variables no se aplican.
+Si verificas todo lo anterior:
+1. Borra cookies de `www.veredillasfm.es` una vez más.
+2. Intenta entrar en modo incógnito para asegurar que no hay caché.
