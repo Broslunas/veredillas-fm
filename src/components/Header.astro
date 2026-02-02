@@ -111,23 +111,30 @@ const isDropdownActive = (items: any[]) => {
       <div class="divider"></div>
 
       <div class="actions">
-        <CommandPalette />
-        <a href="https://open.spotify.com/show/6mXWyLhzhET5EHk1p72j18" target="_blank" class="action-btn spotify-btn" aria-label="Escúchanos en Spotify">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
-          </svg>
-          <span class="spotify-tooltip">Escúchanos en Spotify</span>
-        </a>
-        <a href="https://music.amazon.es/podcasts/8d708ffa-7ef7-42f0-878d-fe3575491bef/veredillas-fm" target="_blank" class="action-btn amazon-btn" aria-label="Escúchanos en Amazon Music">
-          <div class="icon-mask amazon-icon"></div>
-          <span class="spotify-tooltip">Escúchanos en Amazon Music</span>
-        </a>
-        <a href="https://podcasts.apple.com/es/podcast/veredillas-fm/id1870103081" target="_blank" class="action-btn apple-btn" aria-label="Escúchanos en Apple Podcasts">
-          <div class="icon-mask apple-icon"></div>
-           <span class="spotify-tooltip">Escúchanos en Apple Podcasts</span>
-        </a>
-        <AuthButton />
-        <ThemeToggle />
+        <!-- Utility / User Group -->
+        <div class="utility-group">
+            <CommandPalette />
+            <AuthButton />
+            <ThemeToggle />
+        </div>
+
+        <!-- Platforms Group -->
+        <div class="platforms-group">
+            <a href="https://open.spotify.com/show/6mXWyLhzhET5EHk1p72j18" target="_blank" class="action-btn spotify-btn" aria-label="Escúchanos en Spotify">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+              </svg>
+              <span class="spotify-tooltip">Escúchanos en Spotify</span>
+            </a>
+            <a href="https://music.amazon.es/podcasts/8d708ffa-7ef7-42f0-878d-fe3575491bef/veredillas-fm" target="_blank" class="action-btn amazon-btn" aria-label="Escúchanos en Amazon Music">
+              <div class="icon-mask amazon-icon"></div>
+              <span class="spotify-tooltip">Escúchanos en Amazon Music</span>
+            </a>
+            <a href="https://podcasts.apple.com/es/podcast/veredillas-fm/id1870103081" target="_blank" class="action-btn apple-btn" aria-label="Escúchanos en Apple Podcasts">
+              <div class="icon-mask apple-icon"></div>
+              <span class="spotify-tooltip">Escúchanos en Apple Podcasts</span>
+            </a>
+        </div>
       </div>
     </nav>
   
@@ -539,8 +546,15 @@ const isDropdownActive = (items: any[]) => {
   .actions {
       display: flex;
       align-items: center;
+      gap: 1.5rem; /* Increased gap between groups */
+  }
+
+  .utility-group, .platforms-group {
+      display: flex;
+      align-items: center;
       gap: 0.5rem;
   }
+
   
   .action-btn {
       width: 40px;
@@ -880,13 +894,21 @@ const isDropdownActive = (items: any[]) => {
           background: var(--color-bg); /* Opaque background */
           display: flex;
           flex-direction: column;
-          justify-content: center;
+          /* Changed from center to flex-start to allow scrolling */
+          justify-content: flex-start; 
           align-items: center;
           z-index: 150;
           border-radius: 0 !important;
           border: none !important;
           padding: 2rem;
+          /* Add top padding to avoid hitting the logo/close button */
+          padding-top: 6rem;
+          padding-bottom: 4rem;
           box-sizing: border-box;
+          
+          /* Enable Scrolling */
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
           
           /* Animation Start State */
           opacity: 0;
@@ -913,12 +935,13 @@ const isDropdownActive = (items: any[]) => {
       .nav-list {
           flex-direction: column;
           align-items: center;
-          gap: 2rem;
+          gap: 1.5rem; /* Reduced gap from 2rem */
           width: 100%;
+          flex-shrink: 0; /* Prevent shrinking */
       }
 
       .nav-link {
-          font-size: 2rem; /* Larger font for immersion */
+          font-size: 1.75rem; /* Slightly smaller to save space */
           font-weight: 700;
           padding: 0;
           width: auto;
@@ -958,13 +981,51 @@ const isDropdownActive = (items: any[]) => {
 
       /* Actions in Menu */
       .actions {
-          flex-direction: row;
-          scale: 1.5; /* Bigger actions */
+          flex-direction: column;
+          width: 100%;
+          gap: 2rem;
           margin-top: 2rem;
+          /* Remove scale to fix layout issues with buttons */
+          scale: 1; 
+          flex-shrink: 0; /* Prevent shrinking */
           
           opacity: 0;
           transform: translateY(20px);
           transition: all 0.4s ease 0.4s; /* Delay after links */
+      }
+
+      .utility-group {
+        flex-direction: column;
+        width: 100%;
+        gap: 1.5rem; /* Spacing between auth/theme/command */
+      }
+
+      .platforms-group {
+        justify-content: center;
+        gap: 2rem;
+        transform: scale(1.3); /* Make platform icons larger */
+      }
+
+      /* Force centered content in utility group */
+      .utility-group :global(.cmd-btn) {
+          width: 100%;
+          justify-content: center;
+          padding: 1rem;
+          font-size: 1.1rem;
+      }
+
+      .utility-group :global(#auth-button-wrapper),
+      .utility-group :global(.profile-dropdown-container) {
+          width: 100%;
+          justify-content: center;
+      }
+      
+      .utility-group :global(.auth-btn), 
+      .utility-group :global(.profile-btn) {
+          width: 100% !important;
+          justify-content: center !important;
+          padding: 1rem !important;
+          font-size: 1.1rem !important;
       }
       
       .menu-open .actions {
