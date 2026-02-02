@@ -1,32 +1,28 @@
-# Configuración del CMS (Keystatic)
+# Configuración del CMS (Decap CMS)
 
-## 🚨 "Authorization Failed": Últimos Chequeos
+Hemos migrado a **Decap CMS** (anteriormente Netlify CMS), que es una solución más ligera, estable y usa un backend de autenticación personalizado que hemos creado.
 
-Si has regenerado el secreto y sigue fallando, el error suele estar en uno de estos puntos sutiles.
+## Acceso
 
-### 1. ¿Client ID o App ID? (Error Común)
+- **URL**: `https://www.veredillasfm.es/admin/`
+- **Gestión**: Desde el Panel de Admin > Contenido.
 
-Es muy común confundir el **App ID** con el **Client ID**. Son números parecidos pero diferentes.
+## Configuración de OAuth (Producción)
 
-- Ve a GitHub App Settings > General.
-- Busca **Client ID** (Suele empezar por letras, ej: `Ov23...` o `Iv1...`).
-- **NO COPIES** el "App ID" (que es solo números).
-- Verifica que en Vercel `KEYSTATIC_GITHUB_CLIENT_ID` sea el Client ID correcto.
+Para que el login funcione en producción, necesitamos actualizar la URL de Callback en GitHub ONE LAST TIME.
 
-### 2. ¿La App está INSTALADA?
+1. Ve a **GitHub Settings > Developer settings > GitHub Apps > Veredillas FM CMS**.
+2. **Callback URL**: Cámbiala a:
+   👉 `https://www.veredillasfm.es/api/oauth/callback`
+   (Nota: ya no es `/api/keystatic...`, ahora es más corto).
 
-Crear la App no es suficiente, tienes que instalarla en el repositorio.
+3. **Variables**: Las variables `KEYSTATIC_GITHUB_CLIENT_ID` y `KEYSTATIC_GITHUB_CLIENT_SECRET` se reutilizan, así que **NO hace falta cambiarlas** en Vercel (si ya funcionaban).
 
-1. En GitHub App Settings, ve a **Install App** (menú lateral izquierdo).
-2. Asegúrate de que está instalada en la cuenta `Broslunas`.
-3. Dale permisos al repositorio `veredillas-fm` (o "All repositories").
+## Uso Local
 
-### 3. Permisos de Organización
+En local (`npm run dev`), puedes entrar a `http://localhost:4321/admin/`.
+Decap intentará conectar con el servidor de producción para autenticarse, lo cual funcionará si tienes internet.
 
-Si `Broslunas` es una Organización, es posible que la App necesite **"Grant"** o **"Authorize"** en los ajustes de la organización (Settings > Third-party access > GitHub Apps).
+## Estructura
 
-### 4. Limpieza Final
-
-Si verificas todo lo anterior:
-1. Borra cookies de `www.veredillasfm.es` una vez más.
-2. Intenta entrar en modo incógnito para asegurar que no hay caché.
+El archivo de configuración está en `public/admin/config.yml`. Ahí se definen los campos de Blogs, Episodios e Invitados.

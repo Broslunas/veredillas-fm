@@ -1,0 +1,74 @@
+backend:
+  name: github
+  repo: Broslunas/veredillas-fm
+  branch: master
+  base_url: https://www.veredillasfm.es
+  auth_endpoint: api/oauth/auth
+  site_domain: www.veredillasfm.es
+
+local_backend: true
+
+media_folder: "public/images/uploads"
+public_folder: "/images/uploads"
+
+collections:
+  - name: "blog"
+    label: "Blogs"
+    folder: "src/content/blog"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "Título", name: "title", widget: "string"}
+      - {label: "Descripción", name: "description", widget: "text"}
+      - {label: "Fecha", name: "pubDate", widget: "datetime"}
+      - {label: "Autor", name: "author", widget: "string", default: "Redacción Veredillas"}
+      - {label: "Imagen", name: "image", widget: "image", required: false}
+      - {label: "Tags", name: "tags", widget: "list", required: false}
+      - {label: "Cuerpo", name: "body", widget: "markdown"}
+
+  - name: "episodios"
+    label: "Episodios"
+    folder: "src/content/episodios"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "Título", name: "title", widget: "string"}
+      - {label: "Descripción", name: "description", widget: "text"}
+      - {label: "Fecha de Publicación", name: "pubDate", widget: "datetime"}
+      - {label: "Autor", name: "author", widget: "string", default: "Veredillas FM"}
+      - {label: "Imagen de Portada", name: "image", widget: "image", required: false}
+      - {label: "Audio URL (MP3/WAV)", name: "audioUrl", widget: "string", required: false}
+      - {label: "Spotify URL", name: "spotifyUrl", widget: "string", required: false}
+      - {label: "Duración", name: "duration", widget: "string", required: false}
+      - {label: "Temporada", name: "season", widget: "number", value_type: "int", required: false}
+      - {label: "Episodio #", name: "episode", widget: "number", value_type: "int", required: false}
+      - {label: "Es Estreno", name: "isPremiere", widget: "boolean", default: false, required: false}
+      - {label: "Participantes", name: "participants", widget: "list", required: false}
+      - {label: "Tags", name: "tags", widget: "list", required: false}
+      - {label: "Secciones (Tiempos)", name: "sections", widget: "list", fields: [
+          {label: "Tiempo (MM:SS)", name: "time", widget: "string"},
+          {label: "Título", name: "title", widget: "string"}
+        ], required: false}
+      - {label: "Transcripción", name: "transcription", widget: "list", fields: [
+          {label: "Tiempo", name: "time", widget: "string"},
+          {label: "Hablante", name: "speaker", widget: "string", required: false},
+          {label: "Texto", name: "text", widget: "text"}
+        ], required: false}
+      - {label: "Cuerpo", name: "body", widget: "markdown"}
+
+  - name: "invitados"
+    label: "Invitados"
+    folder: "src/content/guests"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "Nombre", name: "name", widget: "string"}
+      - {label: "Rol / Profesión", name: "role", widget: "string", required: false}
+      - {label: "Foto", name: "image", widget: "image", required: false}
+      - {label: "Descripción corta", name: "description", widget: "text", required: false}
+      - {label: "Redes Sociales", name: "social", widget: "object", fields: [
+          {label: "Twitter", name: "twitter", widget: "string", required: false},
+          {label: "Instagram", name: "instagram", widget: "string", required: false},
+          {label: "Web", name: "website", widget: "string", required: false}
+        ], required: false}
+      - {label: "Bio Completa", name: "body", widget: "markdown"}
