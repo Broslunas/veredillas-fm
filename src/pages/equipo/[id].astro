@@ -2,6 +2,8 @@
 import Layout from '../../layouts/Layout.astro';
 import { teamMembers } from '../../data/team';
 
+export const prerender = true;
+
 export function getStaticPaths() {
   return teamMembers.map((member) => {
     // Simple slugify: "Miguel Salazar" -> "miguel-salazar"
@@ -133,27 +135,32 @@ const { member } = Astro.props;
 
     .back-btn {
         position: absolute;
-        top: 2rem;
+        top: 7.5rem; /* Moves below fixed header */
         left: 2rem;
         z-index: 50;
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.8rem 1.5rem;
+        padding: 0.7rem 1.4rem;
         border-radius: 50px;
         text-decoration: none;
         color: var(--color-text-main);
-        background: rgba(0,0,0,0.3);
-        border: 1px solid rgba(255,255,255,0.1);
+        background: var(--color-bg);
+        border: 1px solid var(--color-border, rgba(255,255,255,0.1));
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         backdrop-filter: blur(10px);
-        font-weight: 500;
+        font-weight: 600;
+        font-size: 0.9rem;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .back-btn:hover {
-        background: rgba(255,255,255,0.1);
-        transform: translateX(-5px);
+        background: var(--color-primary);
+        color: #ffffff;
+        border-color: var(--color-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
     }
 
     .profile-layout {
@@ -292,9 +299,9 @@ const { member } = Astro.props;
         }
 
         .back-btn {
-            top: 1.5rem;
+            top: 6rem; /* Moves below mobile header */
             left: 1.5rem;
-            background: rgba(0,0,0,0.6);
+            /* inherit other premium styles */
         }
     }
 </style>
