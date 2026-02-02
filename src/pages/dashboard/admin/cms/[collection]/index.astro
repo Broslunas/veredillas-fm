@@ -1,0 +1,226 @@
+---
+import Layout from '../../../../../layouts/Layout.astro';
+import AdminNav from '../../../../../components/admin/AdminNav.astro';
+import { listFiles } from '../../../../../lib/cms';
+import { getUserFromCookie } from '../../../../../lib/auth';
+import User from '../../../../../models/User';
+import dbConnect from '../../../../../lib/mongodb';
+
+export const prerender = false;
+
+const { collection } = Astro.params;
+
+// Validate Collection
+const validCollections = ['blog', 'episodios', 'guests'];
+if (!validCollections.includes(collection || '')) {
+    return Astro.redirect('/dashboard/admin/cms');
+}
+
+// Auth Check
+const cookieHeader = Astro.request.headers.get('cookie');
+const userPayload = getUserFromCookie(cookieHeader);
+if (!userPayload) return Astro.redirect('/404');
+
+await dbConnect();
+const currentUser = await User.findById(userPayload.userId);
+if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'owner')) {
+  return Astro.redirect('/404');
+}
+
+// GitHub Token Check
+let token;
+if (import.meta.env.PROD) {
+    const cookies = Object.fromEntries(cookieHeader.split('; ').map(c => c.split('=')));
+    token = cookies['cms_gh_token'];
+    
+    if (!token) {
+        return Astro.redirect('/dashboard/admin/cms'); // Redirect to connect
+    }
+}
+
+// Fetch Files
+let files = [];
+let error = null;
+
+try {
+    files = await listFiles(collection!, token);
+} catch (e: any) {
+    error = e.message;
+}
+
+const collectionLabels: Record<string, string> = {
+    'blog': 'Blogs',
+    'episodios': 'Episodios',
+    'guests': 'Invitados'
+};
+---
+
+<Layout title={`CMS - ${collectionLabels[collection!]}`}>
+    <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <div class="admin-container fade-in-up">
+        <div class="header-nav">
+             <a href="/dashboard/admin/cms" class="back-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Volver
+            </a>
+        </div>
+
+        <div class="admin-header">
+            <div class="header-content">
+                <div class="flex items-center gap-3">
+                    <h1>{collectionLabels[collection!]}</h1>
+                    <span class="count-badge">{files.length}</span>
+                </div>
+                <p>Gestionando colección: {collection}</p>
+            </div>
+            <div class="header-actions">
+                <a href={`/dashboard/admin/cms/${collection}/new`} class="action-btn primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                   Nuevo
+                </a>
+            </div>
+        </div>
+
+        {error && (
+            <div class="error-banner">
+                <p>Error cargando archivos: {error}</p>
+                {import.meta.env.PROD && <a href="/api/auth/github/login">Reconectar GitHub</a>}
+            </div>
+        )}
+
+        <div class="files-grid">
+            {files.length === 0 && !error && (
+                <div class="empty-state">
+                    <p>No hay archivos en esta colección.</p>
+                </div>
+            )}
+            
+            {files.map(file => (
+                <a href={`/dashboard/admin/cms/${collection}/${file.slug}`} class="file-card glass-panel interactive">
+                     <div class="file-icon">📄</div>
+                     <div class="file-info">
+                         <h3>{file.name || file.slug}</h3>
+                         <span class="slug">{file.slug}</span>
+                     </div>
+                     <div class="chevron">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                     </div>
+                </a>
+            ))}
+        </div>
+    </div>
+</Layout>
+
+<style>
+  .admin-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: var(--color-text-main);
+    animation: fadeInUp 0.8s ease-out;
+  }
+  
+  .header-nav { margin-bottom: 1rem; }
+  .back-link {
+       display: inline-flex;
+       align-items: center;
+       gap: 0.5rem;
+       color: var(--color-text-muted);
+       text-decoration: none;
+       font-size: 0.9rem;
+       transition: color 0.2s;
+  }
+  .back-link:hover { color: #fff; }
+
+  /* Header */
+  .admin-header {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .admin-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.25rem;
+    background: linear-gradient(to right, #fff, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+  }
+  
+  .count-badge {
+      background: rgba(255,255,255,0.1);
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 1rem;
+      color: #fff;
+  }
+  
+  .admin-header p { color: var(--color-text-muted); font-size: 1rem; }
+  
+  .files-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+  }
+  
+  .file-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem;
+      text-decoration: none;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 1rem;
+      background: rgba(255,255,255,0.02);
+      transition: all 0.2s;
+  }
+  
+  .file-card:hover {
+      background: rgba(255,255,255,0.05);
+      transform: translateX(5px);
+  }
+  
+  .file-icon { font-size: 1.5rem; }
+  
+  .file-info { flex: 1; }
+  .file-info h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.2rem; }
+  .file-info .slug { font-family: monospace; font-size: 0.8rem; color: var(--color-text-muted); }
+  
+  .chevron { color: var(--color-text-muted); }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .action-btn.primary {
+    background: #a78bfa;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+  }
+
+  /* Utils */
+  .fade-in-up { animation: fadeInUp 0.8s ease-out; }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .blob { position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(100px); opacity: 0.08; z-index: -1; }
+  .blob-1 { top: -200px; left: -200px; background: var(--color-primary); }
+  .blob-2 { bottom: -200px; right: -200px; background: var(--color-secondary); }
+  .grid-overlay { position: absolute; inset: 0; background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px; mask-image: radial-gradient(circle at center, black 40%, transparent 100%); opacity: 0.5; }
+</style>

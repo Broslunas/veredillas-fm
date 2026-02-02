@@ -1,28 +1,31 @@
-# Configuración del CMS (Decap CMS)
+# Configuración del CMS (Custom Built)
 
-Hemos migrado a **Decap CMS** (anteriormente Netlify CMS), que es una solución más ligera, estable y usa un backend de autenticación personalizado que hemos creado.
+Hemos reemplazado los CMS de terceros por un **Gestor de Contenido a medida** integrado directamente en el Dashboard.
+
+## 🚀 Configuración Final de GitHub App
+
+Para que la autenticación funcione con el nuevo sistema, actualiza la **Callback URL** en GitHub por última vez:
+
+👉 **Callback URL**: `https://www.veredillasfm.es/api/auth/github/callback`
+
+### Pasos:
+1. Ve a **GitHub Settings > Developer settings > GitHub Apps**.
+2. Selecciona tu App (`Veredillas FM CMS`).
+3. Busca el campo **Callback URL**.
+4. Pega la URL de arriba.
+5. Guarda los cambios.
 
 ## Acceso
 
-- **URL**: `https://www.veredillasfm.es/admin/`
-- **Gestión**: Desde el Panel de Admin > Contenido.
+- **URL**: `/dashboard/admin/cms`
+- **Permisos**: Solo visible para administradores (`admin` o `owner`).
 
-## Configuración de OAuth (Producción)
+## Funcionamiento
 
-Para que el login funcione en producción, necesitamos actualizar la URL de Callback en GitHub ONE LAST TIME.
-
-1. Ve a **GitHub Settings > Developer settings > GitHub Apps > Veredillas FM CMS**.
-2. **Callback URL**: Cámbiala a:
-   👉 `https://www.veredillasfm.es/api/oauth/callback`
-   (Nota: ya no es `/api/keystatic...`, ahora es más corto).
-
-3. **Variables**: Las variables `KEYSTATIC_GITHUB_CLIENT_ID` y `KEYSTATIC_GITHUB_CLIENT_SECRET` se reutilizan, así que **NO hace falta cambiarlas** en Vercel (si ya funcionaban).
-
-## Uso Local
-
-En local (`npm run dev`), puedes entrar a `http://localhost:4321/admin/`.
-Decap intentará conectar con el servidor de producción para autenticarse, lo cual funcionará si tienes internet.
-
-## Estructura
-
-El archivo de configuración está en `public/admin/config.yml`. Ahí se definen los campos de Blogs, Episodios e Invitados.
+- **En Local (`npm run dev`)**:
+  - Lee y escribe directamente en tu disco duro (`src/content`).
+  - No requiere login con GitHub (usa el sistema de archivos).
+  
+- **En Producción**:
+  - Requiere conectar con GitHub (botón visible en el dashboard).
+  - Usa la API de GitHub para leer y commitear cambios.
