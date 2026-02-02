@@ -11,6 +11,12 @@
   <body>
     <!-- CMS mounts here -->
     <!-- Decap CMS Script -->
+    <script>
+      window.addEventListener("message", (e) => {
+        // Log all messages to see what's happening
+        console.log("📌 Admin Message Received:", e.data, "Origin:", e.origin);
+      });
+    </script>
     <script src="https://unpkg.com/decap-cms@^3.1.2/dist/decap-cms.js"></script>
   </body>
 </html>
