@@ -5,16 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
     <title>Content Manager - Veredillas FM</title>
-    <!-- CMS -->
-    <script src="https://unpkg.com/decap-cms@^3.1.2/dist/decap-cms.js"></script>
-    <style>
-       /* Custom CSS overrides if needed */
-       [data-slate-editor] { 
-          -webkit-user-modify: read-write !important; 
-       }
-    </style>
+    <!-- Explicitly link to the config file -->
+    <link href="./config.yml" type="text/yaml" rel="cms-config-url">
   </head>
   <body>
     <!-- CMS mounts here -->
+    <script src="https://unpkg.com/decap-cms@^3.1.2/dist/decap-cms.js"></script>
   </body>
 </html>
