@@ -192,7 +192,28 @@ const dateFormatter = new Intl.DateTimeFormat('es-ES', { month: 'short', year: '
                                     <div class={`mini-badge ${b.class}`} data-tooltip={b.label} set:html={b.icon}></div>
                                 ))}
                             </div>
-                            <h3>{guest.data.name}</h3>
+                            <div class="name-row">
+                                <h3>{guest.data.name}</h3>
+                                {guest.data.social && (
+                                    <div class="social-links-inline">
+                                        {guest.data.social.twitter && (
+                                            <a href={guest.data.social.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
+                                            </a>
+                                        )}
+                                        {guest.data.social.instagram && (
+                                            <a href={guest.data.social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                                            </a>
+                                        )}
+                                        {guest.data.social.website && (
+                                            <a href={guest.data.social.website} target="_blank" rel="noopener noreferrer" aria-label="Website">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                                            </a>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                             <span class="role">{guest.data.role}</span>
                         </div>
 
@@ -236,25 +257,7 @@ const dateFormatter = new Intl.DateTimeFormat('es-ES', { month: 'short', year: '
                             ))}
                         </div>
 
-                        {guest.data.social && (
-                            <div class="social-links">
-                                {guest.data.social.twitter && (
-                                    <a href={guest.data.social.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
-                                    </a>
-                                )}
-                                {guest.data.social.instagram && (
-                                    <a href={guest.data.social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
-                                    </a>
-                                )}
-                                {guest.data.social.website && (
-                                    <a href={guest.data.social.website} target="_blank" rel="noopener noreferrer" aria-label="Website">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-                                    </a>
-                                )}
-                            </div>
-                        )}
+
                     </div>
                 </div>
             ))}
@@ -620,6 +623,38 @@ const dateFormatter = new Intl.DateTimeFormat('es-ES', { month: 'short', year: '
         font-weight: 700;
         margin-bottom: 0.25rem;
         color: var(--color-text-main);
+    }
+    
+    .name-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .name-row h3 {
+        margin-bottom: 0;
+    }
+
+    .social-links-inline {
+        display: flex;
+        gap: 0.4rem;
+        align-items: center;
+        margin-top: 2px;
+    }
+
+    .social-links-inline a {
+        color: var(--color-text-muted);
+        transition: all 0.2s;
+        display: flex;
+        opacity: 0.6;
+    }
+    
+    .social-links-inline a:hover {
+        color: var(--color-primary);
+        opacity: 1;
+        transform: translateY(-1px);
     }
 
     .info-box .role {
