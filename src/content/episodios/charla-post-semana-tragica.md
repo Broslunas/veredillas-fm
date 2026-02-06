@@ -8,9 +8,8 @@ tags:
   - Actualidad
   - Podcast Interno
 description: >-
-  Un episodio relajado de Veredillas FM donde los integrantes comparten
-  reflexiones sobre la vida, los exámenes de la 'Semana Trágica' y otros temas
-  de actualidad. ¡Una charla amena entre amigos!
+  Podcast divertido sobre la vida estudiantil post-exámenes. ¡Anécdotas, debates
+  y risas aseguradas! Suscríbete y comparte con tus amigos.
 pubDate: '2026-02-13T17:00:00.000Z'
 duration: ¿?
 isPremiere: true
