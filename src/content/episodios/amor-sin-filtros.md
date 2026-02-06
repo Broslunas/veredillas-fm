@@ -1,5 +1,5 @@
 ---
-title: Amor Sin Filtros ft. Saray y Antonieta
+title: Amor Sin Filtros ft. Saray & Antonieta
 tags:
   - amor
   - relaciones
