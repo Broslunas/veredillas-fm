@@ -30,7 +30,7 @@ participants:
 
 El amor sin filtros se trata de relaciones auténticas y transparentes. Implica mostrarse tal como somos, con nuestras virtudes y defectos, sin máscaras ni pretensiones. Saray y Antonieta nos compartirán sus perspectivas sobre este concepto.
 
-## Los Retos de la Comunicación en la Pareja
+## Los Retos de la Comunicación en la Pareja.
 
 Uno de los mayores desafíos en cualquier relación es la comunicación. ¿Cómo podemos expresar nuestras necesidades y deseos de manera efectiva? ¿Cómo podemos escuchar activamente a nuestra pareja? Saray y Antonieta nos ofrecerán consejos valiosos sobre cómo mejorar la comunicación en la pareja.
 
