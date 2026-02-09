@@ -7,7 +7,6 @@ tags:
   - sin filtros
   - diálogo
   - conversación
-  - ''
 description: >-
   Un análisis profundo y sin tapujos sobre el amor, la pareja y las relaciones
   modernas con Saray y Antonieta.
