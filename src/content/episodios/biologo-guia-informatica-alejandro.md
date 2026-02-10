@@ -751,7 +751,7 @@ description: >-
   persona que está detrás del teclado: el Profesor Alejandro, nuestro querido
   profesor de Informática.
 pubDate: '2025-11-25T00:00:00.000Z'
-image: 'https://cdn.broslunas.com/img/002.webp'
+image: 'https://cdn.veredillasfm.es/images/002.webp'
 audioUrl: >-
   https://anchor.fm/s/10ca1a038/podcast/play/112421764/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2025-11-10%2F7b84ea23-3111-4257-5de9-75f6df3f7128.mp3
 videoUrl: 'https://www.youtube.com/embed/EySLKcxHzXk'
