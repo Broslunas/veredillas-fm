@@ -1,0 +1,575 @@
+---
+interface Clip {
+  title: string;
+  url: string;
+}
+
+interface Props {
+  clips?: Clip[];
+}
+
+const { clips } = Astro.props;
+
+function toEmbedUrl(url: string): string {
+  const patterns = [
+    /youtube\.com\/shorts\/([^?&]+)/,
+    /(?:youtube\.com\/watch\?v=|youtube\.com\/watch\?.+&v=)([^&]+)/,
+    /youtu\.be\/([^?&]+)/,
+    /youtube\.com\/embed\/([^?&]+)/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return `https://www.youtube.com/embed/${match[1]}`;
+  }
+  return url;
+}
+
+const embedClips = clips?.map(clip => ({
+  title: clip.title,
+  embedUrl: toEmbedUrl(clip.url),
+})) ?? [];
+---
+
+{embedClips.length > 0 && (
+  <>
+    <button class="clips-trigger" id="clips-open-btn">
+      <div class="clips-trigger-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+      </div>
+      <div class="clips-trigger-text">
+        <span class="clips-trigger-title">Clips Destacados</span>
+        <span class="clips-trigger-count">{embedClips.length} {embedClips.length === 1 ? 'clip' : 'clips'} disponibles</span>
+      </div>
+      <svg class="clips-trigger-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>
+
+    <!-- Immersive Clips Modal -->
+    <div class="clips-immersive" id="clips-modal-overlay">
+      <div class="clips-immersive-bg"></div>
+      <div class="clips-immersive-noise"></div>
+
+      <!-- Header -->
+      <div class="clips-immersive-header">
+        <div class="clips-header-meta">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <span>Clips Destacados</span>
+        </div>
+        <button class="clips-close-btn" id="clips-close-btn" aria-label="Cerrar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Main content area -->
+      <div class="clips-stage">
+        <!-- Left arrow -->
+        {embedClips.length > 1 && (
+          <button class="clips-arrow clips-arrow-left" id="clips-prev" aria-label="Anterior">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+        )}
+
+        <!-- Clips flex container -->
+        <div class="clips-flex-track" id="clips-carousel">
+          {embedClips.map((clip, i) => (
+            <div class="clips-card" data-index={i}>
+              <div class="clips-card-video">
+                <iframe
+                  data-src={clip.embedUrl}
+                  title={clip.title}
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen
+                ></iframe>
+              </div>
+              <div class="clips-card-info">
+                <span class="clips-card-number">{String(i + 1).padStart(2, '0')}</span>
+                <p class="clips-card-title">{clip.title}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <!-- Right arrow -->
+        {embedClips.length > 1 && (
+          <button class="clips-arrow clips-arrow-right" id="clips-next" aria-label="Siguiente">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        )}
+      </div>
+
+      <!-- Dots indicator -->
+      {embedClips.length > 1 && (
+        <div class="clips-dots" id="clips-dots">
+          {embedClips.map((_, i) => (
+            <button class:list={["clips-dot", { active: i === 0 }]} data-dot-index={i} aria-label={`Clip ${i + 1}`}></button>
+          ))}
+        </div>
+      )}
+    </div>
+  </>
+)}
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const openBtn = document.getElementById('clips-open-btn');
+    const overlay = document.getElementById('clips-modal-overlay');
+    const closeBtn = document.getElementById('clips-close-btn');
+    const track = document.getElementById('clips-carousel');
+    const prevBtn = document.getElementById('clips-prev');
+    const nextBtn = document.getElementById('clips-next');
+    const dotsContainer = document.getElementById('clips-dots');
+
+    if (!openBtn || !overlay || !closeBtn || !track) return;
+
+    const cards = Array.from(track.querySelectorAll('.clips-card'));
+    const dots = dotsContainer ? Array.from(dotsContainer.querySelectorAll('.clips-dot')) : [];
+    let currentIndex = 0;
+
+    function loadIframe(index: number) {
+      const card = cards[index];
+      if (!card) return;
+      const iframe = card.querySelector('iframe');
+      if (iframe && !iframe.src && iframe.dataset.src) {
+        iframe.src = iframe.dataset.src;
+      }
+    }
+
+    function goTo(index: number) {
+      if (index < 0 || index >= cards.length) return;
+      currentIndex = index;
+
+      // Translate track
+      const offset = -index * 100;
+      track.style.transform = `translateX(${offset}%)`;
+
+      // Update dots
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+      });
+
+      // Load current + adjacent
+      loadIframe(index);
+      if (index > 0) loadIframe(index - 1);
+      if (index < cards.length - 1) loadIframe(index + 1);
+    }
+
+    function open() {
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      currentIndex = 0;
+      track.style.transform = 'translateX(0)';
+      loadIframe(0);
+      if (cards.length > 1) loadIframe(1);
+      dots.forEach((d, i) => d.classList.toggle('active', i === 0));
+    }
+
+    function close() {
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+      cards.forEach(card => {
+        const iframe = card.querySelector('iframe');
+        if (iframe && iframe.src) iframe.src = '';
+      });
+    }
+
+    openBtn.addEventListener('click', open);
+    closeBtn.addEventListener('click', close);
+
+    overlay.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target === overlay || target.classList.contains('clips-stage')) {
+        close();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!overlay.classList.contains('active')) return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') goTo(currentIndex - 1);
+      if (e.key === 'ArrowRight') goTo(currentIndex + 1);
+    });
+
+    prevBtn?.addEventListener('click', () => goTo(currentIndex - 1));
+    nextBtn?.addEventListener('click', () => goTo(currentIndex + 1));
+
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        const idx = parseInt((dot as HTMLElement).dataset.dotIndex || '0');
+        goTo(idx);
+      });
+    });
+
+    // Touch swipe support
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    track.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    track.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) goTo(currentIndex + 1);  // swipe left
+        else goTo(currentIndex - 1);            // swipe right
+      }
+    }, { passive: true });
+  });
+</script>
+
+<style>
+  /* ── Trigger Button ── */
+  .clips-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: linear-gradient(135deg, rgba(255, 0, 0, 0.08), rgba(255, 60, 60, 0.04));
+    border: 1px solid rgba(255, 60, 60, 0.15);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    color: var(--color-text-main);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .clips-trigger:hover {
+    background: linear-gradient(135deg, rgba(255, 0, 0, 0.14), rgba(255, 60, 60, 0.08));
+    border-color: rgba(255, 60, 60, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(255, 0, 0, 0.1);
+  }
+
+  .clips-trigger-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 0, 0, 0.12);
+    color: #ff4444;
+    flex-shrink: 0;
+  }
+
+  .clips-trigger-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .clips-trigger-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-text-heading);
+  }
+
+  .clips-trigger-count {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    margin-top: 1px;
+  }
+
+  .clips-trigger-arrow {
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+
+  .clips-trigger:hover .clips-trigger-arrow {
+    transform: translateX(2px);
+    color: #ff4444;
+  }
+
+  /* ── Immersive Fullscreen ── */
+  .clips-immersive {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0.4s;
+    overflow: hidden;
+  }
+
+  .clips-immersive.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .clips-immersive-bg {
+    position: absolute;
+    inset: -10%;
+    width: 120%;
+    height: 120%;
+    background: #0a0a0f;
+    background-image:
+      radial-gradient(circle at 25% 40%, rgba(255, 0, 0, 0.12) 0%, transparent 55%),
+      radial-gradient(circle at 75% 60%, rgba(120, 0, 255, 0.08) 0%, transparent 55%);
+    filter: blur(80px) brightness(0.7);
+    z-index: 0;
+  }
+
+  .clips-immersive-noise {
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Header */
+  .clips-immersive-header {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: max(16px, env(safe-area-inset-top)) 28px 8px;
+    flex-shrink: 0;
+  }
+
+  .clips-header-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  .clips-header-meta svg { color: #ff4444; }
+
+  .clips-close-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s;
+  }
+
+  .clips-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    transform: scale(1.05);
+  }
+
+  /* ── Stage: Flex layout with arrows ── */
+  .clips-stage {
+    position: relative;
+    z-index: 10;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    overflow: hidden;
+    padding: 0;
+    min-height: 0;
+  }
+
+  /* Side arrows */
+  .clips-arrow {
+    position: absolute;
+    z-index: 30;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .clips-arrow:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: white;
+    transform: translateY(-50%) scale(1.08);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+  }
+
+  .clips-arrow-left { left: 20px; }
+  .clips-arrow-right { right: 20px; }
+
+  /* ── Flex track (translateX-based slider) ── */
+  .clips-flex-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  /* ── Card ── */
+  .clips-card {
+    flex: 0 0 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 60px;
+    gap: 16px;
+    min-height: 0;
+  }
+
+  .clips-card-video {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    height: min(70vh, 560px);
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.06),
+      0 25px 60px -12px rgba(0, 0, 0, 0.6),
+      0 0 80px -20px rgba(255, 0, 0, 0.08);
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .clips-card:hover .clips-card-video {
+    transform: scale(1.01);
+  }
+
+  .clips-card-video iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .clips-card-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    max-width: 360px;
+    width: 100%;
+  }
+
+  .clips-card-number {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #ff4444;
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid rgba(255, 0, 0, 0.15);
+    padding: 3px 8px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.05em;
+  }
+
+  .clips-card-title {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.4;
+  }
+
+  /* ── Dots ── */
+  .clips-dots {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 24px max(20px, env(safe-area-inset-bottom));
+    flex-shrink: 0;
+  }
+
+  .clips-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+  }
+
+  .clips-dot:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(1.2);
+  }
+
+  .clips-dot.active {
+    background: #ff4444;
+    width: 24px;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .clips-card {
+      padding: 12px 20px;
+    }
+
+    .clips-card-video {
+      height: min(65vh, 480px);
+      border-radius: 16px;
+    }
+
+    .clips-arrow {
+      width: 40px;
+      height: 40px;
+    }
+
+    .clips-arrow-left { left: 8px; }
+    .clips-arrow-right { right: 8px; }
+
+    .clips-arrow svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .clips-immersive-header {
+      padding: max(12px, env(safe-area-inset-top)) 16px 4px;
+    }
+  }
+
+  @media (max-height: 600px) and (orientation: landscape) {
+    .clips-card {
+      flex-direction: row;
+      padding: 8px 80px;
+      gap: 20px;
+    }
+
+    .clips-card-video {
+      height: min(75vh, 300px);
+    }
+
+    .clips-card-info {
+      max-width: 200px;
+      flex-direction: column;
+      gap: 8px;
+    }
+  }
+</style>

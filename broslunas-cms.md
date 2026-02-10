@@ -82,6 +82,24 @@ Cada entrada de transcripción tiene:
 
 > 💡 **Ejemplo:** `00:01` — *"Bienvenidos a Veredillas FM"* / `00:15` — *"Hoy hablaremos sobre el mercadillo"*
 
+#### 🎬 Clips Destacados (`clips`)
+
+Permiten destacar **fragmentos de vídeo de YouTube** relacionados con el episodio. Cada clip se incrustará como un reproductor de YouTube directamente en la página del episodio.
+
+Cada clip tiene:
+
+| Subcampo | Tipo | Descripción |
+|----------|------|-------------|
+| **Título** (`title`) | 🔤 Texto | Nombre descriptivo del clip. Ej: *"Momento más divertido"* |
+| **URL** (`url`) | 🔤 URL | Enlace al vídeo de YouTube. Ej: *"https://youtube.com/shorts/sLOydLPWelk"* |
+
+> 💡 **Formatos de URL compatibles:** Puedes pegar cualquier enlace de YouTube y se convertirá automáticamente:
+> - `https://youtube.com/shorts/VIDEO_ID`
+> - `https://www.youtube.com/watch?v=VIDEO_ID`
+> - `https://youtu.be/VIDEO_ID`
+>
+> **Ejemplo:** Puedes añadir varios clips por episodio, como: *"La anécdota del mercadillo"* con `https://youtube.com/shorts/sLOydLPWelk`
+
 ---
 
 ## 📝 Blog

@@ -5,6 +5,25 @@ tags:
   - Vida Diaria
   - Charla
   - Anécdotas
+clips:
+  - title: "¿Seríamos amigos de nuestros padres si tuviéramos su edad?"
+    url: "https://youtube.com/shorts/sLOydLPWelk"
+  - title: "El miedo a empezar un nuevo curso y la importancia de superar la soledad"
+    url: "https://youtube.com/shorts/aRNKXsRFEp0"
+  - title: "El miedo y la incertidumbre al cumplir 18 una etapa que debería concienciarse más"
+    url: "https://youtube.com/shorts/ScAmDxUyASQ"
+  - title: "Empezar de cero el desafío y la adaptación en un nuevo lugar"
+    url: "https://youtube.com/shorts/IpaeeXibRtw"
+  - title: "La importancia de ser auténtico para atraer a las personas correctas"
+    url: "https://youtube.com/shorts/13ScgZ9cZoQ"
+  - title: "La relación profunda entre profesores y alumnos que pocos conocen"
+    url: "https://youtube.com/shorts/jzaMG9AD1KI"
+  - title: "Mentalidad ganadora prepararse para el examen y la vida con confianza"
+    url: "https://youtube.com/shorts/H38HoPnxMLY"
+  - title: "Vivir la vida al límite con responsabilidad reflexiones sobre el tiempo y el ritmo personal"
+    url: "https://youtube.com/shorts/9hFOsgLUSKM"
+  - title: "La soledad elegida vs la soledad impuesta aprender a estar solo sin sentirse solo"
+    url: "https://youtu.be/zMMMF2_vXL8"    
 transcription:
   - time: '00:00'
     text: >-
