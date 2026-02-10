@@ -5,20 +5,60 @@ import EpisodeCard from './EpisodeCard.astro';
 interface Props {
   currentSlug: string;
   tags: string[];
+  listenedEpisodes?: string[];
+  favoriteEpisodes?: string[];
 }
 
-const { currentSlug, tags } = Astro.props;
+const { currentSlug, tags = [], listenedEpisodes = [], favoriteEpisodes = [] } = Astro.props;
 
 const allEpisodes = await getCollection('episodios');
 
-// Filter: exclude current, calculate matching score
+// 1. Build User Taste Profile
+const userTasteTags = new Map<string, number>();
+
+if (listenedEpisodes.length > 0 || favoriteEpisodes.length > 0) {
+    allEpisodes.forEach(ep => {
+        const episodeTags = ep.data.tags || [];
+        if (favoriteEpisodes.includes(ep.slug)) {
+            episodeTags.forEach(t => userTasteTags.set(t, (userTasteTags.get(t) || 0) + 3)); // High weight for favorites
+        } else if (listenedEpisodes.includes(ep.slug)) {
+            episodeTags.forEach(t => userTasteTags.set(t, (userTasteTags.get(t) || 0) + 1)); // Lower weight for history
+        }
+    });
+}
+
+// 2. Score and Filter Candidates
 const candidates = allEpisodes
-  .filter((ep) => ep.slug !== currentSlug)
+  .filter((ep) => {
+      // Exclude current
+      if (ep.slug === currentSlug) return false;
+      // Exclude listened (as per user request "podcast que no haya escuchado")
+      if (listenedEpisodes.includes(ep.slug)) return false;
+      return true;
+  })
   .map((ep) => {
-    const shared = ep.data.tags.filter((t) => tags.includes(t));
+    // Score based on:
+    // A. Contextual Relevance (matches current episode tags)
+    const episodeTags = ep.data.tags || [];
+    const contextMatches = episodeTags.filter((t) => tags.includes(t)).length;
+    
+    // B. User Personalization (matches user taste profile)
+    let userAffinityScore = 0;
+    episodeTags.forEach(t => {
+        if (userTasteTags.has(t)) {
+            userAffinityScore += userTasteTags.get(t) || 0;
+        }
+    });
+
+    // Normalize or cap affinity so it doesn't completely overpower context? 
+    // Actually, allowing it to overpower is fine if it means highly relevant to USER.
+    // Example: Context matches 2 tags = 6 points. User loves 'tech' (10 points). 
+    // Episode with 'tech' but no context match gets 10 points. 
+    // Episode with both gets 16. Seems fair.
+    
     return {
       ep,
-      score: shared.length,
+      score: (contextMatches * 3) + userAffinityScore,
       // Tie-breaker: recency
       date: ep.data.pubDate.valueOf() 
     };
@@ -31,12 +71,14 @@ candidates.sort((a, b) => {
 });
 
 const relatedEpisodes = candidates.slice(0, 3).map(c => c.ep);
+
+const sectionTitle = listenedEpisodes.length > 0 ? "Seleccionado para ti" : "También te podría interesar";
 ---
 
 {relatedEpisodes.length > 0 && (
   <section class="related-section">
     <div class="container">
-      <h2 class="section-title">También te podría interesar</h2>
+      <h2 class="section-title">{sectionTitle}</h2>
       <div class="related-grid">
         {relatedEpisodes.map((ep) => (
           <div class="related-card-wrapper">
@@ -59,11 +101,13 @@ const relatedEpisodes = candidates.slice(0, 3).map(c => c.ep);
     font-size: 1.75rem;
     margin-bottom: var(--spacing-lg);
     color: var(--color-text-main);
+    text-align: center;
   }
 
   .related-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: var(--spacing-lg);
+    justify-content: center;
   }
 </style>

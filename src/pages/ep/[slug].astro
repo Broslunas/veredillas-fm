@@ -67,6 +67,9 @@ let savedProgress = 0;
 const cookieHeader = Astro.request.headers.get('cookie'); // or Astro.cookies.get('auth-token')
 
 // Safely attempt to read progress if logged in
+let listenedEpisodes: string[] = [];
+let favoriteEpisodes: string[] = [];
+
 try {
     const token = Astro.cookies.get('auth-token')?.value;
     if (token) {
@@ -78,10 +81,17 @@ try {
             }
             
             const user = await User.findById(userPayload.userId);
-            if (user && user.playbackHistory) {
-                const historyItem = user.playbackHistory.find(h => h.episodeSlug === slug);
-                if (historyItem && !historyItem.completed) {
-                   savedProgress = historyItem.progress || 0;
+            if (user) {
+                if (user.playbackHistory) {
+                    const historyItem = user.playbackHistory.find((h: any) => h.episodeSlug === slug);
+                    if (historyItem && !historyItem.completed) {
+                       savedProgress = historyItem.progress || 0;
+                    }
+                    listenedEpisodes = user.playbackHistory.map((h: any) => h.episodeSlug);
+                }
+                
+                if (user.favorites) {
+                    favoriteEpisodes = user.favorites;
                 }
             }
         }
@@ -241,7 +251,12 @@ try {
             </div>
         )}
 
-        <RelatedEpisodes currentSlug={entry.slug} tags={entry.data.tags} />
+        <RelatedEpisodes 
+            currentSlug={entry.slug} 
+            tags={entry.data.tags} 
+            listenedEpisodes={listenedEpisodes}
+            favoriteEpisodes={favoriteEpisodes}
+        />
     </article>
 </Layout>
 
