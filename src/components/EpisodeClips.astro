@@ -129,7 +129,7 @@ const embedClips = clips?.map(clip => ({
       const card = cards[index];
       if (!card) return;
       const iframe = card.querySelector('iframe');
-      if (iframe && !iframe.src && iframe.dataset.src) {
+      if (iframe && !iframe.hasAttribute('src') && iframe.dataset.src) {
         iframe.src = iframe.dataset.src;
       }
     }
@@ -153,7 +153,18 @@ const embedClips = clips?.map(clip => ({
       if (index < cards.length - 1) loadIframe(index + 1);
     }
 
+    function unloadAllIframes() {
+      cards.forEach(card => {
+        const iframe = card.querySelector('iframe');
+        if (iframe) {
+          iframe.removeAttribute('src');
+        }
+      });
+    }
+
     function open() {
+      // Ensure all iframes are clean before reopening
+      unloadAllIframes();
       overlay.classList.add('active');
       document.body.style.overflow = 'hidden';
       currentIndex = 0;
@@ -166,10 +177,7 @@ const embedClips = clips?.map(clip => ({
     function close() {
       overlay.classList.remove('active');
       document.body.style.overflow = '';
-      cards.forEach(card => {
-        const iframe = card.querySelector('iframe');
-        if (iframe && iframe.src) iframe.src = '';
-      });
+      unloadAllIframes();
     }
 
     openBtn.addEventListener('click', open);
