@@ -781,7 +781,7 @@ duration: 36 min
 isPremiere: true
 season: 1
 episode: 8
-image: 'https://cdn.broslunas.com/img/008-v3.webp'
+image: 'https://cdn.veredillasfm.es/images/008.webp'
 audioUrl: >-
   https://d3ctxlq1ktw2nl.cloudfront.net/staging/2026-0-29/417069938-44100-2-bdb88e185d608.mp3
 videoUrl: 'https://www.youtube.com/embed/02fWDRgSuNw?si=qZbH5kri82fj6aVs'
