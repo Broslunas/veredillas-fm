@@ -7,6 +7,7 @@ export interface IComment extends mongoose.Document {
   email: string;
   text: string;
   createdAt: Date;
+  likes: string[];
 }
 
 const CommentSchema = new mongoose.Schema({
@@ -44,6 +45,10 @@ const CommentSchema = new mongoose.Schema({
     min: 0,
     max: 5,
     default: 0
+  },
+  likes: {
+    type: [String],
+    default: []
   },
   verificationToken: {
     type: String,

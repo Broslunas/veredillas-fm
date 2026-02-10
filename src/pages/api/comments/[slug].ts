@@ -6,7 +6,7 @@ import { getUserFromCookie } from '../../../lib/auth';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, request }) => {
   const { slug } = params;
 
   if (!slug) {
@@ -21,14 +21,24 @@ export const GET: APIRoute = async ({ params }) => {
     // Sort by newest first, only show verified comments
     const comments = await Comment.find({ slug, isVerified: true }).sort({ createdAt: -1 }).lean();
 
+    // Check for authentication to determine if user liked comments
+    const cookieHeader = request.headers.get('cookie');
+    const userPayload = getUserFromCookie(cookieHeader);
+    const currentUserId = userPayload?.userId;
+
     const commentsWithAvatar = comments.map((c: any) => {
       // Handle legacy comments that might not have an email
       const email = c.email ? c.email.trim().toLowerCase() : 'anonymous@example.com';
       const emailHash = crypto.createHash('md5').update(email).digest('hex');
       
+      const likes = c.likes || [];
+      const isLiked = currentUserId ? likes.includes(currentUserId) : false;
+
       return {
         ...c,
-        avatar: `https://www.gravatar.com/avatar/${emailHash}?d=retro&s=100`
+        avatar: `https://www.gravatar.com/avatar/${emailHash}?d=retro&s=100`,
+        likesCount: likes.length,
+        isLiked
       };
     });
     
