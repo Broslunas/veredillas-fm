@@ -11,7 +11,7 @@ description: >-
   Un análisis profundo y sin tapujos sobre el amor, la pareja y las relaciones
   modernas con Saray y Antonieta.
 pubDate: '2026-02-11T17:00:00Z'
-duration: ¿?
+duration: '37'
 isPremiere: true
 season: 1
 episode: 9
