@@ -5,70 +5,6 @@ tags:
   - Vida Diaria
   - Charla
   - Anécdotas
-clips:
-  - title: "¿Seríamos amigos de nuestros padres si tuviéramos su edad?"
-    url: "https://youtube.com/shorts/sLOydLPWelk"
-  - title: "El miedo a empezar un nuevo curso y la importancia de superar la soledad"
-    url: "https://youtube.com/shorts/aRNKXsRFEp0"
-  - title: "El miedo y la incertidumbre al cumplir 18 una etapa que debería concienciarse más"
-    url: "https://youtube.com/shorts/ScAmDxUyASQ"
-  - title: "Empezar de cero el desafío y la adaptación en un nuevo lugar"
-    url: "https://youtube.com/shorts/IpaeeXibRtw"
-  - title: "La importancia de ser auténtico para atraer a las personas correctas"
-    url: "https://youtube.com/shorts/13ScgZ9cZoQ"
-  - title: "La relación profunda entre profesores y alumnos que pocos conocen"
-    url: "https://youtube.com/shorts/jzaMG9AD1KI"
-  - title: "Mentalidad ganadora prepararse para el examen y la vida con confianza"
-    url: "https://youtube.com/shorts/H38HoPnxMLY"
-  - title: "Vivir la vida al límite con responsabilidad reflexiones sobre el tiempo y el ritmo personal"
-    url: "https://youtube.com/shorts/9hFOsgLUSKM"
-  - title: "La soledad elegida vs la soledad impuesta aprender a estar solo sin sentirse solo"
-    url: "https://youtu.be/zMMMF2_vXL8"    
-
-description: >-
-  Un episodio relajado donde Carlos y Gustavo comparten sus experiencias
-  personales y reflexionan sobre las situaciones cotidianas de la vida.
-pubDate: '2026-01-29T17:00:00.000Z'
-duration: 36 min
-isPremiere: true
-season: 1
-episode: 8
-image: 'https://cdn.veredillasfm.es/images/008.webp'
-audioUrl: >-
-  https://d3ctxlq1ktw2nl.cloudfront.net/staging/2026-0-29/417069938-44100-2-bdb88e185d608.mp3
-videoUrl: 'https://www.youtube.com/embed/02fWDRgSuNw?si=qZbH5kri82fj6aVs'
-participants:
-  - Carlos
-  - Gustavo
-sections:
-  - time: '00:00'
-    title: 'Intro: Empezar de cero'
-  - time: '01:20'
-    title: La relación con los profesores
-  - time: '04:57'
-    title: 'Cumplir 18 años: ¿Gorilones o niños?'
-  - time: '09:58'
-    title: '"Cada escaloncito te sube al rascacielos"'
-  - time: '11:39'
-    title: El miedo al cambio y la incertidumbre
-  - time: '14:07'
-    title: ¿Seríamos amigos de nuestros padres?
-  - time: '16:05'
-    title: 'Bukowski: ¿Libertad o Soledad?'
-  - time: '17:46'
-    title: Aprender a vivir solo sin sentirse solo
-  - time: '21:08'
-    title: El valor de un "reset" social
-  - time: '24:10'
-    title: Sobre los consejos y quién los da
-  - time: '25:05'
-    title: 'Historia: Primeros amigos en el instituto'
-  - time: '31:19'
-    title: 'Mentalidad: "The hardest worker in the room"'
-  - time: '32:50'
-    title: El sistema educativo y la PAU
-  - time: '35:43'
-    title: La apuesta del GTA VI
 transcription:
   - time: '00:00'
     text: >-
@@ -837,6 +773,75 @@ transcription:
       sin más que decir, hasta un nuevo pódcast. Y recuerden, escuchando esto
       desde Veredias FM, donde te mantenemos al pendiente de los temas más
       candentes
+clips:
+  - title: ¿Seríamos amigos de nuestros padres si tuviéramos su edad?
+    url: 'https://youtube.com/shorts/sLOydLPWelk'
+  - title: El miedo a empezar un nuevo curso y la importancia de superar la soledad
+    url: 'https://youtube.com/shorts/aRNKXsRFEp0'
+  - title: >-
+      El miedo y la incertidumbre al cumplir 18 una etapa que debería
+      concienciarse más
+    url: 'https://youtube.com/shorts/ScAmDxUyASQ'
+  - title: Empezar de cero el desafío y la adaptación en un nuevo lugar
+    url: 'https://youtube.com/shorts/IpaeeXibRtw'
+  - title: La importancia de ser auténtico para atraer a las personas correctas
+    url: 'https://youtube.com/shorts/13ScgZ9cZoQ'
+  - title: La relación profunda entre profesores y alumnos que pocos conocen
+    url: 'https://youtube.com/shorts/jzaMG9AD1KI'
+  - title: Mentalidad ganadora prepararse para el examen y la vida con confianza
+    url: 'https://youtube.com/shorts/H38HoPnxMLY'
+  - title: >-
+      Vivir la vida al límite con responsabilidad reflexiones sobre el tiempo y
+      el ritmo personal
+    url: 'https://youtube.com/shorts/9hFOsgLUSKM'
+  - title: >-
+      La soledad elegida vs la soledad impuesta aprender a estar solo sin
+      sentirse solo
+    url: 'https://youtu.be/zMMMF2_vXL8'
+description: >-
+  Un episodio relajado donde Carlos y Gustavo comparten sus experiencias
+  personales y reflexionan sobre las situaciones cotidianas de la vida.
+pubDate: '2026-01-29T17:00:00.000Z'
+duration: 36 min
+isPremiere: true
+season: 1
+episode: 8
+image: 'https://cdn.veredillasfm.es/images/008-v2.jpeg'
+audioUrl: >-
+  https://d3ctxlq1ktw2nl.cloudfront.net/staging/2026-0-29/417069938-44100-2-bdb88e185d608.mp3
+videoUrl: 'https://www.youtube.com/embed/02fWDRgSuNw?si=qZbH5kri82fj6aVs'
+participants:
+  - Carlos
+  - Gustavo
+sections:
+  - time: '00:00'
+    title: 'Intro: Empezar de cero'
+  - time: '01:20'
+    title: La relación con los profesores
+  - time: '04:57'
+    title: 'Cumplir 18 años: ¿Gorilones o niños?'
+  - time: '09:58'
+    title: '"Cada escaloncito te sube al rascacielos"'
+  - time: '11:39'
+    title: El miedo al cambio y la incertidumbre
+  - time: '14:07'
+    title: ¿Seríamos amigos de nuestros padres?
+  - time: '16:05'
+    title: 'Bukowski: ¿Libertad o Soledad?'
+  - time: '17:46'
+    title: Aprender a vivir solo sin sentirse solo
+  - time: '21:08'
+    title: El valor de un "reset" social
+  - time: '24:10'
+    title: Sobre los consejos y quién los da
+  - time: '25:05'
+    title: 'Historia: Primeros amigos en el instituto'
+  - time: '31:19'
+    title: 'Mentalidad: "The hardest worker in the room"'
+  - time: '32:50'
+    title: El sistema educativo y la PAU
+  - time: '35:43'
+    title: La apuesta del GTA VI
 ---
 
 **¡Bienvenidos a otro episodio de Veredillas FM!**
