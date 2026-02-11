@@ -16,7 +16,8 @@ isPremiere: true
 season: 1
 episode: 9
 image: 'https://cdn.veredillasfm.es/images/009-v4.jpg'
-audioUrl: 'https://example.com/veredillas-fm-episodio-5.mp3'
+audioUrl: >-
+  https://d3ctxlq1ktw2nl.cloudfront.net/staging/2026-1-11/417906950-44100-2-1d920a32dd59a.mp3
 videoUrl: 'https://www.youtube.com/embed/y-aEbuts0fg'
 participants:
   - Saray
