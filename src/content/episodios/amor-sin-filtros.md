@@ -897,6 +897,55 @@ transcription:
       llegado la hora. Y bueno, espero que les haya gustado, hayan aprendido
       algo nuevo, y recuerden, manténganse al pendiente de los temas más
       candentes en Verrerías FM. Hasta luego, señores.
+sections:
+  - time: '00:02'
+    title: Bienvenida e Introducción al Tema del Amor
+  - time: '00:29'
+    title: Presentación de Invitados
+  - time: '01:01'
+    title: ¿Qué es el Noviazgo y Cómo se Demuestra el Amor?
+  - time: '02:35'
+    title: Atracción Física vs. Personalidad en el Amor
+  - time: '03:45'
+    title: Distintos Tipos de Atracción
+  - time: '05:46'
+    title: Expectativas y Cambios en una Relación
+  - time: '07:18'
+    title: La Importancia de la Reciprocidad
+  - time: '09:24'
+    title: ¿Dónde Dibujar la Línea en una Relación?
+  - time: '10:25'
+    title: Falta de Respeto y Límites
+  - time: '12:11'
+    title: La Primera Impresión y el Aspecto Físico
+  - time: '13:53'
+    title: El Hábito del Cuidado Personal Diario
+  - time: '15:31'
+    title: Amistad vs. Relaciones Amorosas
+  - time: '16:31'
+    title: Estrategias para Conocer a Alguien
+  - time: '18:10'
+    title: La Importancia de la Opinión en la Amistad
+  - time: '19:54'
+    title: Los Chismes y su Impacto
+  - time: '23:04'
+    title: Redes Sociales y las Relaciones Modernas
+  - time: '25:39'
+    title: Amenazas y Dominio en las Relaciones
+  - time: '27:05'
+    title: El Amor Propio Como Prioridad
+  - time: '28:53'
+    title: Relaciones Tóxicas e Idealización del Amor
+  - time: '30:38'
+    title: La Planificación en las Relaciones
+  - time: '31:40'
+    title: Prioridades y Tiempo en una Relación
+  - time: '33:37'
+    title: Consejos Para Mantener una Buena Relación
+  - time: '35:13'
+    title: Detectar Puntos de Quiebre
+  - time: '36:53'
+    title: Cierre y Despedida
 ---
 # Amor Sin Filtros: Un Diálogo Abierto con Saray y Antonieta
 
