@@ -4,22 +4,6 @@ tags:
   - Amor
   - Relaciones
   - Sin filtros
-description: >-
-  Un análisis profundo y sin tapujos sobre el amor, la pareja y las relaciones
-  modernas con Saray y Antonieta.
-pubDate: '2026-02-11T17:00:00Z'
-duration: 37 min
-isPremiere: true
-season: 1
-episode: 9
-image: 'https://cdn.veredillasfm.es/images/009-v4.jpg'
-audioUrl: >-
-  https://d3ctxlq1ktw2nl.cloudfront.net/staging/2026-1-11/417906950-44100-2-1d920a32dd59a.mp3
-videoUrl: 'https://www.youtube.com/embed/y-aEbuts0fg'
-participants:
-  - Saray
-  - Antonieta
-  - Diego
 transcription:
   - time: '00:02'
     text: >-
@@ -894,6 +878,22 @@ transcription:
       llegado la hora. Y bueno, espero que les haya gustado, hayan aprendido
       algo nuevo, y recuerden, manténganse al pendiente de los temas más
       candentes en Verrerías FM. Hasta luego, señores.
+description: >-
+  Un análisis profundo y sin tapujos sobre el amor, la pareja y las relaciones
+  modernas con Saray y Antonieta.
+pubDate: '2026-02-11T17:00:00Z'
+duration: 37 min
+isPremiere: true
+season: 1
+episode: 9
+image: 'https://cdn.veredillasfm.es/images/009-v4.jpg'
+audioUrl: >-
+  https://d3ctxlq1ktw2nl.cloudfront.net/staging/2026-1-11/417906950-44100-2-1d920a32dd59a.mp3
+videoUrl: 'https://www.youtube.com/embed/y-aEbuts0fg'
+participants:
+  - Saray
+  - Antonieta
+  - Diego
 sections:
   - time: '00:02'
     title: Bienvenida e Introducción al Tema del Amor
@@ -943,6 +943,17 @@ sections:
     title: Detectar Puntos de Quiebre
   - time: '36:53'
     title: Cierre y Despedida
+clips:
+  - title: La analogía del 'balón de voleibol' para las relaciones
+    url: 'https://youtube.com/shorts/qNWLD02IFwk'
+  - title: El poder y peligro de los chismes en las relaciones y amistades
+    url: 'https://youtube.com/shorts/-ZXyyPqqfyE'
+  - title: >-
+      Consejos prácticos para mantener relaciones saludables y detectar las
+      green flags que importan
+    url: 'https://youtube.com/shorts/QcLxXxCn9yY'
+  - title: Amistad o amor El dilema
+    url: 'https://youtube.com/shorts/eeyrRHKtqFU'
 ---
 # Amor Sin Filtros: Un Diálogo Abierto con Saray y Antonieta
 
