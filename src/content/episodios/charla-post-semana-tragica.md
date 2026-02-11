@@ -15,7 +15,7 @@ duration: ¿?
 isPremiere: true
 season: 1
 episode: 10
-image: 'https://cdn.veredillasfm.es/images/010.webp'
+image: 'https://cdn.veredillasfm.es/interno.png'
 audioUrl: 'https://example.com/veredillas-fm-episodio-5.mp3'
 videoUrl: 'https://youtube.com/embed/PONER_AQUI'
 ---
