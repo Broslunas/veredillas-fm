@@ -44,12 +44,17 @@ const now = new Date();
         <div class="episodes-grid" id="episodes-grid">
             {sortedEpisodes.map((post, index) => {
                  const isUpcoming = post.data.pubDate > now;
-                 const searchContent = `${post.data.title} ${post.data.description} ${post.data.participants?.join(' ') || ''}`.toLowerCase();
+                 // Calculate if it's about to premiere (<= 2 hours)
+                 const diffInHours = (new Date(post.data.pubDate).getTime() - now.getTime()) / (1000 * 60 * 60);
+                 const isAboutToPremiere = isUpcoming && diffInHours <= 2;
+                 
+                 const searchContent = `${post.data.title} ${post.data.description || ''} ${post.data.participants?.join(' ') || ''}`.toLowerCase();
                  return (
                     <div 
-                        class={`episode-item fade-in-up ${isUpcoming ? 'upcoming-item hidden-upcoming' : ''}`}
+                        class={`episode-item fade-in-up ${isUpcoming && !isAboutToPremiere ? 'upcoming-item hidden-upcoming' : ''}`}
                         data-search-content={searchContent}
                         data-is-upcoming={isUpcoming.toString()}
+                        data-is-about-to-premiere={isAboutToPremiere.toString()}
                         style={`--delay: ${index % 6}`}
                     >
                          <EpisodeCard post={post} />
@@ -88,8 +93,9 @@ const now = new Date();
                 const itemEl = item as HTMLElement;
                 const searchContent = itemEl.getAttribute('data-search-content') || '';
                 const isUpcoming = itemEl.getAttribute('data-is-upcoming') === 'true';
+                const isAboutToPremiere = itemEl.getAttribute('data-is-about-to-premiere') === 'true';
                 
-                const matchesUpcoming = showUpcoming || !isUpcoming;
+                const matchesUpcoming = showUpcoming || !isUpcoming || isAboutToPremiere;
                 const matchesSearch = searchTerm === '' || searchContent.includes(searchTerm);
 
                 if (matchesUpcoming && matchesSearch) {
