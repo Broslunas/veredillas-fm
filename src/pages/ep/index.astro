@@ -6,7 +6,23 @@ import { getCollection } from 'astro:content';
 const allEpisodes = await getCollection('episodios');
 const sortedEpisodes = allEpisodes.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
+
 const now = new Date();
+
+const episodesWithMeta = sortedEpisodes.map(post => {
+    const isUpcoming = post.data.pubDate > now;
+    // Calculate if it's about to premiere (<= 2 hours)
+    const diffInHours = (new Date(post.data.pubDate).getTime() - now.getTime()) / (1000 * 60 * 60);
+    const isAboutToPremiere = isUpcoming && diffInHours <= 2;
+    const searchContent = `${post.data.title} ${post.data.description || ''} ${post.data.participants?.join(' ') || ''}`.toLowerCase();
+    
+    return {
+        post,
+        isUpcoming,
+        isAboutToPremiere,
+        searchContent
+    };
+});
 ---
 
 <Layout 
@@ -42,13 +58,7 @@ const now = new Date();
         </header>
 
         <div class="episodes-grid" id="episodes-grid">
-            {sortedEpisodes.map((post, index) => {
-                 const isUpcoming = post.data.pubDate > now;
-                 // Calculate if it's about to premiere (<= 2 hours)
-                 const diffInHours = (new Date(post.data.pubDate).getTime() - now.getTime()) / (1000 * 60 * 60);
-                 const isAboutToPremiere = isUpcoming && diffInHours <= 2;
-                 
-                 const searchContent = `${post.data.title} ${post.data.description || ''} ${post.data.participants?.join(' ') || ''}`.toLowerCase();
+            {episodesWithMeta.map(({ post, isUpcoming, isAboutToPremiere, searchContent }, index) => {
                  return (
                     <div 
                         class={`episode-item fade-in-up ${isUpcoming && !isAboutToPremiere ? 'upcoming-item hidden-upcoming' : ''}`}
