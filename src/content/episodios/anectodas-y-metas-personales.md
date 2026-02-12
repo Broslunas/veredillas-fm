@@ -14,9 +14,9 @@ image: 'https://cdn.veredillasfm.es/images/012.png'
 participants:
   - Christopher
 season: 1
-episode: 14
+episode: 12
 duration: ¿?
-pubDate: 2026-02-25
+pubDate: '2026-02-25T17:00:00.000Z'
 ---
 # Anécdotas y Metas Personales con Christopher
 
