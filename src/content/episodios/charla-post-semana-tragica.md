@@ -10,7 +10,7 @@ tags:
 description: >-
   Podcast divertido sobre la vida estudiantil post-exámenes. ¡Anécdotas, debates
   y risas aseguradas! Suscríbete y comparte con tus amigos.
-pubDate: '2026-02-13T17:17:00.000Z'
+pubDate: '2026-02-27T17:17:00.000Z'
 duration: ¿?
 isPremiere: true
 season: 1
