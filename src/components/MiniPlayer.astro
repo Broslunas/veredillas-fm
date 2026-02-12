@@ -119,6 +119,12 @@ import './player/SharedPlayerStyles.css';
          window.playerSlug = null;
     }
         
+    if (!window.playerCurrentUrl) {
+         window.playerCurrentUrl = null;
+         window.playerMeta = null;
+         window.playerSlug = null;
+    }
+        
     const fac = new FastAverageColor();
 
     // Shared AudioContext to prevent "Max AudioContexts" error
@@ -439,9 +445,11 @@ import './player/SharedPlayerStyles.css';
                  if(window.playerSlug) syncPlaybackHistory(window.playerSlug, audioElement.duration, audioElement.duration, true);
              };
              
-             // Visualizer
+             // Visualizer & Voice Boost (Always Active)
              let analyser: AnalyserNode;
              let source: MediaElementAudioSourceNode;
+             let compressor: DynamicsCompressorNode;
+             let gainNode: GainNode;
              let canvas = container.querySelector('#audioVisualizer') as HTMLCanvasElement;
              
              const initVisualizer = () => {
@@ -460,12 +468,28 @@ import './player/SharedPlayerStyles.css';
                  if (!analyser) {
                       try {
                           source = globalAudioCtx.createMediaElementSource(audioElement);
+                          compressor = globalAudioCtx.createDynamicsCompressor();
+                          gainNode = globalAudioCtx.createGain();
                           analyser = globalAudioCtx.createAnalyser();
+
                           analyser.fftSize = 512; // Higher resolution for better bass definition
                           analyser.smoothingTimeConstant = 0.85; // Smoother fallback
                           
-                          source.connect(analyser);
+                          // Graph: Source -> Compressor -> Gain -> Analyser -> Destination
+                          source.connect(compressor);
+                          compressor.connect(gainNode);
+                          gainNode.connect(analyser); 
                           analyser.connect(globalAudioCtx.destination);
+                          
+                          // Convert to Always-On Voice Boost (Radio Processing)
+                          compressor.threshold.value = -24;
+                          compressor.knee.value = 30;
+                          compressor.ratio.value = 12;
+                          compressor.attack.value = 0.003;
+                          compressor.release.value = 0.25;
+                          
+                          // Makeup Gain +6dB hardcoded
+                          gainNode.gain.value = 2.0; 
                           
                           draw();
                       } catch(e) {
