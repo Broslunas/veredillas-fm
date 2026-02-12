@@ -17,6 +17,6 @@ participants:
 season: 1
 episode: 10
 duration: ¿?
-pubDate: '2026-02-20T17:17:00.000Z'
+pubDate: '2026-02-20T17:00:00.000Z'
 ---
 Recibimos a una visita muy especial desde el IES Viera y Clavijo. Diego Torres, un gran amigo, se sienta con nosotros para hablar sobre su conexión con Las Veredillas, cómo ha logrado tener tanta repercusión en nuestro centro sin ser alumno oficial, y por fin desvelamos el misterio: ¿Quién es realmente Tifu?
