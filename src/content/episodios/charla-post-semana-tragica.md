@@ -14,7 +14,7 @@ pubDate: '2026-02-27T17:17:00.000Z'
 duration: ¿?
 isPremiere: true
 season: 1
-episode: null
+episode: 11
 image: 'https://cdn.veredillasfm.es/interno.png'
 audioUrl: 'https://example.com/veredillas-fm-episodio-5.mp3'
 videoUrl: 'https://youtube.com/embed/PONER_AQUI'
