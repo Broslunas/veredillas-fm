@@ -1,0 +1,712 @@
+---
+interface Props {
+  title: string;
+  image?: string;
+  guests?: string[];
+  url?: URL | string;
+  triggerId?: string;
+}
+
+const { title, image = '/logo.png', guests = [], url = Astro.url, triggerId } = Astro.props;
+---
+
+<!-- Trigger Button (Only if no external trigger ID provided) -->
+{!triggerId && (
+<button class="share-btn generator-btn" id="open-generator-btn" aria-label="Crear Story">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+    <polyline points="21 15 16 10 5 21"></polyline>
+  </svg>
+</button>
+)}
+
+<!-- Generator Modal -->
+<div id="generator-modal" class="generator-backdrop" data-trigger-id={triggerId}>
+    <div class="generator-dialog">
+        <div class="generator-header">
+            <h3>Crear Story para Instagram</h3>
+            <button class="close-btn" id="close-generator-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+
+        <div class="generator-content">
+            <!-- Controls -->
+            <div class="controls-panel">
+                <div class="input-group">
+                    <label for="card-title">Título</label>
+                    <input type="text" id="card-title" value={title} />
+                </div>
+                
+                <div class="input-group">
+                    <label for="card-guest">Invitado</label>
+                    <input type="text" id="card-guest" value={guests.join(', ') || ''} placeholder="Nombre del invitado" />
+                </div>
+                
+                <div class="input-group">
+                    <label for="card-quote">Frase Destacada</label>
+                    <textarea id="card-quote" rows="3" placeholder="Una frase inspiradora del episodio..."></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label>Imagen de Fondo</label>
+                    <div class="bg-options">
+                        <button class="bg-btn active" data-bg="cover">Portada</button>
+                        <button class="bg-btn" data-bg="gradient-1">Gradiente 1</button>
+                        <button class="bg-btn" data-bg="gradient-2">Gradiente 2</button>
+                        <button class="bg-btn" data-bg="gradient-3">Gradiente 3</button>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button id="download-card-btn" class="primary-btn">
+                        <span class="btn-text">Descargar Imagen</span>
+                        <span class="loading-spinner" style="display: none;">Wait...</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Area -->
+            <div class="preview-panel">
+                <div class="canvas-container">
+                    <div id="share-card" class="share-card">
+                        <!-- Background -->
+                        <div class="card-bg" id="card-bg-layer">
+                             <img src={image} alt="Background" class="bg-image blurred" />
+                             <div class="bg-overlay"></div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="card-content">
+                            <div class="brand-header">
+                                <img src="/logo.png" alt="Logo" class="brand-logo" crossorigin="anonymous" />
+                                <span class="brand-name">VEREDILLAS FM</span>
+                            </div>
+
+                            <div class="main-visual">
+                                 <img src={image} alt="Cover" class="cover-image" id="card-cover-img" />
+                            </div>
+
+                            <div class="text-content">
+                                <div class="episode-tag">NUEVO EPISODIO</div>
+                                <h1 class="card-title-text" id="preview-title">{title}</h1>
+                                <div class="card-guest-text" id="preview-guest" style={guests.length === 0 ? 'display:none' : ''}>
+                                    <span class="guest-label">FT.</span>
+                                    <span class="guest-name">{guests.join(', ')}</span>
+                                </div>
+                                <div class="card-quote-container" id="preview-quote-container" style="display:none">
+                                    <span class="quote-mark">“</span>
+                                    <p class="card-quote-text" id="preview-quote"></p>
+                                    <span class="quote-mark">”</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    import { toPng } from 'html-to-image';
+
+    const modal = document.getElementById('generator-modal');
+    const openBtn = document.getElementById('open-generator-btn');
+    const closeBtn = document.getElementById('close-generator-btn');
+    
+    // Inputs
+    const titleInput = document.getElementById('card-title') as HTMLInputElement;
+    const guestInput = document.getElementById('card-guest') as HTMLInputElement;
+    const quoteInput = document.getElementById('card-quote') as HTMLTextAreaElement;
+    
+    // Preview Elements
+    const previewTitle = document.getElementById('preview-title');
+    const previewGuest = document.getElementById('preview-guest');
+    const previewGuestName = previewGuest?.querySelector('.guest-name');
+    const previewQuoteContainer = document.getElementById('preview-quote-container');
+    const previewQuote = document.getElementById('preview-quote');
+    const cardBgLayer = document.getElementById('card-bg-layer');
+    
+    // Background Buttons
+    const bgBtns = document.querySelectorAll('.bg-btn');
+
+    // State
+    const toggleModal = (show: boolean) => {
+        if (show) {
+            modal?.classList.add('visible');
+            setTimeout(fitPreview, 50); // Calc scale after render
+        } else {
+            modal?.classList.remove('visible');
+        }
+    };
+
+    // Responsive Preview Scaling
+    const fitPreview = () => {
+        const panel = document.querySelector('.preview-panel');
+        const container = document.querySelector('.canvas-container') as HTMLElement;
+        if (!panel || !container) return;
+
+        const margin = 40;
+        const scale = Math.min(
+            (panel.clientWidth - margin) / 1080,
+            (panel.clientHeight - margin) / 1920
+        );
+        
+        // Prevent excessive scaling on huge screens, but ensuring fit is priority
+        // Minimum meaningful scale usually around 0.2 on mobile
+        container.style.transform = `scale(${Math.min(scale, 0.8)})`;
+    };
+
+    window.addEventListener('resize', fitPreview);
+
+    // Support external triggers (Restored)
+    const triggerId = modal?.dataset.triggerId;
+    if (triggerId) {
+        const extBtn = document.getElementById(triggerId);
+        if (extBtn) {
+            extBtn.addEventListener('click', () => toggleModal(true));
+        }
+    }
+
+    openBtn?.addEventListener('click', () => toggleModal(true));
+    closeBtn?.addEventListener('click', () => toggleModal(false));
+    modal?.addEventListener('click', (e) => {
+        if (e.target === modal) toggleModal(false);
+    });
+
+    // Update Logic
+    const updatePreview = () => {
+        if (titleInput && previewTitle) previewTitle.textContent = titleInput.value;
+        
+        if (guestInput && previewGuest && previewGuestName) {
+            const val = guestInput.value.trim();
+            if (val) {
+                previewGuestName.textContent = val;
+                previewGuest.style.display = 'flex';
+            } else {
+                previewGuest.style.display = 'none';
+            }
+        }
+        
+        if (quoteInput && previewQuote && previewQuoteContainer) {
+            const val = quoteInput.value.trim();
+            if (val) {
+                previewQuote.textContent = val;
+                previewQuoteContainer.style.display = 'flex';
+            } else {
+                previewQuoteContainer.style.display = 'none';
+            }
+        }
+    };
+
+    titleInput?.addEventListener('input', updatePreview);
+    guestInput?.addEventListener('input', updatePreview);
+    quoteInput?.addEventListener('input', updatePreview);
+
+    // Background selection
+    bgBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            bgBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const bgType = btn.getAttribute('data-bg');
+            if (cardBgLayer) {
+                cardBgLayer.className = 'card-bg'; // reset
+                if (bgType === 'cover') {
+                    // Default behavior (img + overlay)
+                } else {
+                     cardBgLayer.classList.add(bgType || '');
+                }
+            }
+        });
+    });
+
+    // Download Logic
+    const downloadBtn = document.getElementById('download-card-btn');
+    downloadBtn?.addEventListener('click', async () => {
+        const card = document.getElementById('share-card');
+        if (!card) return;
+
+        const originalText = downloadBtn.innerHTML;
+        downloadBtn.innerHTML = '<span class="loading-spinner">...</span> Generando...';
+        (downloadBtn as HTMLButtonElement).disabled = true;
+
+        try {
+            // Wait for images to be fully loaded
+            const images = Array.from(card.querySelectorAll('img'));
+            await Promise.all(images.map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = resolve; // Continue even if error
+                });
+            }));
+
+            // Small delay to ensure rendering matches
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const dataUrl = await toPng(card, {
+                quality: 0.95,
+                width: 1080,
+                height: 1920,
+                cacheBust: true, // Fix for CORS/Caching issues
+                skipAutoScale: true,
+                style: {
+                    transform: 'none', // Ensure the clone isn't scaled down
+                    transformOrigin: 'top left'
+                }
+            });
+
+            const link = document.createElement('a');
+            link.download = `veredillas-story-${Date.now()}.png`;
+            link.href = dataUrl;
+            link.click();
+        } catch (err) {
+            console.error('Error generating image', err);
+            // More detailed error for the user
+            alert(`Hubo un error al generar la imagen: ${err instanceof Error ? err.message : 'Error desconocido'}. Intenta de nuevo.`);
+        } finally {
+            downloadBtn.innerHTML = originalText;
+            (downloadBtn as HTMLButtonElement).disabled = false;
+        }
+    });
+
+</script>
+
+<style>
+  /* Button Styles (Matching SocialShare) */
+  .generator-btn:hover {
+      background: #E1306C !important; /* Instagram Color */
+      border-color: #E1306C !important;
+  }
+
+  /* Modal Styles */
+  .generator-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+  }
+  
+  .generator-backdrop.visible {
+      opacity: 1;
+      pointer-events: auto;
+  }
+
+  .generator-dialog {
+      background: #18181b;
+      border: 1px solid #27272a;
+      width: 95%;
+      max-width: 1000px;
+      height: 90vh;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  .generator-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #27272a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #18181b;
+  }
+
+  .generator-header h3 {
+      margin: 0;
+      color: white;
+      font-size: 1.25rem;
+  }
+
+  .close-btn {
+      background: transparent;
+      border: none;
+      color: #a1a1aa;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 6px;
+      transition: all 0.2s;
+  }
+  
+  .close-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: white;
+  }
+
+  .generator-content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+  }
+
+  /* Controls Panel */
+  .controls-panel {
+      width: 350px;
+      padding: 1.5rem;
+      border-right: 1px solid #27272a;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      background: #18181b;
+  }
+
+  .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+  }
+
+  .input-group label {
+      color: #a1a1aa;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+  }
+
+  .input-group input, .input-group textarea {
+      background: #27272a;
+      border: 1px solid #3f3f46;
+      border-radius: 8px;
+      padding: 0.75rem;
+      color: white;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+  }
+
+  .input-group input:focus, .input-group textarea:focus {
+      border-color: #8b5cf6;
+  }
+
+  .bg-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+  }
+
+  .bg-btn {
+      background: #27272a;
+      border: 1px solid #3f3f46;
+      color: #d4d4d8;
+      padding: 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+  }
+
+  .bg-btn.active {
+      background: #8b5cf6;
+      color: white;
+      border-color: #8b5cf6;
+  }
+
+  .primary-btn {
+      width: 100%;
+      padding: 1rem;
+      background: #8b5cf6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: auto;
+  }
+
+  .primary-btn:hover {
+      background: #7c3aed;
+  }
+  
+  .primary-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+  }
+
+  /* Preview Panel */
+  .preview-panel {
+      flex: 1;
+      background: #09090b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      overflow: hidden;
+  }
+
+  .canvas-container {
+      /* Dynamic scale via JS, default fallback */
+      transform: scale(0.3); 
+      transform-origin: center;
+      box-shadow: 0 0 50px rgba(0,0,0,0.5);
+      border-radius: 24px;
+      transition: transform 0.2s ease-out;
+  }
+
+  /* THE CARD - 1080x1920 */
+  .share-card {
+      width: 1080px;
+      height: 1920px;
+      background: #000;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      color: white;
+  }
+
+  /* Layers */
+  .card-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+  }
+
+  .bg-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: blur(40px) brightness(0.6);
+      transform: scale(1.1); /* Avoid white edges from blur */
+  }
+
+  .bg-overlay {
+      position: absolute;
+      inset: 0;
+      /* More vibrant overlay */
+      background: radial-gradient(circle at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 100%);
+  }
+  
+  /* Gradient Backgrounds */
+  .card-bg.gradient-1 { background: linear-gradient(135deg, #FF0080 0%, #7928CA 100%); }
+  .card-bg.gradient-1 .bg-image { display: none; }
+  
+  .card-bg.gradient-2 { background: linear-gradient(135deg, #0cebeb 0%, #20e3b2 50%, #29ffc6 100%); }
+  .card-bg.gradient-2 .bg-image { display: none; }
+  
+  .card-bg.gradient-3 { background: linear-gradient(0deg, #0f172a 0%, #334155 100%); }
+  .card-bg.gradient-3 .bg-image { display: none; }
+
+
+  .card-content {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 120px 80px;
+      text-align: center;
+  }
+
+  .brand-header {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 60px;
+      opacity: 1;
+      background: rgba(0,0,0,0.3);
+      padding: 16px 32px;
+      border-radius: 100px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .brand-logo {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+  }
+
+  .brand-name {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+  }
+
+  .main-visual {
+      margin-bottom: 60px;
+      position: relative;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 1; 
+      max-height: 850px; 
+  }
+
+  .cover-image {
+      width: 100%;
+      height: 100%; 
+      max-height: 850px;
+      object-fit: contain;
+      border-radius: 40px;
+      filter: drop-shadow(0 40px 60px rgba(0,0,0,0.6));
+  }
+
+  .text-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+  }
+
+  .episode-tag {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(20px);
+      padding: 16px 40px;
+      border-radius: 100px;
+      font-size: 28px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 50px;
+      border: 1px solid rgba(255,255,255,0.3);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+
+  .card-title-text {
+      font-size: 64px;
+      line-height: 1.1;
+      font-weight: 800;
+      margin-bottom: 40px;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      max-width: 900px;
+      /* Clamp lines? */
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+  }
+
+  .card-guest-text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 60px;
+  }
+
+  .guest-label {
+      font-size: 28px;
+      color: rgba(255,255,255,0.8);
+      font-weight: 500;
+  }
+
+  .guest-name {
+      font-size: 48px;
+      font-weight: 700;
+      color: #d7d7d7; /* Gold/Yellow highlight */
+  }
+
+  .card-quote-container {
+      margin-top: 20px;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+  }
+
+  .quote-mark {
+      font-size: 120px;
+      line-height: 0.5;
+      font-family: serif;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 20px;
+  }
+
+  .card-quote-text {
+      font-size: 42px;
+      line-height: 1.4;
+      font-style: italic;
+      color: rgba(255,255,255,0.95);
+      font-weight: 300;
+  }
+
+  .card-footer {
+      margin-top: auto;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding-top: 60px;
+  }
+
+  .listen-on {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+  }
+
+  .website-pill {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(15px);
+      padding: 20px 48px;
+      border-radius: 100px;
+      border: 2px solid rgba(255,255,255,0.2);
+      color: white;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  }
+  
+  .website-text {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+  }
+
+  /* Responsive Adjustments for Mobile View of the Tool */
+  @media (max-width: 768px) {
+      .generator-dialog {
+          flex-direction: column;
+          height: 100%;
+          border-radius: 0;
+      }
+      
+      .controls-panel {
+          width: 100%;
+          height: 50%; /* Top half */
+          border-right: none;
+          border-bottom: 1px solid #27272a;
+      }
+      
+      .preview-panel {
+          height: 50%; /* Bottom half */
+          padding: 1rem;
+      }
+      
+      .canvas-container {
+          transform: scale(0.18); /* Much smaller on mobile */
+      }
+  }
+
+  @keyframes spin {
+      to { transform: rotate(360deg); }
+  }
+  
+  .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 8px;
+  }
+</style>

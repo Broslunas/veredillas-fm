@@ -15,6 +15,7 @@ import EpisodeRating from '../../components/EpisodeRating.astro';
 import PremiereCountdown from '../../components/PremiereCountdown.astro';
 import LiveChat from '../../components/LiveChat.astro';
 import ListenerCount from '../../components/ListenerCount.astro';
+import EpisodeActions from '../../components/EpisodeActions.astro';
 
 export const prerender = false;
 
@@ -192,6 +193,15 @@ try {
                         ></div>
                     ) : null}
                 </div>
+
+                <EpisodeActions 
+                    title={entry.data.title} 
+                    audioUrl={entry.data.audioUrl} 
+                    image={entry.data.image} 
+                    slug={entry.slug} 
+                    guests={entry.data.participants}
+                    duration={entry.data.duration}
+                />
             </div>
 
             {isPremiere && !hasPremiereEnded && (
@@ -242,6 +252,7 @@ try {
                 </div>
             </div>
         </div>
+
 
 
         <!-- Social Share -->

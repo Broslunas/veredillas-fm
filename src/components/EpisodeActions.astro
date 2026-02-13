@@ -1,0 +1,171 @@
+---
+import ShareCardGenerator from './ShareCardGenerator.astro';
+
+interface Props {
+  title: string;
+  audioUrl?: string;
+  image?: string;
+  guests?: string[];
+  slug?: string;
+  duration?: number | string;
+}
+
+const { title, audioUrl, image, guests, slug, duration } = Astro.props;
+---
+
+<div class="episode-actions-container">
+    <!-- Create Clip -->
+    <button id="action-create-clip" class="action-btn" data-audio-url={audioUrl} data-title={title} data-image={image} data-duration={duration}>
+        <span class="icon-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 0 0 5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2h-4c-1.35 0-2.58.5-3.6 1.4L6 9"/><path d="M6 2h4c1.35 0 2.58.5 3.6 1.4L18 9"/></svg>
+        </span>
+        <span class="label">Crear Clip</span>
+    </button>
+
+    <!-- Create Story (Uses invisible ShareCardGenerator via trigger) -->
+    <button id="action-create-story" class="action-btn">
+        <span class="icon-wrapper">
+             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+        </span>
+        <span class="label">Historia</span>
+    </button>
+
+    <!-- Comments -->
+    <a href="#comments" class="action-btn">
+        <span class="icon-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+        </span>
+        <span class="label">Comentarios</span>
+    </a>
+</div>
+
+<!-- The Hidden Generator Component -->
+<ShareCardGenerator 
+    title={title} 
+    image={image} 
+    guests={guests} 
+    triggerId="action-create-story" 
+/>
+
+<script>
+    declare global {
+        interface Window {
+            playerCurrentUrl: string | null;
+            playerMeta: any;
+        }
+    }
+
+    const clipBtn = document.querySelector('#action-create-clip');
+    
+    if (clipBtn) {
+        clipBtn.addEventListener('click', () => {
+            const url = clipBtn.getAttribute('data-audio-url');
+            const title = clipBtn.getAttribute('data-title');
+            const image = clipBtn.getAttribute('data-image');
+            const duration = clipBtn.getAttribute('data-duration'); // Might need parsing if string
+            
+            if (url) {
+                // Dispatch event for Layout/ClipModalWrapper
+                const evt = new CustomEvent('veredillas:open-clip-editor', {
+                     detail: {
+                         audioUrl: url,
+                         title: title || 'Episodio',
+                         author: 'Veredillas FM',
+                         cover: image || '/logo.png',
+                         duration: duration ? parseFloat(duration) : 0
+                     }
+                 });
+                 window.dispatchEvent(evt);
+            } else {
+                // Fallback: If no direct audio url (e.g. Spotify Only), try to grab from player state if active
+                // But better to alert if really no source.
+                if (window.playerCurrentUrl) {
+                     // We could use current player, but for now just alert constraint
+                     // alert('Reproduce el episodio primero para crear un clip.');
+                     // actually, let's try to grab from window.playerCurrentUrl if it matches this episode?
+                     // For now, simpler:
+                     alert('Esta función solo está disponible si hay un archivo de audio directo (no Spotify).');
+                } else {
+                     alert('No hay fuente de audio disponible para clips.');
+                }
+            }
+        });
+    }
+    
+    // Story button is handled by ShareCardGenerator via triggerId logic
+</script>
+
+<style>
+    .episode-actions-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 1.5rem;
+        margin-bottom: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        padding: 1rem;
+        border-radius: 12px;
+        color: #d4d4d8;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.9rem;
+        font-weight: 500;
+        width: 100%;
+    }
+    
+    .action-btn:hover {
+        background: rgba(139, 92, 246, 0.1);
+        border-color: rgba(139, 92, 246, 0.3);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.05);
+        color: #a1a1aa;
+        transition: all 0.2s;
+    }
+    
+    .action-btn:hover .icon-wrapper {
+        background: var(--color-primary);
+        color: white;
+    }
+
+    @media (max-width: 600px) {
+        .episode-actions-container {
+            gap: 0.5rem;
+        }
+        
+        .action-btn {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .icon-wrapper {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .icon-wrapper svg {
+            width: 18px;
+            height: 18px;
+        }
+    }
+</style>
