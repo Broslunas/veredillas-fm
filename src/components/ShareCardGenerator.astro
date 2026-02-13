@@ -53,9 +53,21 @@ const { title, image = '/logo.png', guests = [], url = Astro.url, triggerId } = 
                     <label>Imagen de Fondo</label>
                     <div class="bg-options">
                         <button class="bg-btn active" data-bg="cover">Portada</button>
-                        <button class="bg-btn" data-bg="gradient-1">Gradiente 1</button>
-                        <button class="bg-btn" data-bg="gradient-2">Gradiente 2</button>
-                        <button class="bg-btn" data-bg="gradient-3">Gradiente 3</button>
+                        <button class="bg-btn" data-bg="gradient-1">Neon</button>
+                        <button class="bg-btn" data-bg="gradient-2">Mint</button>
+                        <button class="bg-btn" data-bg="gradient-3">Dark</button>
+                    </div>
+                </div>
+
+                <div class="customization-section">
+                    <h4>Personalización</h4>
+                    <div class="range-group">
+                        <label for="img-scale">Escala Imagen</label>
+                        <input type="range" id="img-scale" min="50" max="150" value="100" />
+                    </div>
+                    <div class="range-group">
+                        <label for="img-radius">Redondeo</label>
+                        <input type="range" id="img-radius" min="0" max="80" value="40" />
                     </div>
                 </div>
 
@@ -121,6 +133,10 @@ const { title, image = '/logo.png', guests = [], url = Astro.url, triggerId } = 
     const guestInput = document.getElementById('card-guest') as HTMLInputElement;
     const quoteInput = document.getElementById('card-quote') as HTMLTextAreaElement;
     
+    // Customization Inputs
+    const imgScaleInput = document.getElementById('img-scale') as HTMLInputElement;
+    const imgRadiusInput = document.getElementById('img-radius') as HTMLInputElement; // New
+    
     // Preview Elements
     const previewTitle = document.getElementById('preview-title');
     const previewGuest = document.getElementById('preview-guest');
@@ -128,6 +144,7 @@ const { title, image = '/logo.png', guests = [], url = Astro.url, triggerId } = 
     const previewQuoteContainer = document.getElementById('preview-quote-container');
     const previewQuote = document.getElementById('preview-quote');
     const cardBgLayer = document.getElementById('card-bg-layer');
+    const cardCoverImg = document.getElementById('card-cover-img'); // New
     
     // Background Buttons
     const bgBtns = document.querySelectorAll('.bg-btn');
@@ -199,11 +216,24 @@ const { title, image = '/logo.png', guests = [], url = Astro.url, triggerId } = 
                 previewQuoteContainer.style.display = 'none';
             }
         }
+        // Customization Updates
+        if (cardCoverImg) {
+            if (imgScaleInput) {
+                const scale = parseInt(imgScaleInput.value) / 100;
+                cardCoverImg.style.transform = `scale(${scale})`;
+            }
+            if (imgRadiusInput) {
+                const radius = imgRadiusInput.value;
+                cardCoverImg.style.borderRadius = `${radius}px`;
+            }
+        }
     };
 
     titleInput?.addEventListener('input', updatePreview);
     guestInput?.addEventListener('input', updatePreview);
     quoteInput?.addEventListener('input', updatePreview);
+    imgScaleInput?.addEventListener('input', updatePreview);
+    imgRadiusInput?.addEventListener('input', updatePreview);
 
     // Background selection
     bgBtns.forEach(btn => {
@@ -366,14 +396,18 @@ const { title, image = '/logo.png', guests = [], url = Astro.url, triggerId } = 
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+      position: relative; /* Ensure context */
   }
 
   .input-group label {
       color: #a1a1aa;
-      font-size: 0.875rem;
-      font-weight: 500;
+      font-size: 0.8rem;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      position: static; /* Force static positioning to avoid overlap */
+      transform: none;
+      margin-bottom: 0.25rem;
   }
 
   .input-group input, .input-group textarea {
@@ -389,6 +423,47 @@ const { title, image = '/logo.png', guests = [], url = Astro.url, triggerId } = 
 
   .input-group input:focus, .input-group textarea:focus {
       border-color: #8b5cf6;
+  }
+  
+  .customization-section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #27272a;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+  }
+  
+  .customization-section h4 {
+      color: #d4d4d8;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+  }
+  
+  .range-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+  }
+  
+  .range-group label {
+      color: #a1a1aa;
+      font-size: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+  }
+  
+  .range-group input[type="range"] {
+      width: 100%;
+      height: 6px;
+      background: #3f3f46;
+      border-radius: 3px;
+      accent-color: #8b5cf6;
+      border: none;
+      outline: none;
   }
 
   .bg-options {
@@ -553,7 +628,7 @@ const { title, image = '/logo.png', guests = [], url = Astro.url, triggerId } = 
       height: 100%; 
       max-height: 850px;
       object-fit: contain;
-      border-radius: 40px;
+      border-radius: 70px;
       filter: drop-shadow(0 40px 60px rgba(0,0,0,0.6));
   }
 
