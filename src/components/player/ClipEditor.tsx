@@ -1,6 +1,58 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './ClipEditorStyles.css';
 
+// Helpers for TimeInput
+function formatTime(seconds: number) {
+    const min = Math.floor(seconds / 60);
+    const sec = Math.floor(seconds % 60);
+    return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+}
+
+function parseTime(val: string) {
+    const parts = val.split(':');
+    if (parts.length === 2) {
+        const m = parseInt(parts[0], 10);
+        const s = parseInt(parts[1], 10);
+        if (!isNaN(m) && !isNaN(s)) return m * 60 + s;
+    }
+    const s = parseInt(val, 10); // Start trying to support raw seconds
+    if (!isNaN(s)) return s;
+    return null;
+}
+
+function TimeInput({ value, onChange, max }: { value: number, onChange: (val: number) => void, max: number }) {
+    const [localValue, setLocalValue] = useState(formatTime(value));
+    
+    useEffect(() => {
+        setLocalValue(formatTime(value));
+    }, [value]);
+
+    const handleBlur = () => {
+        const parsed = parseTime(localValue);
+        if (parsed !== null) {
+            onChange(parsed);
+        } else {
+            setLocalValue(formatTime(value));
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.currentTarget.blur();
+        }
+    };
+
+    return (
+        <input 
+            className="time-input"
+            value={localValue}
+            onChange={(e) => setLocalValue(e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+        />
+    );
+}
+
 interface ClipEditorProps {
     audioUrl: string;
     title: string;
@@ -197,25 +249,59 @@ export default function ClipEditor({ audioUrl, title, author, cover, duration: t
 
         const isPortrait = aspectRatio === '9:16';
         const cx = W / 2;
-        const cy = H / 2;
+
+        // --- LAYOUT CONSTANTS (SAFE ZONES) ---
+        // We define specific zones to ensure NO OVERLAP.
+        
+        let imgAreaCenterY, imgMaxH, imgMaxW;
+        let textAreaStartY;
+        let titleFontSize, authorFontSize;
+
+        if (isPortrait) {
+             // 9:16 (1080x1920)
+             // Image sits in the upper-mid section
+             imgAreaCenterY = 750;
+             imgMaxH = 900;
+             imgMaxW = W * 0.85;
+             
+             // Text starts comfortably below
+             textAreaStartY = 1300;
+             titleFontSize = 64;
+             authorFontSize = 40;
+        } else {
+             // 16:9 (1920x1080)
+             // Image sits in the upper section
+             imgAreaCenterY = 420;
+             imgMaxH = 520;
+             imgMaxW = W * 0.7; // Wider layout allowed
+             
+             // Text starts below
+             textAreaStartY = 760;
+             titleFontSize = 72;
+             authorFontSize = 44;
+        }
 
         // 1. Background (Blurred Cover)
         ctx.fillStyle = '#000';
-        ctx.fillRect(0,0,W,H); // Reset
+        ctx.fillRect(0,0,W,H); 
 
         if (coverImgRef.current && (coverImgRef.current.complete || imageLoaded)) {
-            // Draw huge blurred background
             ctx.save();
-            ctx.filter = 'blur(40px) brightness(0.4)';
-            // Draw image to cover canvas while maintaining aspect ratio
+            ctx.filter = 'blur(60px) brightness(0.35)'; // Darker for better text contrast
             const img = coverImgRef.current;
             const scale = Math.max(W / img.width, H / img.height);
             const x = (W / 2) - (img.width / 2) * scale;
             const y = (H / 2) - (img.height / 2) * scale;
             ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
             ctx.restore();
+            
+            // Subtle vignetting
+            const grad = ctx.createRadialGradient(W/2, H/2, H/3, W/2, H/2, H);
+            grad.addColorStop(0, 'rgba(0,0,0,0)');
+            grad.addColorStop(1, 'rgba(0,0,0,0.6)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0,0,W,H);
         } else {
-            // Gradient fallback
             const grad = ctx.createLinearGradient(0, 0, 0, H);
             grad.addColorStop(0, '#09090b');
             grad.addColorStop(1, '#000000');
@@ -223,89 +309,92 @@ export default function ClipEditor({ audioUrl, title, author, cover, duration: t
             ctx.fillRect(0, 0, W, H);
         }
 
-        // 2. Main "Banner" Image (Clean)
-        // We want to show the full banner if possible, or a nice cut.
-        // "Quiero que sea la imagen de banner" implies seeing the image.
-        
+        // 2. Banner Image (Strictly Positioned)
         if (coverImgRef.current && (coverImgRef.current.complete || imageLoaded)) {
             const img = coverImgRef.current;
+            const imgRatio = img.width / img.height;
             
-            // Calculate dimensions to fit nicely within a safe area
-            // 16:9 -> Max width 80%?
-            // 9:16 -> Max width 90%?
+            // Fit logic
+            let renderW = imgMaxW;
+            let renderH = renderW / imgRatio;
             
-            let targetW, targetH;
-            
-            if (isPortrait) {
-                // In portrait, we usually fit width
-                targetW = W * 0.85;
-                const ratio = img.height / img.width;
-                targetH = targetW * ratio;
-                // Cap height if extremely tall
-                if(targetH > H * 0.5) {
-                    targetH = H * 0.5;
-                    targetW = targetH / ratio;
-                }
-            } else {
-                // In landscape, we fit height somewhat, or width
-                // If it's a wide banner, fit width
-                targetW = W * 0.7; // 70% width
-                const ratio = img.height / img.width;
-                targetH = targetW * ratio;
-                // Cap height
-                if(targetH > H * 0.5) {
-                    targetH = H * 0.5;
-                    targetW = targetH / ratio;
-                }
+            if (renderH > imgMaxH) {
+                renderH = imgMaxH;
+                renderW = renderH * imgRatio;
             }
 
-            const imgX = cx - targetW/2;
-            const imgY = cy - targetH/2 - (isPortrait ? 100 : 50); // Shift up slightly for text space
+            const imgX = cx - renderW / 2;
+            const imgY = imgAreaCenterY - renderH / 2;
 
             // Shadow
             ctx.save();
             ctx.shadowColor = 'rgba(0,0,0,0.5)';
-            ctx.shadowBlur = 50;
-            ctx.shadowOffsetY = 20;
+            ctx.shadowBlur = 60;
+            ctx.shadowOffsetY = 30;
             
-            // Draw rounded image
             ctx.beginPath();
-            ctx.roundRect(imgX, imgY, targetW, targetH, 24);
-            ctx.fillStyle = '#000';
-            ctx.fill(); // fill for shadow
+            ctx.roundRect(imgX, imgY, renderW, renderH, 24);
+            ctx.fillStyle = '#000'; // backing
+            ctx.fill();
+            
             ctx.clip();
-            ctx.drawImage(img, imgX, imgY, targetW, targetH);
+            ctx.drawImage(img, imgX, imgY, renderW, renderH);
             ctx.restore();
         }
 
-        // 3. Text Info
+        // 3. Text Info (Strictly Positioned)
         ctx.textAlign = 'center';
-        ctx.fillStyle = 'white';
         ctx.shadowColor = 'rgba(0,0,0,0.8)';
         ctx.shadowBlur = 10;
 
-        const textBaseY = cy + (isPortrait ? 250 : 200);
+        let currentY = textAreaStartY;
 
         // Title
-        const titleSize = isPortrait ? 60 : 70;
-        ctx.font = `bold ${titleSize}px "Outfit", sans-serif`;
+        ctx.font = `bold ${titleFontSize}px "Outfit", sans-serif`; 
+        ctx.fillStyle = 'white';
         
         let displayTitle = title;
-        const maxTextW = W * 0.8;
-        if (ctx.measureText(displayTitle).width > maxTextW) {
-             // Basic ellpsis logic could be better (word wrap) but kept simple
-             while(ctx.measureText(displayTitle + '...').width > maxTextW && displayTitle.length > 0) {
-                 displayTitle = displayTitle.slice(0, -1);
-             }
-             displayTitle += '...';
+        const maxTextW = W * 0.85;
+        
+        // Simple truncate for now (multiline is complex on canvas without library)
+        // If we want wrapping, we need a helper, but truncate is safer for "No Overlap"
+        // Let's implement a quick 2-line max logic?
+        
+        const words = title.split(' ');
+        let line1 = '';
+        let line2 = '';
+        let lineCount = 1;
+        
+        // Very basic naive word wrap for 2 lines
+        for (let word of words) {
+            const testLine = line1 + word + ' ';
+            if (lineCount === 1 && ctx.measureText(testLine).width < maxTextW) {
+                line1 = testLine;
+            } else if (lineCount === 1) {
+                lineCount = 2;
+                line2 = word + ' ';
+            } else {
+                if (ctx.measureText(line2 + word + ' ').width < maxTextW) {
+                    line2 += word + ' ';
+                } else {
+                    line2 = line2.trim() + '...';
+                    break;
+                }
+            }
         }
-        ctx.fillText(displayTitle, cx, textBaseY);
+        
+        ctx.fillText(line1.trim(), cx, currentY);
+        
+        if (line2) {
+            currentY += titleFontSize * 1.2;
+            ctx.fillText(line2.trim(), cx, currentY);
+        }
         
         // Author
-        const authorSize = isPortrait ? 36 : 40;
-        ctx.font = `500 ${authorSize}px "Outfit", sans-serif`;
+        currentY += titleFontSize * 1.0; // Gap
+        ctx.font = `500 ${authorFontSize}px "Outfit", sans-serif`;
         ctx.fillStyle = '#d4d4d8';
-        ctx.fillText(author, cx, textBaseY + titleSize + 10);
+        ctx.fillText(author, cx, currentY);
 
         // 4. Visualizer
         if (analyser) {
@@ -313,29 +402,34 @@ export default function ClipEditor({ audioUrl, title, author, cover, duration: t
             const dataArray = new Uint8Array(bufferLength);
             analyser.getByteFrequencyData(dataArray);
             
-            const bars = isPortrait ? 30 : 50; 
-            const barWidth = isPortrait ? 16 : 14;
-            const gap = 8;
+            const bars = isPortrait ? 28 : 50; 
+            const barWidth = isPortrait ? 18 : 14;
+            const gap = isPortrait ? 10 : 8;
             const totalVisWidth = bars * (barWidth + gap);
             const startX = (W - totalVisWidth) / 2;
-            const baselineY = H - (isPortrait ? 200 : 100);
+            
+            // Anchor to bottom with safe margin
+            const baselineY = H - (isPortrait ? 150 : 80);
             
             ctx.fillStyle = 'white';
             ctx.shadowColor = '#8b5cf6';
             ctx.shadowBlur = 20;
             
-            // Bass-heavy mapping
-            const binSize = Math.floor(bufferLength * 0.7 / bars);
-
+            const binSize = Math.floor(bufferLength * 0.6 / bars);
+            
             for(let i=0; i<bars; i++) {
                 let sum = 0;
                 for(let j=0; j<binSize; j++) {
                     sum += dataArray[Math.floor(i*binSize) + j] || 0;
                 }
-                const val = sum / binSize;
+                const val = sum / binSize; // 0-255
                 
-                const p = Math.pow(val / 255, 1.5);
-                const h = Math.max(6, p * (isPortrait ? 250 : 200));
+                // Make it dance
+                const p = Math.pow(val / 255, 1.8); 
+                let h = Math.max(6, p * (isPortrait ? 220 : 180));
+                
+                // Symmetry tweak (mirror effect or just center weighted?)
+                // Just normal bars for now
                 
                 const x = startX + i * (barWidth + gap);
                 
@@ -348,15 +442,15 @@ export default function ClipEditor({ audioUrl, title, author, cover, duration: t
         // 5. Progress Line 
         if (progress > 0 && progress <= 1) {
              ctx.fillStyle = '#8b5cf6';
-             ctx.fillRect(0, H - 16, W * progress, 16);
+             ctx.fillRect(0, H - 12, W * progress, 12);
         }
         
         // 6. Watermark
-        ctx.font = 'bold 28px "Outfit", sans-serif';
-        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.font = 'bold 24px "Outfit", sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
         ctx.textAlign = 'right';
         ctx.shadowBlur = 0;
-        ctx.fillText('veredillasfm.es', W - 40, 50);
+        ctx.fillText('veredillasfm.es', W - 40, 40);
     };
 
     // GENERATE VIDEO
@@ -510,12 +604,12 @@ export default function ClipEditor({ audioUrl, title, author, cover, duration: t
                               <div className="time-inputs">
                                   <div className="time-block">
                                       <label className="time-label">Inicio</label>
-                                      <div className="time-value">{new Date(startTime * 1000).toISOString().substr(14, 5)}</div>
+                                      <TimeInput value={startTime} onChange={handleStartTimeChange} max={totalDuration} />
                                   </div>
                                   <div className="time-divider"></div>
                                   <div className="time-block">
                                       <label className="time-label">Fin</label>
-                                      <div className="time-value">{new Date(endTime * 1000).toISOString().substr(14, 5)}</div>
+                                      <TimeInput value={endTime} onChange={handleEndTimeChange} max={totalDuration} />
                                   </div>
                               </div>
                               

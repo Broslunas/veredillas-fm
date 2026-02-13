@@ -10,27 +10,50 @@ export const GET: APIRoute = async ({ request }) => {
     }
 
     try {
-        const response = await fetch(targetUrl);
-        
-        if (!response.ok) {
-             return new Response(`Error fetching audio: ${response.statusText}`, { status: response.status });
+        const headers = new Headers();
+        // Forward Range header if present
+        const range = request.headers.get('range');
+        if (range) {
+            headers.set('range', range);
         }
 
-        const newHeaders = new Headers();
-        // Copy content-type
-        const contentType = response.headers.get('Content-Type');
-        if (contentType) newHeaders.set('Content-Type', contentType);
+        const response = await fetch(targetUrl, {
+            headers: headers
+        });
         
-        // Copy content-length if available
-        const contentLength = response.headers.get('Content-Length');
-        if (contentLength) newHeaders.set('Content-Length', contentLength);
+        const newHeaders = new Headers();
+        
+        // Forward critical headers for streaming
+        const headersToForward = [
+            'content-type',
+            'content-length',
+            'content-range',
+            'accept-ranges',
+            'last-modified',
+            'etag'
+        ];
+
+        headersToForward.forEach(header => {
+            const value = response.headers.get(header);
+            if (value) {
+                newHeaders.set(header, value);
+            }
+        });
         
         // Add CORS headers
         newHeaders.set('Access-Control-Allow-Origin', '*');
-        newHeaders.set('Cache-Control', 'public, max-age=3600'); 
+        
+        // Use upstream Cache-Control or default
+        const cacheControl = response.headers.get('cache-control');
+        if (cacheControl) {
+            newHeaders.set('Cache-Control', cacheControl);
+        } else {
+            newHeaders.set('Cache-Control', 'public, max-age=3600'); 
+        }
 
         return new Response(response.body, {
-            status: 200,
+            status: response.status,
+            statusText: response.statusText,
             headers: newHeaders
         });
 
