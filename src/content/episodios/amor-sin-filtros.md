@@ -881,7 +881,7 @@ transcription:
 description: >-
   Un análisis profundo y sin tapujos sobre el amor, la pareja y las relaciones
   modernas con Saray y Antonieta.
-pubDate: '2026-02-11T17:00:00Z'
+pubDate: '2026-02-11T17:00:00.000Z'
 duration: 37 min
 isPremiere: true
 season: 1
@@ -944,16 +944,30 @@ sections:
   - time: '36:53'
     title: Cierre y Despedida
 clips:
-  - title: La analogía del 'balón de voleibol' para las relaciones
-    url: 'https://youtube.com/shorts/qNWLD02IFwk'
-  - title: El poder y peligro de los chismes en las relaciones y amistades
-    url: 'https://youtube.com/shorts/-ZXyyPqqfyE'
-  - title: >-
-      Consejos prácticos para mantener relaciones saludables y detectar las
-      green flags que importan
-    url: 'https://youtube.com/shorts/QcLxXxCn9yY'
-  - title: Amistad o amor El dilema
-    url: 'https://youtube.com/shorts/eeyrRHKtqFU'
+  - title: Romanticismo Perdido  ¿Conversaciones Reales o Juegos?
+    url: 'https://youtube.com/shorts/6WQseOputIY'
+  - title: Relaciones  Equilibrio y Valor Propio Revelados
+    url: 'https://youtube.com/shorts/SFOd78DQsHs'
+  - title: Relaciones  ¿Hablar o Soltar  La Clave es la Reciprocidad
+    url: 'https://youtube.com/shorts/yF7LMUqvbpk'
+  - title: Redes Sociales  ¿Han Matado el Romanticismo?
+    url: 'https://youtube.com/shorts/7LWx-TkJrfw'
+  - title: Personalidad vs Belleza  ¿Qué te hace quedarte?
+    url: 'https://youtube.com/shorts/axyQWOb-Iws'
+  - title: Instagram y Tinder  La Evolución de las Conexiones Modernas
+    url: 'https://youtube.com/shorts/9cU9kiE3lBQ'
+  - title: Esperar Mensajes  ¿Por Qué No Contestan Siempre?
+    url: 'https://youtube.com/shorts/1RQGb1tUrBc'
+  - title: Encuentra tu Media Naranja  Ama tu Soledad
+    url: 'https://youtube.com/shorts/nGt_OYcjpug'
+  - title: Amistad o Amor  ¿Cuál va primero?
+    url: 'https://youtube.com/shorts/rkgMSvpcbuU'
+  - title: Amar y Dejar Ir.  El Dolor y el Respeto
+    url: 'https://youtube.com/shorts/W16G-QBqAuo'
+  - title: ¿Quién Merece Ganar?  La Verdad Sobre el Riesgo
+    url: 'https://youtube.com/shorts/fNApWRXa154'
+  - title: ¡Deja el Móvil! Relaciones Tóxicas y Prioridades
+    url: 'https://youtube.com/shorts/2isxbp9y4c0'
 ---
 # Amor Sin Filtros: Un Diálogo Abierto con Saray y Antonieta
 
