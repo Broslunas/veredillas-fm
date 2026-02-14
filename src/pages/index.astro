@@ -5,6 +5,7 @@ import PostCard from '../components/PostCard.astro';
 import FeaturedSlider from '../components/FeaturedSlider.astro';
 import Newsletter from '../components/Newsletter.astro';
 import TopListenersWidget from '../components/TopListenersWidget.astro';
+import TrendingEpisodes from '../components/TrendingEpisodes.astro';
 import { getCollection } from 'astro:content';
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -13,12 +14,19 @@ import 'swiper/css/pagination';
 const allEpisodes = await getCollection('episodios');
 const now = new Date();
 
-// Get latest 6 episodes for the slider (sorted by date)
-const sortedEpisodes = allEpisodes.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-const recentEpisodes = sortedEpisodes.slice(0, 6);
+// Separate published and upcoming episodes
+const sortedPublished = allEpisodes
+    .filter(ep => ep.data.pubDate <= now)
+    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const upcomingEpisodes = allEpisodes
+    .filter(ep => ep.data.pubDate > now)
+    .sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
+
+const recentEpisodes = sortedPublished.slice(0, 6);
 
 // Find the latest episode that has already been published for the Hero Spotlight
-const latestPublishedEpisode = sortedEpisodes.find(ep => ep.data.pubDate <= now) || sortedEpisodes[0];
+const latestPublishedEpisode = sortedPublished[0];
 
 const allPosts = await getCollection('blog');
 const recentPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
@@ -142,7 +150,7 @@ const recentPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pu
         <div class="container">
             <div class="section-header gs-fade-up">
                 <div>
-                    <h2 class="section-title">En Tendencia</h2>
+                    <h2 class="section-title">Nuevos Lanzamientos</h2>
                     <p class="section-subtitle">Lo último que está sonando en los pasillos</p>
                 </div>
                 <div class="slider-nav">
@@ -167,6 +175,46 @@ const recentPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pu
             </div>
         </div>
     </section>
+
+    <!-- Upcoming Episodes Slider (Conditional) -->
+    {upcomingEpisodes.length > 0 && (
+        <section id="upcoming-episodes" class="episodes-section relative bg-purple-900/10">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 pointer-events-none"></div>
+            <div class="container relative z-10">
+                <div class="section-header gs-fade-up">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-bold uppercase tracking-wider mb-2">
+                             <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                            </span>
+                            Próximamente
+                        </div>
+                        <h2 class="section-title">Próximos Estrenos</h2>
+                        <p class="section-subtitle">Lo que está por llegar a Veredillas FM</p>
+                    </div>
+                    <div class="slider-nav">
+                        <button class="swiper-button-prev-custom" aria-label="Previous slide">←</button>
+                        <button class="swiper-button-next-custom" aria-label="Next slide">→</button>
+                    </div>
+                </div>
+
+                <div class="swiper episodes-swiper gs-fade-up">
+                    <div class="swiper-wrapper">
+                        {upcomingEpisodes.map((post) => (
+                            <div class="swiper-slide">
+                                <EpisodeCard post={post} />
+                            </div>
+                        ))}
+                    </div>
+                    <div class="swiper-pagination"></div>
+                </div>
+            </div>
+        </section>
+    )}
+
+    <!-- Trending Episodes (Most Listened) -->
+    <TrendingEpisodes />
 
     <!-- Marquee Text -->
     <div class="marquee-container">
@@ -376,26 +424,33 @@ const recentPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pu
             });
         }
 
-        // Swiper Init
-        if (document.querySelector('.episodes-swiper')) {
-            new Swiper('.episodes-swiper', {
+        // Swiper Init (Scoped for multiple sliders)
+        const swipers = document.querySelectorAll('.episodes-swiper');
+        swipers.forEach(swiperEl => {
+            // Find controls within the same section parent
+            const section = swiperEl.closest('section');
+            const nextEl = section?.querySelector('.swiper-button-next-custom');
+            const prevEl = section?.querySelector('.swiper-button-prev-custom');
+
+            new Swiper(swiperEl, {
                 modules: [Navigation, Pagination, Autoplay],
                 observer: true,
                 observeParents: true,
                 slidesPerView: 1,
                 spaceBetween: 20,
-                loop: true,
+                // Loop only if enough slides
+                loop: swiperEl.querySelectorAll('.swiper-slide').length > 3,
                 autoplay: {
                     delay: 5000,
                     disableOnInteraction: false,
                 },
                 pagination: {
-                    el: '.swiper-pagination',
+                    el: swiperEl.querySelector('.swiper-pagination') as HTMLElement,
                     clickable: true,
                 },
                 navigation: {
-                    nextEl: '.swiper-button-next-custom',
-                    prevEl: '.swiper-button-prev-custom',
+                    nextEl: nextEl as HTMLElement,
+                    prevEl: prevEl as HTMLElement,
                 },
                 breakpoints: {
                     640: {
@@ -407,12 +462,12 @@ const recentPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pu
                         spaceBetween: 30,
                     },
                     1280: {
-                         slidesPerView: 3.5,
-                         spaceBetween: 30,
+                        slidesPerView: 3.5,
+                        spaceBetween: 30,
                     }
                 },
             });
-        }
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
