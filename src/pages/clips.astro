@@ -31,6 +31,23 @@ let clips = allEpisodes.flatMap(episode => {
   }));
 }).sort(() => Math.random() - 0.5); // Simple shuffle
 
+// Build a map of clips grouped by episode slug for the side panel
+const clipsByEpisode: Record<string, {episodeTitle: string, episodeImage: string, clips: Array<{title: string, videoId: string | null, url: string}>}> = {};
+allEpisodes.forEach(episode => {
+  const epClips = (episode.data.clips || []).map(clip => ({
+    title: clip.title,
+    videoId: getVideoId(clip.url),
+    url: clip.url
+  }));
+  if (epClips.length > 0) {
+    clipsByEpisode[episode.slug] = {
+      episodeTitle: episode.data.title,
+      episodeImage: typeof episode.data.image === 'string' ? episode.data.image : (episode.data.image?.src || '/placeholder.jpg'),
+      clips: epClips
+    };
+  }
+});
+
 // Check for watch param and move to start
 const watchId = Astro.url.searchParams.get('watch');
 if (watchId) {
@@ -67,6 +84,9 @@ if (watchId) {
             </div>
             
             <div class="clip-actions">
+                <button class="action-btn episode-clips-btn" aria-label="Ver clips del episodio" data-episode-slug={clip.episodeSlug} onclick="handleOpenEpisodeClips(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                </button>
                 <button class="action-btn like-btn" aria-label="Me gusta" data-clip-id={videoId} onclick="handleLikeClip(this)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="heart-icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 </button>
@@ -90,6 +110,31 @@ if (watchId) {
       </div>
     )}
   </div>
+
+  <!-- Episode Clips Side Panel -->
+  <div id="episode-panel-backdrop" class="panel-backdrop" onclick="handleCloseEpisodeClips()"></div>
+  <aside id="episode-clips-panel" class="episode-clips-panel">
+    <div class="panel-header">
+      <button class="panel-close-btn" onclick="handleCloseEpisodeClips()" aria-label="Cerrar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="panel-episode-hero">
+      <img id="panel-episode-image" class="panel-episode-cover" src="" alt="" />
+      <div class="panel-episode-meta">
+        <h3 id="panel-episode-title" class="panel-episode-title">Episodio</h3>
+        <span id="panel-clips-count" class="panel-clips-count"></span>
+      </div>
+    </div>
+    <div id="panel-clips-grid" class="panel-clips-grid">
+      <!-- Populated dynamically -->
+    </div>
+  </aside>
+
+  <!-- Inject clips-by-episode data for JS -->
+  <script is:inline define:vars={{ clipsByEpisode }}>
+    window._clipsByEpisode = clipsByEpisode;
+  </script>
 </Layout>
 
 <style>
@@ -352,6 +397,345 @@ if (watchId) {
         display: none;
     }
   }
+
+  /* ═══════════════════════════════════════════════════════════ */
+  /* Episode Clips — Side Panel (Drawer)                       */
+  /* ═══════════════════════════════════════════════════════════ */
+
+  .panel-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.35s ease, visibility 0s 0.35s;
+  }
+
+  .panel-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.35s ease, visibility 0s 0s;
+  }
+
+  .episode-clips-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background: linear-gradient(
+      180deg,
+      rgba(18, 15, 28, 0.98) 0%,
+      rgba(12, 10, 20, 0.99) 100%
+    );
+    border-left: 1px solid rgba(139, 92, 246, 0.12);
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: -8px 0 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .episode-clips-panel.active {
+    transform: translateX(0);
+  }
+
+  /* Panel Header */
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 1rem 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .panel-close-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .panel-close-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+    transform: rotate(90deg);
+  }
+
+  /* Episode Hero Section */
+  .panel-episode-hero {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 1.25rem 1.25rem;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .panel-episode-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 1.25rem;
+    right: 1.25rem;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(139, 92, 246, 0.25) 30%,
+      rgba(139, 92, 246, 0.25) 70%,
+      transparent
+    );
+  }
+
+  .panel-episode-cover {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .panel-episode-meta {
+    min-width: 0;
+  }
+
+  .panel-episode-title {
+    color: #f0edf6;
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    letter-spacing: -0.01em;
+  }
+
+  .panel-clips-count {
+    display: inline-block;
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
+    color: rgba(139, 92, 246, 0.8);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  /* Clips Grid */
+  .panel-clips-grid {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    align-content: start;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 92, 246, 0.2) transparent;
+  }
+
+  .panel-clips-grid::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .panel-clips-grid::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .panel-clips-grid::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 99px;
+  }
+
+  /* Desktop: fixed-width drawer */
+  @media (min-width: 768px) {
+    .episode-clips-panel {
+      width: 420px;
+      border-radius: 20px 0 0 20px;
+      box-shadow:
+        -12px 0 60px rgba(0, 0, 0, 0.5),
+        -2px 0 20px rgba(139, 92, 246, 0.06);
+    }
+
+    .panel-episode-cover {
+      width: 72px;
+      height: 72px;
+    }
+
+    .panel-episode-title {
+      font-size: 1.05rem;
+    }
+  }
+
+  /* Small mobile: 2 columns */
+  @media (max-width: 380px) {
+    .panel-clips-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+
+<!-- Global styles for dynamically generated content (JS-injected HTML doesn't get Astro scoping) -->
+<style is:global>
+  /* Grid Clip Card — 9:16 portrait */
+  .grid-clip-card {
+    position: relative;
+    display: block;
+    text-decoration: none;
+    color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+    animation: gridCardIn 0.4s ease forwards;
+  }
+
+  @keyframes gridCardIn {
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .grid-clip-card:hover {
+    border-color: rgba(139, 92, 246, 0.4);
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 92, 246, 0.15);
+  }
+
+  .grid-clip-card:active {
+    transform: scale(0.97);
+  }
+
+  .grid-clip-card.active-clip {
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+  }
+
+  /* Image in normal flow — its aspect-ratio defines the card height */
+  .grid-clip-card img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 9 / 16;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.35s ease;
+  }
+
+  .grid-clip-card:hover img {
+    transform: scale(1.08);
+  }
+
+  /* Title overlay at bottom with gradient */
+  .grid-clip-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2rem 0.5rem 0.5rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 55%, transparent 100%);
+    z-index: 4;
+  }
+
+  .grid-clip-title {
+    font-size: 0.58rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: rgba(255, 255, 255, 0.92);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  }
+
+  .grid-clip-card:hover .grid-clip-title {
+    color: #fff;
+  }
+
+  .grid-clip-card.active-clip .grid-clip-title {
+    color: rgba(200, 170, 255, 1);
+  }
+
+  /* Play overlay */
+  .grid-play-icon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    z-index: 3;
+  }
+
+  .grid-clip-card:hover .grid-play-icon {
+    opacity: 1;
+  }
+
+  .grid-play-icon svg {
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+  }
+
+  /* Number badge */
+  .grid-clip-badge {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.5rem;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 4px;
+    z-index: 5;
+    line-height: 1.2;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Active indicator */
+  .grid-clip-card.active-clip::after {
+    content: '▶';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(139, 92, 246, 0.9);
+    color: white;
+    font-size: 0.45rem;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+    z-index: 5;
+  }
+
+  @media (min-width: 768px) {
+    .grid-clip-title {
+      font-size: 0.62rem;
+    }
+  }
 </style>
 
 <script is:inline>
@@ -610,6 +994,75 @@ if (watchId) {
                 setTimeout(() => { btn.innerHTML = original; }, 2000);
             });
         };
+
+        // --- EPISODE CLIPS SIDE PANEL ---
+        WIN.handleOpenEpisodeClips = function(btn) {
+            if (WIN.event) {
+                WIN.event.stopPropagation();
+                WIN.event.preventDefault();
+            }
+
+            const slug = btn.getAttribute('data-episode-slug');
+            if (!slug || !WIN._clipsByEpisode) return;
+
+            const episodeData = WIN._clipsByEpisode[slug];
+            if (!episodeData || !episodeData.clips || episodeData.clips.length === 0) return;
+
+            const panel = document.getElementById('episode-clips-panel');
+            const backdrop = document.getElementById('episode-panel-backdrop');
+            const grid = document.getElementById('panel-clips-grid');
+            const titleEl = document.getElementById('panel-episode-title');
+            const imageEl = document.getElementById('panel-episode-image');
+            const countEl = document.getElementById('panel-clips-count');
+            if (!panel || !grid || !titleEl || !imageEl || !countEl || !backdrop) return;
+
+            // Get current watch param to highlight active clip
+            const currentWatch = new URLSearchParams(WIN.location.search).get('watch');
+
+            // Populate episode info
+            titleEl.textContent = episodeData.episodeTitle;
+            imageEl.src = episodeData.episodeImage;
+            imageEl.alt = episodeData.episodeTitle;
+            countEl.textContent = '🎬 ' + episodeData.clips.length + ' clips';
+
+            // Build grid HTML with staggered animation
+            grid.innerHTML = episodeData.clips.map((clip, i) => {
+                const thumbUrl = clip.videoId 
+                    ? 'https://img.youtube.com/vi/' + clip.videoId + '/hqdefault.jpg'
+                    : '';
+                const isActive = clip.videoId === currentWatch;
+                const delay = (i * 0.06).toFixed(2);
+                return '<a class="grid-clip-card' + (isActive ? ' active-clip' : '') + '" href="/clips?watch=' + (clip.videoId || '') + '" style="animation-delay:' + delay + 's">' +
+                    '<span class="grid-clip-badge">' + (i + 1) + '</span>' +
+                    '<img src="' + thumbUrl + '" alt="" loading="lazy" />' +
+                    '<div class="grid-play-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>' +
+                    '<div class="grid-clip-info">' +
+                        '<div class="grid-clip-title">' + clip.title + '</div>' +
+                    '</div>' +
+                '</a>';
+            }).join('');
+
+            // Show panel + backdrop
+            panel.classList.add('active');
+            backdrop.classList.add('active');
+        };
+
+        WIN.handleCloseEpisodeClips = function() {
+            const panel = document.getElementById('episode-clips-panel');
+            const backdrop = document.getElementById('episode-panel-backdrop');
+            if (panel) panel.classList.remove('active');
+            if (backdrop) backdrop.classList.remove('active');
+        };
+
+        // Close panel on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const panel = document.getElementById('episode-clips-panel');
+                if (panel && panel.classList.contains('active')) {
+                    WIN.handleCloseEpisodeClips();
+                }
+            }
+        });
 
         async function loadLikes() {
             try {
