@@ -2,17 +2,9 @@
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 
-const allEpisodes = await getCollection('episodios');
+export const prerender = false;
 
-// Extract all clips and shuffle them for a "feed" feel
-const clips = allEpisodes.flatMap(episode => {
-  return (episode.data.clips || []).map(clip => ({
-    ...clip,
-    episodeTitle: episode.data.title,
-    episodeSlug: episode.slug,
-    episodeImage: episode.data.image
-  }));
-}).sort(() => Math.random() - 0.5); // Simple shuffle
+const allEpisodes = await getCollection('episodios');
 
 function getVideoId(url: string): string | null {
   const patterns = [
@@ -27,13 +19,34 @@ function getVideoId(url: string): string | null {
   }
   return null;
 }
+
+// Extract all clips and shuffle them for a "feed" feel
+let clips = allEpisodes.flatMap(episode => {
+  return (episode.data.clips || []).map(clip => ({
+    ...clip,
+    videoId: getVideoId(clip.url),
+    episodeTitle: episode.data.title,
+    episodeSlug: episode.slug,
+    episodeImage: episode.data.image
+  }));
+}).sort(() => Math.random() - 0.5); // Simple shuffle
+
+// Check for watch param and move to start
+const watchId = Astro.url.searchParams.get('watch');
+if (watchId) {
+    const index = clips.findIndex(c => c.videoId === watchId);
+    if (index > -1) {
+        const [selectedClip] = clips.splice(index, 1);
+        clips.unshift(selectedClip);
+    }
+}
 ---
 
 <Layout title="Clips" description="Los mejores momentos de Veredillas FM en formato corto." showFooter={false}>
   <div class="clips-container" id="clips-container">
     {clips.length > 0 ? (
       clips.map((clip, index) => {
-        const videoId = getVideoId(clip.url);
+        const videoId = clip.videoId;
         if (!videoId) return null;
         
         return (
@@ -57,7 +70,7 @@ function getVideoId(url: string): string | null {
                 <button class="action-btn like-btn" aria-label="Me gusta" data-clip-id={videoId}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="heart-icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 </button>
-                <button class="action-btn share-btn" aria-label="Compartir">
+                <button class="action-btn share-btn" aria-label="Compartir" data-clip-id={videoId}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                 </button>
                 <a href={`/ep/${clip.episodeSlug}`} class="action-btn" aria-label="Ver episodio completo">
@@ -524,57 +537,68 @@ function getVideoId(url: string): string | null {
         document.addEventListener('DOMContentLoaded', () => {
              initObservers();
              checkWatchParam();
+             initUrlObserver();
         });
     } else {
         initObservers();
         checkWatchParam();
+        initUrlObserver();
     }
     
-    function checkWatchParam() {
+     function checkWatchParam() {
          const urlParams = new URLSearchParams(window.location.search);
          const watchId = urlParams.get('watch');
-         if (watchId) {
-             const targetPlayer = document.querySelector(`.youtube-player[data-video-id="${watchId}"]`);
-             if (targetPlayer) {
-                 const section = targetPlayer.closest('.clip-section');
-                 if (section) {
-                     setTimeout(() => {
-                         section.scrollIntoView({ behavior: 'smooth' });
-                     }, 500); 
+         
+         // If no watch param, set the first one to reflect current state
+         if (!watchId) {
+             const firstPlayer = document.querySelector('.youtube-player');
+             if (firstPlayer) {
+                 const firstId = firstPlayer.getAttribute('data-video-id');
+                 if (firstId) {
+                     const url = new URL(window.location.href);
+                     url.searchParams.set('watch', firstId);
+                     window.history.replaceState({}, '', url);
                  }
              }
          }
     }
-
-    document.addEventListener('astro:page-load', () => {
-         Object.values(players).forEach(p => {
-             if (typeof p.destroy === 'function') p.destroy();
-         });
-         players = {};
-         loadingObserver?.disconnect();
-         playbackObserver?.disconnect();
-         initObservers();
-         loadLikes(); // Reload likes on navigation
-
-         checkWatchParam();
-    });
-
-    // Share logic
-    document.querySelectorAll('.share-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-             const url = window.location.href;
-             navigator.clipboard.writeText(url).then(() => {
-                 const el = btn as HTMLElement;
-                 const originalHTML = el.innerHTML;
-                 el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-                 setTimeout(() => {
-                     el.innerHTML = originalHTML;
-                 }, 2000);
-             });
+    
+    // Observer to update URL on scroll
+    let urlObserver: IntersectionObserver;
+    
+    function initUrlObserver() {
+        if (urlObserver) urlObserver.disconnect();
+        
+        urlObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const playerDiv = entry.target.querySelector('.youtube-player');
+                    if (playerDiv) {
+                         const videoId = playerDiv.getAttribute('data-video-id');
+                         if (videoId) {
+                             const url = new URL(window.location.href);
+                             const currentWatch = url.searchParams.get('watch');
+                             if (currentWatch !== videoId) {
+                                 url.searchParams.set('watch', videoId);
+                                 window.history.replaceState({}, '', url);
+                             }
+                         }
+                    }
+                }
+            });
+        }, {
+            threshold: 0.7 // Must be mostly visible to count as "active"
         });
-    });
+        
+        document.querySelectorAll('.clip-section').forEach(section => {
+            urlObserver.observe(section);
+        });
+    }
 
-    // Like logic
+
+
+    // --- Button Handling (Re-written from scratch) ---
+
     async function loadLikes() {
         try {
             const response = await fetch('/api/clips/liked');
@@ -598,60 +622,109 @@ function getVideoId(url: string): string | null {
         }
     }
 
-    document.querySelectorAll('.like-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const clipId = btn.getAttribute('data-clip-id');
-            if (!clipId) return;
+     // --- GLOBAL EVENT DELEGATION ---
+    // We attach ONCE to the document. 
+    // To handle this idempotently, we can set a property on window.
+    
+    if (!(window as any)._clipsEventDelegationAttached) {
+        console.log('Attaching global clips event delegation');
+        (window as any)._clipsEventDelegationAttached = true;
+        
+        document.addEventListener('click', async (e) => {
+            const target = e.target as HTMLElement;
             
-            const btnEl = btn as HTMLElement;
-            const originalLiked = btnEl.classList.contains('liked');
-
-            // Optimistic UI update
-            if (originalLiked) {
-                 btnEl.classList.remove('liked');
-                 btnEl.querySelector('svg')?.setAttribute('fill', 'none');
-            } else {
-                 btnEl.classList.add('liked');
-                 btnEl.querySelector('svg')?.setAttribute('fill', '#ef4444');
-                 
-                 // Animation
-                 btnEl.style.transform = "scale(1.3)";
-                 setTimeout(() => { btnEl.style.transform = ""; }, 200);
-            }
-
-            try {
-                const response = await fetch('/api/clips/like', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ clipId })
-                });
+            // --- SHARE ---
+            const shareBtn = target.closest('.share-btn');
+            if (shareBtn) {
+                e.stopPropagation();
+                e.preventDefault();
+                const btn = shareBtn as HTMLElement;
+                const clipId = btn.getAttribute('data-clip-id');
+                const url = new URL(window.location.href);
+                if (clipId) url.searchParams.set('watch', clipId);
                 
-                if (response.status === 401) {
-                    alert('Debes iniciar sesión para dar me gusta.');
-                    // Revert UI
-                    if (originalLiked) {
-                        btnEl.classList.add('liked');
-                        btnEl.querySelector('svg')?.setAttribute('fill', '#ef4444');
-                    } else {
-                        btnEl.classList.remove('liked');
-                        btnEl.querySelector('svg')?.setAttribute('fill', 'none');
-                    }
-                    window.location.href = '/login';
-                }
-            } catch (error) {
-                console.error('Error toggling like:', error);
-                // Revert on error
-                if (originalLiked) {
-                    btnEl.classList.add('liked');
-                    btnEl.querySelector('svg')?.setAttribute('fill', '#ef4444');
+                navigator.clipboard.writeText(url.toString()).then(() => {
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                    setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+                });
+                return;
+            }
+            
+            // --- LIKE ---
+            const likeBtn = target.closest('.like-btn');
+            if (likeBtn) {
+                e.stopPropagation();
+                e.preventDefault();
+                const btn = likeBtn as HTMLElement;
+                const clipId = btn.getAttribute('data-clip-id');
+                if (!clipId) return;
+                
+                const isLiked = btn.classList.contains('liked');
+                
+                // Optimistic UI
+                if (isLiked) {
+                    btn.classList.remove('liked');
+                    btn.querySelector('svg')?.setAttribute('fill', 'none');
                 } else {
-                    btnEl.classList.remove('liked');
-                    btnEl.querySelector('svg')?.setAttribute('fill', 'none');
+                    btn.classList.add('liked');
+                    btn.querySelector('svg')?.setAttribute('fill', '#ef4444');
+                    // Animation
+                    btn.animate([
+                        { transform: 'scale(1)' },
+                        { transform: 'scale(1.3)' },
+                        { transform: 'scale(1)' }
+                    ], { duration: 200 });
+                }
+
+                try {
+                    const res = await fetch('/api/clips/like', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ clipId })
+                    });
+                    
+                    if (res.status === 401) {
+                         alert('Inicia sesión para dar me gusta');
+                         window.location.href = '/login';
+                         return;
+                    }
+                } catch (err) {
+                    console.error(err);
+                    // Revert
+                    if (isLiked) {
+                        btn.classList.add('liked');
+                        btn.querySelector('svg')?.setAttribute('fill', '#ef4444');
+                    } else {
+                        btn.classList.remove('liked');
+                        btn.querySelector('svg')?.setAttribute('fill', 'none');
+                    }
                 }
             }
         });
+    }
+
+    // --- LIFECYCLE ---
+    document.addEventListener('astro:page-load', () => {
+         // Clean up old players
+         Object.values(players).forEach(p => {
+             if (typeof p.destroy === 'function') p.destroy();
+         });
+         players = {};
+         loadingObserver?.disconnect();
+         playbackObserver?.disconnect();
+         urlObserver?.disconnect();
+         
+         initObservers();
+         loadLikes(); 
+         checkWatchParam();
+         initUrlObserver();
     });
     
-    // Initial load
-    loadLikes();
+    // Initial run check
+    if (document.readyState === 'loading') {
+         document.addEventListener('DOMContentLoaded', () => loadLikes());
+    } else {
+         loadLikes();
+    }
 </script>

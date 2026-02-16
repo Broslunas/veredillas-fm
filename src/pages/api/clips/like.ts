@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import mongoose from 'mongoose';
 import { getUserFromCookie } from '../../../lib/auth';
 import User from '../../../models/User';
+import Clip from '../../../models/Clip';
 
 export const prerender = false;
 
@@ -55,18 +56,21 @@ export const POST: APIRoute = async ({ request }) => {
     const index = currentLikedClips.indexOf(clipId);
     let newLikedClips: string[];
     let isLiked: boolean;
+    let likeChange = 0;
 
     if (index > -1) {
       // Unlike
       newLikedClips = currentLikedClips.filter(id => id !== clipId);
       isLiked = false;
+      likeChange = -1;
     } else {
       // Like
       newLikedClips = [...currentLikedClips, clipId];
       isLiked = true;
+      likeChange = 1;
     }
 
-    // Atomic update
+    // Atomic update user
     const updatedUser = await User.findByIdAndUpdate(
       userPayload.userId,
       { $set: { likedClips: newLikedClips } },
@@ -76,6 +80,16 @@ export const POST: APIRoute = async ({ request }) => {
     if (!updatedUser) {
       throw new Error('Failed to update user');
     }
+
+    // Update global clip stats
+    await Clip.findOneAndUpdate(
+        { videoId: clipId }, 
+        { 
+            $inc: { likes: likeChange },
+            $set: { lastLikedAt: new Date() }
+        }, 
+        { upsert: true, new: true }
+    );
 
     return new Response(JSON.stringify({ 
       success: true,

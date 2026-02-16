@@ -1,0 +1,320 @@
+---
+// src/components/TopClipsWidget.astro
+---
+
+<section id="top-clips-section" class="top-clips-section hidden">
+    <div class="container">
+        <div class="section-header gs-fade-up">
+            <div>
+                <h2 class="section-title">Top Clips</h2>
+                <p class="section-subtitle">Los momentos favoritos de la comunidad</p>
+            </div>
+             <div class="slider-nav">
+                <button class="swiper-button-prev-clips" aria-label="Previous slide">←</button>
+                <button class="swiper-button-next-clips" aria-label="Next slide">→</button>
+            </div>
+        </div>
+
+        <div class="clips-slider-container gs-fade-up">
+             <!-- Skeleton Loader -->
+             <div id="clips-loading" class="clips-skeleton-row">
+                {[1,2,3,4].map(i => (
+                    <div class="clip-skeleton"></div>
+                ))}
+             </div>
+
+             <!-- Swiper -->
+             <div id="clips-swiper" class="swiper clips-swiper hidden">
+                <div class="swiper-wrapper" id="clips-wrapper">
+                    <!-- Content -->
+                </div>
+             </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Premium Styles */
+    .top-clips-section {
+        padding: 4rem 0;
+        position: relative;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 3rem;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .section-subtitle {
+        color: rgba(255, 255, 255, 0.7); /* Equivalent to text-muted often */
+        font-size: 1.1rem;
+    }
+
+    .container {
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        max-width: 1280px;
+    }
+    
+    .clips-slider-container {
+        position: relative;
+    }
+
+    .clips-skeleton-row {
+        display: flex;
+        gap: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .clip-skeleton {
+        min-width: 250px;
+        height: 440px; /* 9:16 approx */
+        border-radius: 1rem;
+        background: rgba(255,255,255,0.05);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 0.5; }
+        50% { opacity: 0.8; }
+        100% { opacity: 0.5; }
+    }
+    
+    .clips-swiper {
+        overflow: visible; /* Show shadows/glows */
+        padding-bottom: 2rem;
+    }
+
+    .slider-nav {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .swiper-button-prev-clips,
+    .swiper-button-next-clips {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 1px solid var(--color-border);
+        background: var(--color-surface);
+        color: var(--color-text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1.2rem;
+    }
+
+    .swiper-button-prev-clips:hover,
+    .swiper-button-next-clips:hover {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+    }
+    
+    :global(.clip-card) {
+        position: relative;
+        border-radius: 1rem;
+        overflow: hidden;
+        aspect-ratio: 9/16;
+        background: #000;
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+        display: block;
+        text-decoration: none;
+    }
+    
+    :global(.clip-card:hover) {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px -10px rgba(139, 92, 246, 0.3); /* Purple glow */
+        border-color: rgba(139, 92, 246, 0.5);
+    }
+    
+    :global(.clip-thumb) {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    :global(.clip-overlay) {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+    
+    :global(.clip-title) {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    :global(.text-truncate) {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    :global(.clip-ep) {
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.7);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        overflow: hidden; /* Ensure truncation works in flex container */
+        min-width: 0;
+    }
+    
+    :global(.clip-likes) {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        padding: 0.25rem 0.75rem;
+        border-radius: 100px;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: white;
+        border: 1px solid rgba(255,255,255,0.1);
+        z-index: 2;
+    }
+    
+    :global(.play-indicator) {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        width: 3rem;
+        height: 3rem;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(4px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 2;
+        color: white;
+    }
+    
+    :global(.clip-card:hover .play-indicator) {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    
+    .hidden { display: none !important; }
+</style>
+
+<script>
+    import Swiper from 'swiper';
+    import { Navigation, Autoplay } from 'swiper/modules';
+    
+    async function initTopClips() {
+        const section = document.getElementById('top-clips-section');
+        const loading = document.getElementById('clips-loading');
+        const swiperEl = document.getElementById('clips-swiper');
+        const wrapper = document.getElementById('clips-wrapper');
+        
+        if (!section || !loading || !swiperEl || !wrapper) return;
+        
+        try {
+            const res = await fetch('/api/clips/top');
+            
+            if (!res.ok) throw new Error('Failed to fetch');
+            
+            const clips = await res.json();
+            
+            if (!clips || clips.length === 0) {
+                // Keep hidden
+                return;
+            }
+            
+            // Render
+            wrapper.innerHTML = '';
+            clips.forEach(clip => {
+                const slide = document.createElement('div');
+                slide.className = 'swiper-slide';
+                slide.innerHTML = `
+                    <a href="/clips?watch=${clip.videoId}" class="clip-card">
+                        <img src="${clip.thumbnail}" alt="${clip.title}" class="clip-thumb" loading="lazy">
+                        <div class="play-indicator">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                        ${clip.likes > 0 ? `
+                        <div class="clip-likes">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#ef4444" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            ${clip.likes}
+                        </div>
+                        ` : ''}
+                        <div class="clip-overlay">
+                            <h3 class="clip-title">${clip.title}</h3>
+                            <div class="clip-ep">
+                                <span class="text-truncate">de ${clip.episodeTitle}</span>
+                            </div>
+                        </div>
+                    </a>
+                `;
+                wrapper.appendChild(slide);
+            });
+            
+            // Show content
+            loading.classList.add('hidden');
+            swiperEl.classList.remove('hidden');
+            section.classList.remove('hidden');
+            
+            // Init Swiper
+            new Swiper(swiperEl, {
+                modules: [Navigation, Autoplay],
+                slidesPerView: 1.2,
+                spaceBetween: 16,
+                navigation: {
+                    nextEl: '.swiper-button-next-clips',
+                    prevEl: '.swiper-button-prev-clips',
+                },
+                autoplay: {
+                    delay: 4000,
+                    disableOnInteraction: false
+                },
+                breakpoints: {
+                   640: { slidesPerView: 2.2, spaceBetween: 20 },
+                   768: { slidesPerView: 3.2, spaceBetween: 24 },
+                   1024: { slidesPerView: 4.2, spaceBetween: 24 } 
+                }
+            });
+            
+        } catch (e) {
+            console.error(e);
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', initTopClips);
+    document.addEventListener('astro:page-load', initTopClips);
+</script>

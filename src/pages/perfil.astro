@@ -180,7 +180,7 @@ const likedClips = allEpisodes.flatMap(episode => {
                     {likedClips.length > 0 ? (
                         <div class="clips-grid">
                             {likedClips.map(clip => (
-                                <a href={`/clips#clip-${clip.videoId}`} class="clip-card-mini">
+                                <a href={`/clips?watch=${clip.videoId}`} class="clip-card-mini">
                                     <div class="clip-thumbnail">
                                         <img src={`https://img.youtube.com/vi/${clip.videoId}/hqdefault.jpg`} alt={clip.title} loading="lazy" />
                                         <div class="play-overlay">

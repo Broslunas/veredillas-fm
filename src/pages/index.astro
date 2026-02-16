@@ -6,6 +6,7 @@ import FeaturedSlider from '../components/FeaturedSlider.astro';
 import Newsletter from '../components/Newsletter.astro';
 import TopListenersWidget from '../components/TopListenersWidget.astro';
 import TrendingEpisodes from '../components/TrendingEpisodes.astro';
+import TopClipsWidget from '../components/TopClipsWidget.astro';
 import { getCollection } from 'astro:content';
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -144,6 +145,9 @@ const recentPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pu
             </div>
         </div>
     </section>
+
+    <!-- Top Clips Section -->
+    <TopClipsWidget />
 
     <!-- Latest Episodes Slider -->
     <section id="latest-episodes" class="episodes-section">
