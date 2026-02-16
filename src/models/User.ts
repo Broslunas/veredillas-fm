@@ -21,6 +21,7 @@ export interface IUser extends mongoose.Document {
   lastLogin: Date;
   role: 'user' | 'admin' | 'owner';
   newsletter: boolean;
+  likedClips: string[];
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -75,6 +76,10 @@ const userSchema = new mongoose.Schema<IUser>({
     type: String,
     enum: ['user', 'admin', 'owner'],
     default: 'user'
+  },
+  likedClips: {
+    type: [String],
+    default: []
   }
 }, {
   timestamps: true,
