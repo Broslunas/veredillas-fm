@@ -1333,6 +1333,61 @@ sections:
     title: Echando de Menos a Compañeros
   - time: '41:01'
     title: Despedida y agradecimientos
+clips:
+  - title: 'Bachillerato  Música, Policía o CAFYD ¿Qué Salidas Profesionales?'
+    url: 'https://youtu.be/V8Tj1nKjG0I'
+  - title: Viajes  ¿Con amigos o en grupo  Elige bien?
+    url: 'https://youtu.be/p_MYbE91cNY'
+  - title: 'Viajes Soñados  ¿Japón, Corea o Corea del Norte'
+    url: 'https://youtu.be/rwJfKowql3U'
+  - title: Viajes Peligrosos  ¿India o Marruecos  ¡Descubre Tu Próximo Destino!
+    url: 'https://youtu.be/qcm5uVEgF4U'
+  - title: Viaje Mochilero  Aventura Joven O Pesadilla Adulta
+    url: 'https://youtu.be/JxZMisAqTVM'
+  - title: Viaje Inolvidable con Amigos  Recuerdos de Verano
+    url: 'https://youtu.be/qeJHybNEUY4'
+  - title: Viaje de Verano Joven  ¡La Aventura Post Estudios!
+    url: 'https://youtu.be/jWclDNcR6ss'
+  - title: Viaje a La Palma  ¿Organizado o Independiente
+    url: 'https://youtu.be/sRs-obCmtAE'
+  - title: Viaje a India  Taj Mahal y la Estatua de la Unidad
+    url: 'https://youtu.be/Xv-OAC7Nwjk'
+  - title: Viajar en Verano  ¿Gastar o Invertir en tu Futuro
+    url: 'https://youtu.be/sOzdhTFXW-8'
+  - title: Viajar a Europa  Destinos que Enamoran y ¿Por Qué
+    url: 'https://youtu.be/iBhAgnnG5Dk'
+  - title: Viajar a Corea del Norte  ¿Posible  ¡Riesgos y Experiencias!
+    url: 'https://youtu.be/aKO740oykwY'
+  - title: ¿Futuro en Radio Heredía  ¡Pregunta Clave!
+    url: 'https://youtu.be/5GCOCqS75mE'
+  - title: ¡El Tercer Trimestre! Mi Lucha Contra el Estudio Duro
+    url: 'https://youtu.be/uXjf6tRmBVo'
+  - title: Sueño Nórdico  Informática y Aventura en 20s
+    url: 'https://youtu.be/6JgXG-WyYmw'
+  - title: Sorber la Sopa  ¿Buena Educación en Japón o Truco Cultural
+    url: 'https://youtu.be/NXrUC3cWNyo'
+  - title: PAU  ¿Miedo o Confianza en Bachillerato
+    url: 'https://youtu.be/eBFQGd9MEDs'
+  - title: Ingeniería vs  Música  Mi Decisión Difícil
+    url: 'https://youtu.be/3QdDFXulBdw'
+  - title: India  La Brutal Realidad de la Pobreza y Aglomeración
+    url: 'https://youtu.be/8OnQ00z-J4s'
+  - title: Evita multas de tráfico  Señales clave de la carretera
+    url: 'https://youtu.be/tZohbT0zm-Y'
+  - title: El Calor de África vs  el Frío de Rusia
+    url: 'https://youtu.be/c4n_NU6G1-w'
+  - title: Dylan  ¡Mi Sueño de Viajar a California!
+    url: 'https://youtu.be/z8IzwXh0mvg'
+  - title: Descubrí mi Vecino  ¡Una Sorpresa Inesperada!
+    url: 'https://youtu.be/ah9J2qm2SRk'
+  - title: De la ESO a la Vida  Miedo y Emoción al Cambio
+    url: 'https://youtu.be/gzc5Rq2OO4E'
+  - title: Corea del Sur  ¡Un Destino Increíble con Desafíos Culturales!
+    url: 'https://youtu.be/QpFUHQLwHiw'
+  - title: China vs  Japón y Corea  Costumbres y Respeto
+    url: 'https://youtu.be/J2A0tq1OLAY'
+  - title: Bachillerato  El Mejor Consejo Para Tu Éxito Escolar
+    url: 'https://youtu.be/-Ma0WIOiZBY'
 ---
 
 **¡Hola! ¡Bienvenido a Veredillas FM, dónde lo mejor del I.E.S. Las Veredillas es Veredillas FM!**
