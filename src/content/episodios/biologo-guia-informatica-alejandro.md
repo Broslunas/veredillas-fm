@@ -796,8 +796,6 @@ sections:
   - time: '37:06'
     title: Despedida
 clips:
-  - title: Mariposario de Icod  Descubre la Magia Natural de Tenerife
-    url: 'https://youtu.be/X0eQo4RMjyo'
   - title: Estudio de Alimentos  Mi Experiencia en Gallina Blanca
     url: 'https://youtu.be/5HC0lvOAulM'
   - title: Mi Experiencia como Profesor Interino en Andalucía  COVID y Estabilidad
