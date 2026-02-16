@@ -122,6 +122,7 @@ import './player/SharedPlayerStyles.css';
             YT: any;
             onYouTubeIframeAPIReady: () => void;
             playerResizeObserver: ResizeObserver | null;
+            currentYTPlayer: any;
         }
     }
 
@@ -1023,6 +1024,7 @@ import './player/SharedPlayerStyles.css';
                                          }
                                      }
                                  });
+                                 window.currentYTPlayer = ytPlayer;
                              };
                              
                              // Controls Logic
@@ -1363,6 +1365,36 @@ import './player/SharedPlayerStyles.css';
                  }
              }
          }, 500);
+    });
+
+    // Listen for Seek Events (Transcriptions / Sections)
+    document.addEventListener('veredillas:audio-seek', (e: Event) => {
+        const customEvent = e as CustomEvent;
+        const time = customEvent.detail.time;
+        
+        console.log("Seeking to:", time);
+
+        // 1. Try Standard Audio
+        const audio = document.getElementById('audioElement') as HTMLAudioElement;
+        
+        // We need to ensure we are controlling the ACTIVE player, not a hidden one?
+        // Usually only one exists in DOM (inline or floating).
+        
+        if (audio && !isNaN(audio.duration)) {
+             audio.currentTime = time;
+             if(audio.paused) audio.play().catch(e => console.warn("Seek play blocked", e));
+             return;
+        }
+
+        // 2. Try YouTube
+        if (window.currentYTPlayer && typeof window.currentYTPlayer.seekTo === 'function') {
+            try {
+                window.currentYTPlayer.seekTo(time, true);
+                window.currentYTPlayer.playVideo();
+            } catch (e) {
+                console.warn("YouTube Seek Error", e);
+            }
+        }
     });
 </script>
 
