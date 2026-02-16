@@ -301,8 +301,10 @@ function getVideoId(url: string): string | null {
     .clip-info {
         position: absolute;
         bottom: 2rem;
-        left: 50%;
-        transform: translateX(-160%);
+        right: 50%;
+        margin-right: 270px;
+        left: auto;
+        transform: none;
         width: 300px;
         text-align: right;
         display: flex;
@@ -313,8 +315,10 @@ function getVideoId(url: string): string | null {
     .clip-actions {
         position: absolute;
         bottom: 2rem;
-        right: 50%;
-        transform: translateX(160%);
+        left: 50%;
+        margin-left: 270px;
+        right: auto;
+        transform: none;
         align-items: flex-start;
     }
 
