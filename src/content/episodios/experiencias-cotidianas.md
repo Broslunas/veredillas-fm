@@ -798,6 +798,52 @@ clips:
       La soledad elegida vs la soledad impuesta aprender a estar solo sin
       sentirse solo
     url: 'https://youtu.be/zMMMF2_vXL8'
+  - title: 'A los 18  Miedo, Comparación y el Salto a la Vida'
+    url: 'https://youtu.be/cGfY1Z-UbxE'
+  - title: El Arte de Elegir Consejos  Aprende de los Errores
+    url: 'https://youtu.be/1zaIXWPEe1Y'
+  - title: Profesores  De Niños a Amigos   Mi Experiencia
+    url: 'https://youtu.be/2stRDdlCti4'
+  - title: Vive Tu Ritmo  Deja de Compararte y Sé Feliz
+    url: 'https://youtu.be/ynyEXZxhJwk'
+  - title: ¿Serías amigo de tus padres a su edad
+    url: 'https://youtu.be/nhg1I8wuD0I'
+  - title: Soledad Elegida vs  Forzada  Protege Tu Salud Mental
+    url: 'https://youtu.be/LrsVMDcfQuU'
+  - title: '¡Nueva Clase, Nuevos Amigos! Mi Experiencia Épica'
+    url: 'https://youtu.be/GzLdVoRIluo'
+  - title: 18 Años  Un Salto Hacia la Vida Adulta
+    url: 'https://youtu.be/D5S0TIDMRO4'
+  - title: 'Vive Tu Vida Al Límite, ¡Pero Con Responsabilidad!'
+    url: 'https://youtu.be/tRTY1ud7JAs'
+  - title: Descubre Tu Yo Interior  El Poder de Estar Contigo
+    url: 'https://youtu.be/-4fjpiAdB5o'
+  - title: 18 Años  ¿Estás Preparado Para el Futuro
+    url: 'https://youtu.be/wmRnVZTSErU'
+  - title: Adultos  Niños Que Crecieron y Siguen Perdidos
+    url: 'https://youtu.be/SO_Td_ez2HQ'
+  - title: Descubre Nuevas Experiencias y Descúbrete a Ti Mismo
+    url: 'https://youtu.be/hXz50Olj_CE'
+  - title: Mentalidad de Éxito  El Trabajador Más Duro Gana
+    url: 'https://youtu.be/f-JbEzqU9fw'
+  - title: Mi Experiencia  Miedo y Adaptación en Nuevo País
+    url: 'https://youtu.be/nCKwE0DYD0M'
+  - title: Mi Primer Amigo en el Instituto  ¡Fabricio!
+    url: 'https://youtu.be/jnFp3h5THs4'
+  - title: Sé Auténtico  Atrae a las Personas Correctas
+    url: 'https://youtu.be/73m74DjuVKI'
+  - title: Sé tú mismo  Atrae gente auténtica y verdadera
+    url: 'https://youtu.be/Z8IqUTnVGAY'
+  - title: Sé tú mismo  Encuentra tu gente verdadera
+    url: 'https://youtu.be/X58pyL-sstA'
+  - title: Secretos Oscuros  ¿Cuánto Conoces a Tus Padres
+    url: 'https://youtu.be/a0igvxTLdhU'
+  - title: Supera el Miedo a Empezar Clases y Hacer Amigos
+    url: 'https://youtu.be/CzEJIux3ENs'
+  - title: Supera Tus Límites  La Clave del Éxito Persistente
+    url: 'https://youtu.be/X5GVWniHhPM'
+  - title: Consejos de Expertos  ¿A Quién Escuchar
+    url: 'https://youtu.be/bpoVZShAMIM'
 description: >-
   Un episodio relajado donde Carlos y Gustavo comparten sus experiencias
   personales y reflexionan sobre las situaciones cotidianas de la vida.
