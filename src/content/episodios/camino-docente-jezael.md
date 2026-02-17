@@ -830,6 +830,53 @@ sections:
     title: Relaciones en la Adolescencia
   - time: '40:45'
     title: Despedida
+clips:
+  - title: Selectividad  ¿Justa y Eficaz  Opinión Sincera
+    url: 'https://youtu.be/HuLRVtbv4cA'
+  - title: Selectividad  ¿Justa o Reflejo de la Vida Real
+    url: 'https://youtu.be/MxamMcqp7bE'
+  - title: Profesor vs  Examen  ¿Justicia o Realidad
+    url: 'https://youtu.be/POtdJnyKwJM'
+  - title: Padres Exigen Aprobar Hija  ¡Me Pagan el Sueldo!
+    url: 'https://youtu.be/9wm7JqgKOhY'
+  - title: Mitos de la Docencia  ¡La Verdad Revelada Hoy!
+    url: 'https://youtu.be/tMGxRudkKIc'
+  - title: Mi Primer PC Gaming y el Juego Que Más Horas Tuvo
+    url: 'https://youtu.be/mrJlyi2dADo'
+  - title: Mi Pasión  Ser Profesor de Matemáticas Desde Niño
+    url: 'https://youtu.be/DmqD_Qbo23U'
+  - title: Mi mejor etapa  ¡Estudiar vs  Vida Laboral!
+    url: 'https://youtu.be/Gl9IKOiz0WM'
+  - title: Mi Experiencia  De Horarios Agotadores a un Nuevo Comienzo
+    url: 'https://youtu.be/ilveKWqvgwc'
+  - title: Mi Éxito en Oposiciones  Disciplina y Sacrificio Genuinos
+    url: 'https://youtu.be/og7iFwbRQPE'
+  - title: Mi Camino a la Docencia Privada  ¡Sin Buscar Empleo!
+    url: 'https://youtu.be/i63ZHAVYx-o'
+  - title: La Verdad Oculta de Ser Docente Hoy
+    url: 'https://youtu.be/6xnbC-iMx2A'
+  - title: Física y Astrofísica  Mi Pasión Oculta Revelada
+    url: 'https://youtu.be/hR3O8s3KQQw'
+  - title: Entrevista Exclusiva con Gesael Joya Sosa  ¡Un Gran Profesor!
+    url: 'https://youtu.be/sw6zCN84RXs'
+  - title: El Respeto Perdido  ¿Por Qué Nadie Quiere Ser Profesor
+    url: 'https://youtu.be/jcsWVtjgIT4'
+  - title: Educación  Diferencias Clave y Mi Experiencia Real
+    url: 'https://youtu.be/b2aboUUoeYE'
+  - title: Educación en Crisis  ¿Por Qué el Poder Quiere Estudiantes Ignorantes
+    url: 'https://youtu.be/smP6zoHcIfc'
+  - title: Dark Souls  Mi Juego Favorito y Por Qué
+    url: 'https://youtu.be/7eCOk1sdT2Q'
+  - title: Conoce a Gesael Goya Sosa  Un Profe Apasionado y Estoico
+    url: 'https://youtu.be/TFO5mQrhZEU'
+  - title: Carreras del Futuro  ¿Por Qué Nadie Elige Docencia
+    url: 'https://youtu.be/w_D3w1LLUQk'
+  - title: 'Bachillerato  Nervios, Éxitos y Consejos Clave'
+    url: 'https://youtu.be/txcLTRSSchY'
+  - title: ¡Mi Nueva Carrera! De Oposiciones a Trabajo Inesperado
+    url: 'https://youtu.be/QWzlG7-rIvQ'
+  - title: Mi Fracaso Épico con la Física en el Bachillerato
+    url: 'https://youtu.be/s9dj92iNS5E'
 ---
 
 **¡Hola! ¡Bienvenido a Veredillas FM, dónde lo mejor del I.E.S. Las Veredillas es Veredillas FM!**
