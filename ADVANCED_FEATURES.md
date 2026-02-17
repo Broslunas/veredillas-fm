@@ -4,7 +4,7 @@ Lista complementaria de funcionalidades de alto nivel técnico y de usuario, enf
 
 ## 🧠 IA y Personalización Profunda (1-12)
 
-1.  **AI Anchor Personalizado**: Una voz generada por IA que presenta el episodio saludando al usuario por su nombre y resumiendo por qué le gustará según su historial.
+
 2.  **Dynamic Episode Assembly**: Crear "Daily Mixes" que combinan clips, noticias cortas y episodios completos ajustados al tiempo exacto que tiene el usuario (ej. "Tengo 20 min de trayecto").
 3.  **Búsqueda Semántica**: Búsqueda vectorial que entiende conceptos, no solo palabras clave (ej. "buscar episodios sobre superación" encuentra historias inspiradoras aunque no digan la palabra).
 4.  **Detección de Sentimientos**: Filtrar episodios o segmentos por "mood" (Alegre, Serio, Inspirador, Tenso).
