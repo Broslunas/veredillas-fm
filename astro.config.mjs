@@ -72,6 +72,7 @@ export default defineConfig({
         !page.includes('/perfil') &&
         !page.includes('/favoritos') &&
         !page.includes('/historial') &&
+        !page.includes('/studio') &&
         // Exclude specific team members, but allow the main index
         !(page.includes('/equipo/') && page.split('/').filter(Boolean).length > 2),
       serialize: (item) => {
