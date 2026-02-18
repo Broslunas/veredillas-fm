@@ -445,7 +445,7 @@ input[type="range"].u-hidden-range {
 @media (max-width: 640px) {
     .volume-area { display: none; }
     /* Hide specific controls but allow Clip button if possible */
-    .player-extras .btn-ctrl:not(#clipBtn):not(#voiceBoostBtn) { display: none; } 
+    .player-extras .btn-ctrl:not(#clipBtn) { display: none; } 
     .btn-ctrl.secondary-hide { display: none; }
     .player-extras { border-left: none; padding-left: 0; }
 }
@@ -595,3 +595,58 @@ input[type="range"].u-hidden-range {
     color: white;
 }
 
+/* --- Auto-Loudness Normalization Indicator --- */
+.auto-loudness-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    color: var(--color-text-muted, #888);
+    opacity: 0.5;
+    transition: all 0.5s ease;
+    position: relative;
+    cursor: default;
+}
+
+.auto-loudness-indicator::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 8px;
+    background: currentColor;
+    opacity: 0;
+    filter: blur(6px);
+    transition: opacity 0.5s ease;
+    z-index: -1;
+}
+
+/* Pulse animation when actively correcting */
+.auto-loudness-indicator[style*="opacity: 0.8"],
+.auto-loudness-indicator[style*="opacity: 0.9"],
+.auto-loudness-indicator[style*="opacity: 1"] {
+    animation: loudness-pulse 2s ease-in-out infinite;
+}
+
+.auto-loudness-indicator[style*="opacity: 0.8"]::after,
+.auto-loudness-indicator[style*="opacity: 0.9"]::after,
+.auto-loudness-indicator[style*="opacity: 1"]::after {
+    opacity: 0.15;
+}
+
+@keyframes loudness-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Hide indicator in floating mini player (too small) */
+.mini-player.floating .auto-loudness-indicator {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    .auto-loudness-indicator {
+        display: none;
+    }
+}

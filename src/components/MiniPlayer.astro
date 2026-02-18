@@ -74,16 +74,16 @@ import './player/SharedPlayerStyles.css';
             <div class="player-extras">
                 <button class="speed-toggle" id="speedBtn" title="Velocidad">1x</button>
                 
-                <button class="btn-ctrl" id="voiceBoostBtn" title="Boost de Voz (Normalización)" aria-label="Boost de Voz" style="opacity: 0.7;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 3v18"/>
-                        <circle cx="12" cy="12" r="9" stroke-opacity="0.3" /> <!-- Halo effect suggestion? No, keep simple -->
+                <!-- Auto-Loudness Normalization Indicator (always active, no button) -->
+                <div class="auto-loudness-indicator" id="autoLoudnessIndicator" title="Normalización automática de volumen activa">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M2 12h3"/>
                         <path d="M19 12h3"/>
                         <path d="M7 9v6"/>
+                        <path d="M12 5v14"/>
                         <path d="M17 9v6"/>
                     </svg>
-                </button>
+                </div>
                 <div class="volume-area">
                     <button class="btn-ctrl" style="padding:4px; pointer-events:none;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
@@ -143,11 +143,13 @@ import './player/SharedPlayerStyles.css';
     // Shared AudioContext to prevent "Max AudioContexts" error
     let globalAudioCtx: AudioContext | null = null;
     
-    // Voice Boost State (Persisted)
-    let voiceBoostActive = false;
-    if (typeof localStorage !== 'undefined') {
-        voiceBoostActive = localStorage.getItem('voiceBoost') === 'true';
-    }
+    // ---- AUTO-LOUDNESS NORMALIZATION CONFIG ----
+    // Target RMS level in linear scale (approx -14 LUFS for podcast standard)
+    const AUTO_LOUDNESS_TARGET_RMS = 0.20; // Target level (~-14 dBFS RMS / -12 LUFS approx)
+    const AUTO_LOUDNESS_MIN_GAIN = 0.5;    // Never attenuate below 50%
+    const AUTO_LOUDNESS_MAX_GAIN = 10.0;   // Increased max gain boost to 10x (~+20dB) for extreme cases
+    const AUTO_LOUDNESS_SMOOTHING = 0.04;  // Smoothing factor
+    const AUTO_LOUDNESS_ANALYSIS_INTERVAL = 150; // Faster analysis for better response
 
     // ---- Ambient Mode Logic ----
     const updateAmbientTheme = async (imageUrl: string) => {
@@ -243,7 +245,17 @@ import './player/SharedPlayerStyles.css';
              
              // 2. Populate Data
              const audioElement = container.querySelector('#audioElement') as HTMLAudioElement;
-             audioElement.src = url;
+             
+             // --- PROXY EXTERNAL AUDIO FOR CORS ---
+             // This ensures Web Audio API can process the stream (Auto-Loudness Normalization)
+             let processedUrl = url;
+             if (url && url.startsWith('http')) {
+                 // Check if it's already proxied to avoid double proxying
+                 if (!url.includes('/api/proxy-audio')) {
+                     processedUrl = `/api/proxy-audio?url=${encodeURIComponent(url)}`;
+                 }
+             }
+             audioElement.src = processedUrl;
              
              if (startTime > 0) {
                  audioElement.currentTime = startTime;
@@ -498,119 +510,137 @@ import './player/SharedPlayerStyles.css';
                  if(window.playerSlug) syncPlaybackHistory(window.playerSlug, audioElement.duration, audioElement.duration, true);
              };
              
-             // Visualizer & Voice Boost (Always Active)
-             let analyser: AnalyserNode;
-             let source: MediaElementAudioSourceNode;
-             let compressor: DynamicsCompressorNode;
-             let gainNode: GainNode;
-             let canvas = container.querySelector('#audioVisualizer') as HTMLCanvasElement;
-             
-             const initVisualizer = () => {
-                 if (!audioElement.crossOrigin) return; 
+             // Visualizer & Auto-Loudness Normalization (Always Active)
+              let analyser: AnalyserNode;
+              let source: MediaElementAudioSourceNode;
+              let compressor: DynamicsCompressorNode;
+              let gainNode: GainNode;
+              let limiterNode: DynamicsCompressorNode; // Safety limiter to prevent clipping
+              let canvas = container.querySelector('#audioVisualizer') as HTMLCanvasElement;
+              let autoLoudnessTimer: ReturnType<typeof setInterval> | null = null;
+              let currentAutoGain = 1.0;
+              
+               const initVisualizer = () => {
+                  // Removed strict crossOrigin guard to allow processing attempts 
+                  // (Proxying external audio should provide necessary CORS headers)
 
-                 // Use global context or create one
-                 if(!globalAudioCtx) {
-                      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-                      globalAudioCtx = new AudioContext();
-                 }
+                  if(!globalAudioCtx) {
+                       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+                       globalAudioCtx = new AudioContext();
+                  }
 
-                 if (globalAudioCtx.state === 'suspended') {
-                     globalAudioCtx.resume();
-                 }
+                  if (globalAudioCtx.state === 'suspended') {
+                      globalAudioCtx.resume();
+                  }
 
-                 if (!analyser) {
-                      try {
-                          source = globalAudioCtx.createMediaElementSource(audioElement);
-                          compressor = globalAudioCtx.createDynamicsCompressor();
-                          gainNode = globalAudioCtx.createGain();
-                          analyser = globalAudioCtx.createAnalyser();
+                  if (!analyser) {
+                       try {
+                           source = globalAudioCtx.createMediaElementSource(audioElement);
+                           compressor = globalAudioCtx.createDynamicsCompressor();
+                           gainNode = globalAudioCtx.createGain();
+                           limiterNode = globalAudioCtx.createDynamicsCompressor();
+                           analyser = globalAudioCtx.createAnalyser();
 
-                          analyser.fftSize = 512; // Higher resolution for better bass definition
-                          analyser.smoothingTimeConstant = 0.85; // Smoother fallback
-                          
-                          // Graph: Source -> Compressor -> Gain -> Analyser -> Destination
-                          source.connect(compressor);
-                          compressor.connect(gainNode);
-                          gainNode.connect(analyser); 
-                          analyser.connect(globalAudioCtx.destination);
-                          
-                          // Convert to Always-On Voice Boost (Radio Processing)
-                          compressor.threshold.value = -24;
-                          compressor.knee.value = 30;
-                          compressor.ratio.value = 12;
-                          compressor.attack.value = 0.003;
-                          compressor.release.value = 0.25;
-                          
-                          // Makeup Gain +6dB hardcoded
-                          gainNode.gain.value = 2.0; 
-                          
-                          
-                          draw();
-                          
-                          // Apply initial state
-                          applyVoiceBoostSettings();
+                           analyser.fftSize = 2048;
+                           analyser.smoothingTimeConstant = 0.85;
+                           
+                           // Audio Graph:
+                           // Source -> Compressor -> Gain -> Analyser -> Limiter -> Destination
+                           source.connect(compressor);
+                           compressor.connect(gainNode);
+                           gainNode.connect(analyser); 
+                           analyser.connect(limiterNode);
+                           limiterNode.connect(globalAudioCtx.destination);
+                           
+                           // ALWAYS-ON PODCAST COMPRESSION
+                           compressor.threshold.value = -30;
+                           compressor.knee.value = 20;
+                           compressor.ratio.value = 4;
+                           compressor.attack.value = 0.005;
+                           compressor.release.value = 0.15;
+                           
+                           // SAFETY LIMITER (prevents clipping after gain boost)
+                           limiterNode.threshold.value = -1;
+                           limiterNode.knee.value = 0;
+                           limiterNode.ratio.value = 20;
+                           limiterNode.attack.value = 0.001;
+                           limiterNode.release.value = 0.05;
+                           
+                           gainNode.gain.value = 1.0;
+                           currentAutoGain = 1.0;
+                           
+                           draw();
+                           startAutoLoudness();
 
-                      } catch(e) {
-                          console.log("Audio Context Error (CORS?):", e);
-                      }
-                 }
-             };
+                       } catch(e) {
+                           console.log("Audio Context Error (CORS?):", e);
+                       }
+                  }
+              };
 
-             // --- VOICE BOOST LOGIC ---
-             const applyVoiceBoostSettings = () => {
-                 if(!compressor || !gainNode) return;
-                 
-                 // Get current state (globally or from local storage check context)
-                 // Re-read from storage to ensure sync if we want, or rely on `voiceBoostActive` var
-                 
-                 if(voiceBoostActive) {
-                      // RADIO / PODCAST COMPRESSION
-                      compressor.threshold.value = -24;
-                      compressor.knee.value = 30;
-                      compressor.ratio.value = 12;
-                      compressor.attack.value = 0.003;
-                      compressor.release.value = 0.25;
+              // --- AUTO-LOUDNESS NORMALIZATION ---
+              const startAutoLoudness = () => {
+                  if (autoLoudnessTimer) return;
+                  
+                  const rmsBuffer = new Float32Array(analyser.fftSize);
+                  
+                  autoLoudnessTimer = setInterval(() => {
+                      if (audioElement.paused || !analyser || !gainNode) return;
                       
-                      // Makeup Gain +6dB -> we use 2.0 linear gain approximately
-                      // Normalize output 
-                      gainNode.gain.value = 2.0; 
-                 } else {
-                      // NEUTRAL / BYPASS
-                      compressor.threshold.value = 0; // 0 dBFS
-                      compressor.ratio.value = 1;     // 1:1 No compression
-                      gainNode.gain.value = 1.0;      // Unity gain
-                 }
-             };
-
-             const toggleVoiceBoost = () => {
-                 voiceBoostActive = !voiceBoostActive;
-                 localStorage.setItem('voiceBoost', voiceBoostActive ? 'true' : 'false');
-                 updateBoostButtonUI();
-                 applyVoiceBoostSettings();
-             };
-
-             const updateBoostButtonUI = () => {
-                 const btn = container.querySelector('#voiceBoostBtn') as HTMLElement;
-                 if(!btn) return;
-                 
-                 if(voiceBoostActive) {
-                     btn.style.color = 'var(--color-primary, #8b5cf6)';
-                     btn.style.opacity = '1';
-                     btn.classList.add('is-active');
-                 } else {
-                     btn.style.color = ''; // inherit
-                     btn.style.opacity = '0.7';
-                     btn.classList.remove('is-active');
-                 }
-             };
-
-             // Hook up button
-             const boostBtn = container.querySelector('#voiceBoostBtn');
-             if(boostBtn) {
-                 boostBtn.addEventListener('click', toggleVoiceBoost);
-                 // Initialize UI
-                 updateBoostButtonUI();
-             }
+                      analyser.getFloatTimeDomainData(rmsBuffer);
+                      
+                      let sumSquares = 0;
+                      for (let i = 0; i < rmsBuffer.length; i++) {
+                          sumSquares += rmsBuffer[i] * rmsBuffer[i];
+                      }
+                      const rms = Math.sqrt(sumSquares / rmsBuffer.length);
+                      
+                      if (rms < 0.002) return; // Skip only true silence/white noise
+                      
+                      let desiredGain = AUTO_LOUDNESS_TARGET_RMS / rms;
+                      desiredGain = Math.max(AUTO_LOUDNESS_MIN_GAIN, Math.min(AUTO_LOUDNESS_MAX_GAIN, desiredGain));
+                      
+                      currentAutoGain = currentAutoGain + (desiredGain - currentAutoGain) * AUTO_LOUDNESS_SMOOTHING;
+                      
+                      gainNode.gain.setTargetAtTime(
+                          currentAutoGain,
+                          globalAudioCtx!.currentTime,
+                          0.1
+                      );
+                      
+                      updateAutoLoudnessIndicator(currentAutoGain);
+                      
+                  }, AUTO_LOUDNESS_ANALYSIS_INTERVAL);
+              };
+              
+              const stopAutoLoudness = () => {
+                  if (autoLoudnessTimer) {
+                      clearInterval(autoLoudnessTimer);
+                      autoLoudnessTimer = null;
+                  }
+              };
+              
+              const updateAutoLoudnessIndicator = (gain: number) => {
+                  const indicator = container.querySelector('#autoLoudnessIndicator') as HTMLElement;
+                  if (!indicator) return;
+                  
+                  const gainDb = Math.round(20 * Math.log10(gain));
+                  indicator.title = `Normalización automática: ${gainDb > 0 ? '+' : ''}${gainDb} dB`;
+                  
+                  const correctionAmount = Math.abs(gain - 1.0);
+                  const intensity = Math.min(1, correctionAmount / 1.5);
+                  
+                  if (gain > 1.3) {
+                      indicator.style.color = `hsl(160, ${60 + intensity * 40}%, ${50 + intensity * 20}%)`;
+                      indicator.style.opacity = `${0.6 + intensity * 0.4}`;
+                  } else if (gain < 0.8) {
+                      indicator.style.color = `hsl(35, ${60 + intensity * 40}%, ${50 + intensity * 20}%)`;
+                      indicator.style.opacity = `${0.6 + intensity * 0.4}`;
+                  } else {
+                      indicator.style.color = 'var(--color-text-muted, #888)';
+                      indicator.style.opacity = '0.5';
+                  }
+              };
              
              const draw = () => {
                  if(!canvas || !analyser) return;
