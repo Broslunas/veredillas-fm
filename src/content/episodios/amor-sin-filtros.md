@@ -893,7 +893,7 @@ videoUrl: 'https://www.youtube.com/embed/y-aEbuts0fg'
 participants:
   - Saray
   - Antonieta
-  - Diego
+  - Diego Medrano
 sections:
   - time: '00:02'
     title: Bienvenida e Introducción al Tema del Amor
