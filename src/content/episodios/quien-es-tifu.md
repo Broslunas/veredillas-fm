@@ -15,8 +15,8 @@ image: 'https://cdn.veredillasfm.es/images/011.png'
 participants:
   - Diego Torres
   - Diego Medrano
-season: 1
-episode: 10
+season: 2
+episode: 1
 duration: ¿?
 pubDate: '2026-02-20T17:00:00.000Z'
 ---
