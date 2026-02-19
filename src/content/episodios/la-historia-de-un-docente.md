@@ -16,7 +16,7 @@ image: 'https://cdn.veredillasfm.es/images/011.jpeg'
 participants:
   - Dulce
 season: 1
-episode: 10
+episode: 11
 duration: ¿?
 pubDate: '2026-02-24T17:00:00.000Z'
 ---
