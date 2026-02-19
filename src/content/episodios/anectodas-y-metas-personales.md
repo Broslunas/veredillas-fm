@@ -10,7 +10,7 @@ description: >-
   Exploramos anécdotas personales y metas futuras junto a Christopher,
   descubriendo perspectivas inspiradoras y lecciones de vida.
 isPremiere: true
-image: 'https://cdn.veredillasfm.es/images/012.png'
+image: 'https://cdn.veredillasfm.es/images/ba084403-b99d-463f-9afe-ffb655dcc7ba.jpg'
 participants:
   - Christopher
 season: 2
