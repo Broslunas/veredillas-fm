@@ -813,7 +813,7 @@ audioUrl: >-
 videoUrl: 'https://www.youtube.com/embed/gjkcwimemeM'
 participants:
   - Christopher
-  - Diego
+  - Diego Medrano
   - Prof. Jezael
 sections:
   - time: '00:00'
