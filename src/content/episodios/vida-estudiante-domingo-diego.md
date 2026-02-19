@@ -1287,7 +1287,7 @@ episode: 4
 duration: 42 min
 participants:
   - Domingo
-  - Diego
+  - Diego Medrano
 sections:
   - time: '00:00'
     title: 'Intro: Entrevista a Domingo y Diego'
