@@ -13,8 +13,8 @@ isPremiere: true
 image: 'https://cdn.veredillasfm.es/images/012.png'
 participants:
   - Christopher
-season: 1
-episode: 12
+season: 2
+episode: 3
 duration: ¿?
 pubDate: '2026-02-25T17:00:00.000Z'
 ---
