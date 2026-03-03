@@ -17,8 +17,9 @@ participants:
   - Prof. Dulce
 season: 2
 episode: 1
-duration: ¿?
+duration: 35 min
 pubDate: '2026-03-03T17:00:00.000Z'
+videoUrl: 'https://www.youtube.com/embed/ej49Dd1rngI'
 ---
 ¿Alguna vez te has preguntado qué sucede realmente detrás de las puertas de un aula? Más allá de los libros y las pizarras, existen historias que transforman vidas.
 
