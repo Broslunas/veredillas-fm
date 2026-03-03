@@ -12,7 +12,7 @@ description: >-
   generacional en 'La Historia de un Docente'. ¡Un podcast para amantes de la
   educación!
 isPremiere: true
-image: 'https://cdn.veredillasfm.es/images/011.jpeg'
+image: 'https://cdn.veredillasfm.es/images/e723bb85-a053-48db-878c-98e0110e5415.JPEG'
 participants:
   - Prof. Dulce
 season: 2
