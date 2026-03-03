@@ -1,25 +1,23 @@
 ---
 category: Episodios Temporada 1
 images:
-  - title: 010 - Reflexiones Post-Semana Trágica y Actualidad Variada
-    src: 'https://cdn.veredillasfm.es/interno.png'
-  - title: 009 - Amor Sin Filtros
+  - title: T1 E9 - Amor Sin Filtros
     src: 'https://cdn.veredillasfm.es/images/009-v4.jpg'
-  - title: 008 - Charlas cotidianas - Carlos y Gustavo
+  - title: T1 E8 - Charlas cotidianas - Carlos y Gustavo
     src: 'https://cdn.veredillasfm.es/images/008-v2.jpeg'
-  - title: 007 - Hablemos de Venezuela
+  - title: T1 E7- Hablemos de Venezuela
     src: 'https://cdn.veredillasfm.es/images/007-v2.jpeg'
-  - title: 006 - El Pulso de la Vida
+  - title: T1 E6 - El Pulso de la Vida
     src: 'https://cdn.veredillasfm.es/images/006-v2.jpeg'
-  - title: 005 - El Mercadillo
+  - title: T1 E5 - El Mercadillo
     src: 'https://cdn.veredillasfm.es/images/005-v2.jpeg'
-  - title: 004 - La vida del estudiante
+  - title: T1 E4 - La vida del estudiante
     src: 'https://cdn.veredillasfm.es/images/004-v2.jpg'
-  - title: 003 - El camino de un docente
+  - title: T1 E3 - El camino de un docente
     src: 'https://cdn.veredillasfm.es/images/003-v2.JPG'
-  - title: 002 - El Biólogo que nos guía en la Informática
+  - title: T1 E3 - El Biólogo que nos guía en la Informática
     src: 'https://cdn.veredillasfm.es/images/002-v2.jpeg'
-  - title: 001 - El Futuro de la Tecnología
+  - title: T1 E1 - El Futuro de la Tecnología
     src: 'https://cdn.veredillasfm.es/images/001-v2.jpeg'
 ---
 
