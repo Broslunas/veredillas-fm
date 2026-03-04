@@ -20,6 +20,8 @@ season: 2
 episode: 2
 duration: 32 min
 pubDate: '2026-03-04T17:00:00.000Z'
+audioUrl: >-
+  https://anchor.fm/s/10ca1a038/podcast/play/116383775/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2026-2-4%2F419278343-44100-2-7659b4fc76004.mp3
 ---
 ¿Cómo se entrelazan las decisiones de Estado con el poder estratégico de las fuerzas armadas? En un mundo en constante cambio, entender la relación entre el poder político y la seguridad nacional es más crucial que nunca.
 
