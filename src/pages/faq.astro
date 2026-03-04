@@ -58,43 +58,73 @@ const faqs = [
   title="Preguntas Frecuentes | Veredillas FM" 
   description="Resolvemos todas tus dudas sobre Veredillas FM, el proyecto, cómo escuchar y cómo participar."
 >
-    <div class="faq-page container">
+    <!-- Background glow elements -->
+    <div class="glow-bg top-left"></div>
+    <div class="glow-bg bottom-right"></div>
+
+    <div class="faq-page container relative z-10">
         <header class="page-header gs-fade-up">
             <span class="badge">Centro de Ayuda</span>
             <h1>Preguntas Frecuentes</h1>
             <p class="subtitle">Todo lo que necesitas saber sobre el proyecto radiofónico del IES Veredillas.</p>
+            
+            <div class="search-container mt-8 relative max-w-xl mx-auto">
+                <div class="search-input-wrapper glass-panel">
+                    <svg class="search-icon text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input type="text" id="faq-search" placeholder="Busca tu duda (ej. Spotify, participar...)" class="w-full bg-transparent text-white border-none py-4 pl-12 pr-4 outline-none placeholder-gray-500" />
+                </div>
+            </div>
         </header>
 
         <div class="faq-content">
-            {faqs.map((section, sIndex) => (
-                <div class="faq-section gs-fade-up" style={`--delay: ${sIndex * 0.1}s`}>
-                    <div class="section-header">
-                        <span class="section-icon">{section.icon}</span>
-                        <h2 class="section-title">{section.category}</h2>
+            <div id="no-results" class="no-results hidden text-center py-12 glass-panel rounded-2xl mb-8">
+                <span class="text-5xl mb-4 block">🔍</span>
+                <h3 class="text-2xl font-bold mb-2 text-white">No hemos encontrado resultados</h3>
+                <p class="text-gray-400">Prueba con otras palabras o contáctanos directamente si no encuentras tu respuesta.</p>
+            </div>
+
+            <div class="faq-grid">
+                {faqs.map((section, sIndex) => (
+                    <div class="faq-section gs-fade-up glass-panel-container" data-section style={`--delay: ${sIndex * 0.1}s`}>
+                        <div class="section-header">
+                            <div class="icon-wrapper glass-icon">
+                                <span class="section-icon">{section.icon}</span>
+                            </div>
+                            <h2 class="section-title">{section.category}</h2>
+                        </div>
+                        <div class="accordion-group">
+                            {section.items.map((item, iIndex) => (
+                                <details class="accordion-item glass-panel" data-question={item.question.toLowerCase()} data-answer={item.answer.toLowerCase()}>
+                                    <summary>
+                                        <span class="accordion-question">{item.question}</span>
+                                        <span class="icon-toggle">
+                                            <svg class="accordion-icon plus" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                        </span>
+                                    </summary>
+                                    <div class="accordion-answer">
+                                        <div class="answer-content">
+                                            <p>{item.answer}</p>
+                                        </div>
+                                    </div>
+                                </details>
+                            ))}
+                        </div>
                     </div>
-                    <div class="accordion-group">
-                        {section.items.map((item, iIndex) => (
-                            <details class="accordion-item glass-panel">
-                                <summary>
-                                    <span class="accordion-question">{item.question}</span>
-                                    <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                                </summary>
-                                <div class="accordion-answer">
-                                    <p>{item.answer}</p>
-                                </div>
-                            </details>
-                        ))}
-                    </div>
-                </div>
-            ))}
+                ))}
+            </div>
         </div>
         
-        <div class="support-check glass-panel gs-fade-up">
-            <h3>¿Sigues con dudas?</h3>
-            <p>Estamos aquí para ayudarte en lo que necesites, ya sea una propuesta, un problema técnico o simplemente para saludar.</p>
-            <div class="support-actions">
-                <a href="/contacto" class="btn btn-primary">Formulario de Contacto</a>
-                <a href="mailto:contacto@veredillasfm.es" class="btn btn-outline">Enviar Email</a>
+        <div class="support-wrapper mt-16 gs-fade-up">
+            <div class="support-check glass-panel">
+                <div class="support-icon">👋</div>
+                <div class="support-text">
+                    <h3>¿Sigues con dudas?</h3>
+                    <p>Estamos aquí para ayudarte en lo que necesites, ya sea una propuesta, un problema técnico o simplemente para saludar.</p>
+                </div>
+                <div class="support-actions">
+                    <a href="/contacto" class="btn btn-primary">Formulario de Contacto</a>
+                    <a href="mailto:contacto@veredillasfm.es" class="btn btn-outline">Enviar Email</a>
+                </div>
             </div>
         </div>
     </div>
@@ -104,23 +134,68 @@ const faqs = [
     import { gsap } from "gsap";
 
     document.addEventListener('astro:page-load', () => {
+        // Run animations
         gsap.from(".gs-fade-up", {
-            y: 30,
+            y: 40,
             opacity: 0,
             duration: 0.8,
             stagger: 0.15,
-            ease: "power2.out"
+            ease: "power3.out"
         });
 
-        // Close other details when opening one (Exclusive accordion)
-        const details = document.querySelectorAll("details");
-        details.forEach((targetDetail) => {
-            targetDetail.addEventListener("click", () => {
-                details.forEach((detail) => {
-                    if (detail !== targetDetail) {
-                        detail.removeAttribute("open");
+        // Search functionality
+        const searchInput = document.getElementById('faq-search') as HTMLInputElement;
+        const faqSections = document.querySelectorAll('.faq-section');
+        const noResults = document.getElementById('no-results');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                let hasAnyVisibleResult = false;
+
+                faqSections.forEach(section => {
+                    const items = section.querySelectorAll('.accordion-item');
+                    let sectionHasVisibleItem = false;
+
+                    items.forEach(item => {
+                        const question = item.getAttribute('data-question') || '';
+                        const answer = item.getAttribute('data-answer') || '';
+
+                        if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+                            (item as HTMLElement).style.display = 'block';
+                            sectionHasVisibleItem = true;
+                            hasAnyVisibleResult = true;
+                        } else {
+                            (item as HTMLElement).style.display = 'none';
+                        }
+                    });
+
+                    if (sectionHasVisibleItem) {
+                        (section as HTMLElement).style.display = 'block';
+                    } else {
+                        (section as HTMLElement).style.display = 'none';
                     }
                 });
+
+                if (hasAnyVisibleResult || searchTerm === '') {
+                    noResults?.classList.add('hidden');
+                } else {
+                    noResults?.classList.remove('hidden');
+                }
+            });
+        }
+
+        // Close other details when opening one (Exclusive accordion)
+        const allDetails = document.querySelectorAll("details");
+        allDetails.forEach((targetDetail) => {
+            targetDetail.addEventListener("toggle", (e) => {
+                if (targetDetail.open) {
+                    allDetails.forEach((detail) => {
+                        if (detail !== targetDetail && detail.hasAttribute("open")) {
+                            detail.removeAttribute("open");
+                        }
+                    });
+                }
             });
         });
     });
@@ -129,67 +204,137 @@ const faqs = [
 <style>
     .faq-page {
         padding-bottom: 6rem;
+        position: relative;
+    }
+
+    /* Cinematic Glows */
+    .glow-bg {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.15;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .glow-bg.top-left {
+        top: -10%;
+        left: -10%;
+        background: var(--color-primary);
+    }
+
+    .glow-bg.bottom-right {
+        bottom: 0%;
+        right: -10%;
+        background: #8b5cf6;
     }
 
     .page-header {
         text-align: center;
         margin-bottom: 4rem;
-        padding-top: 2rem;
+        padding-top: 4rem;
+        position: relative;
     }
 
     .badge {
-        background: rgba(56, 189, 248, 0.15);
+        background: rgba(56, 189, 248, 0.1);
         color: #38bdf8;
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 1.25rem;
         border-radius: 9999px;
         font-weight: 600;
         font-size: 0.875rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
         border: 1px solid rgba(56, 189, 248, 0.2);
         display: inline-block;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
     h1 {
-        font-size: clamp(2.5rem, 5vw, 4rem);
-        margin-bottom: 1rem;
-        background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        margin-bottom: 1.5rem;
+        font-weight: 800;
+        line-height: 1.1;
+        background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
 
     .subtitle {
-        color: var(--color-text-muted);
-        font-size: 1.2rem;
-        max-width: 600px;
+        color: var(--color-text-muted, #9ca3af);
+        font-size: 1.25rem;
+        max-width: 650px;
         margin: 0 auto;
+        line-height: 1.6;
     }
 
+    /* Search Component */
+    .search-input-wrapper {
+        border-radius: 9999px;
+        transition: all 0.3s ease;
+        background: rgba(17, 24, 39, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    .search-input-wrapper:focus-within {
+        border-color: rgba(56, 189, 248, 0.5);
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1), 0 8px 32px rgba(0,0,0,0.3);
+        transform: translateY(-2px);
+    }
+
+    /* FAQ List Layout */
     .faq-content {
-        max-width: 800px;
+        max-width: 850px;
         margin: 0 auto 4rem;
     }
 
+    .faq-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+    }
+
     .faq-section {
-        margin-bottom: 3.5rem;
+        background: rgba(15, 23, 42, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 24px;
+        padding: 2rem;
+        backdrop-filter: blur(10px);
     }
     
     .section-header {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1.5rem;
+        gap: 1rem;
+        margin-bottom: 2rem;
     }
 
-    .section-icon {
+    .glass-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
         font-size: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     .section-title {
-        font-size: 1.5rem;
-        color: var(--color-text-main);
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #fff;
         margin: 0;
+        letter-spacing: -0.02em;
     }
 
+    /* Accordion Styles */
     .accordion-group {
         display: flex;
         flex-direction: column;
@@ -197,9 +342,9 @@ const faqs = [
     }
 
     .accordion-item {
-        border-radius: var(--radius-md);
+        border-radius: 16px;
         overflow: hidden;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         background: rgba(255, 255, 255, 0.02);
         border: 1px solid rgba(255, 255, 255, 0.05);
     }
@@ -210,9 +355,9 @@ const faqs = [
     }
 
     .accordion-item[open] {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(139, 92, 246, 0.3);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(56, 189, 248, 0.3);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
     }
 
     summary {
@@ -222,7 +367,7 @@ const faqs = [
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 1rem;
+        gap: 1.5rem;
     }
 
     summary::-webkit-details-marker {
@@ -231,89 +376,196 @@ const faqs = [
 
     .accordion-question {
         font-weight: 600;
-        font-size: 1.1rem;
-        color: var(--color-text-main);
-        line-height: 1.4;
+        font-size: 1.15rem;
+        color: #f3f4f6;
+        line-height: 1.5;
+        transition: color 0.3s ease;
     }
 
-    .accordion-icon {
-        color: var(--color-text-muted);
-        transition: transform 0.3s ease;
+    .accordion-item[open] .accordion-question {
+        color: #38bdf8;
+    }
+
+    .icon-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--color-text-muted, #9ca3af);
+        transition: all 0.3s ease;
         flex-shrink: 0;
     }
 
-    details[open] .accordion-icon {
-        transform: rotate(180deg);
-        color: var(--color-primary);
+    .accordion-item:hover .icon-toggle {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+    .accordion-icon {
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .accordion-item[open] .icon-toggle {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        transform: rotate(45deg);
     }
 
     .accordion-answer {
-        padding: 0 1.5rem 1.5rem 1.5rem;
-        color: var(--color-text-muted);
+        color: #d1d5db;
         line-height: 1.7;
-        font-size: 1rem;
-        animation: slideDown 0.3s ease-out;
+        font-size: 1.05rem;
+        overflow: hidden;
     }
-    
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
+
+    .answer-content {
+        padding: 0 1.5rem 1.5rem 1.5rem;
+        animation: revealDown 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes revealDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     /* Support CTA */
+    .support-wrapper {
+        max-width: 900px;
+        margin: 4rem auto 0;
+    }
+
     .support-check {
-        text-align: center;
-        padding: 3rem 2rem;
-        max-width: 600px;
-        margin: 0 auto;
-        border-radius: var(--radius-lg);
-        background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+        padding: 3rem;
+        border-radius: 24px;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .support-check::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
+    }
+
+    .support-icon {
+        font-size: 4rem;
+        line-height: 1;
+        flex-shrink: 0;
     }
     
+    .support-text {
+        flex: 1;
+    }
+
     .support-check h3 {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
         margin-bottom: 0.5rem;
+        font-weight: 700;
+        color: #fff;
     }
     
     .support-check p {
-        color: var(--color-text-muted);
-        margin-bottom: 2rem;
+        color: #9ca3af;
+        font-size: 1.1rem;
+        margin: 0;
     }
 
     .support-actions {
         display: flex;
+        flex-direction: column;
         gap: 1rem;
+        flex-shrink: 0;
+        min-width: 200px;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
         justify-content: center;
-        flex-wrap: wrap;
+        padding: 0.875rem 1.5rem;
+        font-weight: 600;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: rgba(56, 189, 248, 0.9);
+        color: #0f172a;
+        box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
+    }
+
+    .btn-primary:hover {
+        background: #38bdf8;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
     }
     
     .btn-outline {
         background: transparent;
-        border: 1px solid rgba(255,255,255,0.2);
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border-radius: var(--radius-md);
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.2s;
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #e5e7eb;
     }
     
     .btn-outline:hover {
         background: rgba(255,255,255,0.05);
-        border-color: white;
+        border-color: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
     }
 
-</style>
-<script>
-    import { gsap } from "gsap";
+    /* Responsive */
+    @media (max-width: 860px) {
+        .support-check {
+            flex-direction: column;
+            text-align: center;
+            padding: 2.5rem 1.5rem;
+        }
 
-    document.addEventListener('astro:page-load', () => {
-        gsap.from(".gs-fade-up", {
-            y: 30,
-            opacity: 0,
-            duration: 0.8,
-            stagger: 0.15,
-            ease: "power2.out"
-        });
-    });
-</script>
+        .support-actions {
+            flex-direction: row;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 180px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .faq-section {
+            padding: 1.5rem;
+        }
+
+        .section-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .support-actions {
+            flex-direction: column;
+        }
+    }
+</style>

@@ -30,7 +30,7 @@ export const GET: APIRoute = async ({ url, redirect, cookies }) => {
     }
 
     // Intercambiar el código por el access token
-    const redirectUri = `${url.origin}/api/auth/google/callback`;
+    const redirectUri = import.meta.env.GOOGLE_REDIRECT_URI || `${url.origin}/api/auth/google/callback`;
     const accessToken = await exchangeGoogleCode(code, redirectUri);
 
     // Obtener información del usuario de Google

@@ -13,7 +13,7 @@ export const GET: APIRoute = async ({ redirect, url }) => {
   }
 
   // Redirect URI debe coincidir con el configurado en Google Console
-  const redirectUri = `${url.origin}/api/auth/google/callback`;
+  const redirectUri = import.meta.env.GOOGLE_REDIRECT_URI || `${url.origin}/api/auth/google/callback`;
   
   // Construir URL de autorización de Google
   const googleAuthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
