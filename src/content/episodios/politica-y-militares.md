@@ -12,13 +12,13 @@ description: >-
   civiles-militares y el futuro de la defensa con expertos. ¡Entiende el tablero
   geopolítico!
 isPremiere: true
-image: 'https://cdn.veredillasfm.es/images/013.png'
+image: 'https://cdn.veredillasfm.es/images/95852e37-644f-4a6c-a4c8-423c4157de50.jpg'
 participants:
   - Elio
   - Gustavo
 season: 2
 episode: 2
-duration: ¿?
+duration: 32 min
 pubDate: '2026-03-04T17:00:00.000Z'
 ---
 ¿Cómo se entrelazan las decisiones de Estado con el poder estratégico de las fuerzas armadas? En un mundo en constante cambio, entender la relación entre el poder político y la seguridad nacional es más crucial que nunca.
