@@ -1,7 +1,5 @@
 ---
-title: >-
-  Sociedad Limitada: Ministros, Pagas y Cadenas ft. Samuel Machín, Hugo Calero,
-  Carlos Ramos
+title: 'Sociedad Limitada: Ministros, Pagas y Cadenas ft. Samuel, Hugo & Carlos'
 tags:
   - sociedad limitada
   - samuel machin
@@ -11,26 +9,6 @@ tags:
   - dia internacional de la mujer
   - 8m
   - soberania individual
-description: >-
-  Debate sin filtros sobre gestión del éxito, desconexión política, incentivos y
-  el impacto del 8M. ¡Rompe con la predicción y únete a la conversación!
-isPremiere: true
-image: 'https://cdn.veredillasfm.es/40855ef2-33a8-4ca2-a53c-4dd6092b7a3d.jpeg'
-participants:
-  - Samuel Machín
-  - Hugo Calero
-  - Carlos
-season: 2
-episode: 3
-duration: 38 min
-pubDate: '2026-03-06T17:00:00.000Z'
-videoUrl: 'https://www.youtube.com/embed/hfrcqYBr_g0'
-warningMessage: >-
-  Este contenido es 100% para fines de entretenimiento y comedia. Las opiniones
-  aquí vertidas no representan necesariamente la realidad y solo buscan sacar
-  una sonrisa al espectador. #humor
-audioUrl: >-
-  https://anchor.fm/s/10ca1a038/podcast/play/116486477/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2026-2-6%2F419418145-44100-2-2b24b08756937.mp3
 transcription:
   - time: '00:02'
     text: >-
@@ -741,6 +719,26 @@ transcription:
       señores. Sí, sí.
   - time: '38:36'
     text: 'Muchas gracias. Bueno, gracias.'
+description: >-
+  Debate sin filtros sobre gestión del éxito, desconexión política, incentivos y
+  el impacto del 8M. ¡Rompe con la predicción y únete a la conversación!
+isPremiere: true
+image: 'https://cdn.veredillasfm.es/40855ef2-33a8-4ca2-a53c-4dd6092b7a3d.jpeg'
+participants:
+  - Samuel Machín
+  - Hugo Calero
+  - Carlos
+season: 2
+episode: 3
+duration: 38 min
+pubDate: '2026-03-06T17:00:00.000Z'
+videoUrl: 'https://www.youtube.com/embed/hfrcqYBr_g0'
+warningMessage: >-
+  Este contenido es 100% para fines de entretenimiento y comedia. Las opiniones
+  aquí vertidas no representan necesariamente la realidad y solo buscan sacar
+  una sonrisa al espectador. #humor
+audioUrl: >-
+  https://anchor.fm/s/10ca1a038/podcast/play/116486477/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2026-2-6%2F419418145-44100-2-2b24b08756937.mp3
 sections:
   - time: '00:02'
     title: Bienvenida e Introducción al Debate
