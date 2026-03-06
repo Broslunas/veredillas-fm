@@ -19,9 +19,12 @@ participants:
   - Samuel Machín
   - Hugo Calero
 season: 2
-episode: 3
+episode: 5
 duration: ¿?
 pubDate: '2026-03-13T17:00:00.000Z'
+warningMessage: >-
+  Debido a problemas de organización, hemos decidido posponer este episodio una
+  semana, disculpamos las molestias.
 ---
 El auge de la comunidad Therian ha dejado de ser un rincón oscuro de internet para convertirse en un fenómeno sociológico que desafía nuestras nociones tradicionales de identidad. Pero, ¿dónde termina la conexión espiritual y dónde comienza la construcción mediática?
 
