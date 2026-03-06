@@ -1,5 +1,5 @@
 ---
-title: 'Hablemos sobre Venezuela ft. Christopher, Diego y Jezael Goya'
+title: 'Hablemos sobre Venezuela ft. Christopher, Diego & Jezael'
 tags:
   - Venezuela
   - Política
