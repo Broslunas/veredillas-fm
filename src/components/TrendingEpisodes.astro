@@ -117,7 +117,7 @@
                         ${item.count}
                     </span>
                     <span class="meta-duration">
-                       ${item.duration ? Math.floor(item.duration/60) + ' min' : ''}
+                       ${item.duration ? (isNaN(item.duration) ? item.duration : Math.floor(item.duration/60) + ' min') : ''}
                     </span>
                 </div>
             </div>
