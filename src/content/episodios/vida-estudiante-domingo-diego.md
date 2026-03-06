@@ -1,5 +1,5 @@
 ---
-title: La vida del estudiante ft. Domingo y Diego
+title: La vida del estudiante ft. Domingo & Diego
 tags:
   - Bachillerato
   - Vida Estudiantil
