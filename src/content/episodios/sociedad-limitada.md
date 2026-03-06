@@ -804,6 +804,47 @@ sections:
     title: Justicia para monstruos y el sistema penitenciario
   - time: '38:19'
     title: Despedida y Reflexiones Finales
+clips:
+  - title: Protestas por Igualdad  ¿Derechos o Privilegios  Opiniones
+    url: 'https://youtu.be/CdylQJWXxHM'
+  - title: Pena de Muerte  ¿Justicia o Crueldad  Debate Profundo
+    url: 'https://youtu.be/vTVeHcfgDk0'
+  - title: Pena de Muerte Excesiva  ¿Presos Trabajando por Impuestos
+    url: 'https://youtu.be/3vP5p59dgtk'
+  - title: Opinión vs  Pruebas  ¿Culpable sin Juicio
+    url: 'https://youtu.be/EfhlPMn8-Js'
+  - title: 'Monstruos, Pena de Muerte y Prisión  ¿Reinsertar Asesinos'
+    url: 'https://youtu.be/N5QaMlmBs2o'
+  - title: Migraciones  ¿Apertura o Cierre  La Verdad Revelada
+    url: 'https://youtu.be/tHt0RtzsDsI'
+  - title: Impuestos a Emprendedores  ¿Pagar por Trabajar
+    url: 'https://youtu.be/SzGlcZwaDr0'
+  - title: Impuestos a Emprendedores  ¿Libertad o Sistema
+    url: 'https://youtu.be/uTnbvIb3MeE'
+  - title: Igualdad de Género  Mi Apoyo a las Mujeres que Protestan
+    url: 'https://youtu.be/WbfwNIpEHcc'
+  - title: Igualdad de Género  ¿Por Qué No Lo Llamamos Así
+    url: 'https://youtu.be/z6ZtynorLOA'
+  - title: Estrategia Política de EE  UU   ¿Demasiado Ambicioso
+    url: 'https://youtu.be/NwRDBRJWmL8'
+  - title: Día de la Mujer  Mi Opinión Sobre Igualdad Real
+    url: 'https://youtu.be/aSrtHrNEA2g'
+  - title: Desmontando el Mito de la 'Paguita'  ¿Subvenciones o Realidad
+    url: 'https://youtu.be/9CZKKb3ToaY'
+  - title: Debate Pena de Muerte  ¿Justicia o Crueldad
+    url: 'https://youtu.be/R_dUrZKTFGA'
+  - title: Corrupción Política  ¿Enriquecimiento o Servicio al Pueblo
+    url: 'https://youtu.be/vcSPR964V4Q'
+  - title: Corrupción Política  ¡Basta de Robar Fondos Públicos!
+    url: 'https://youtu.be/FkQ3F0Kx5fA'
+  - title: Castigos Severos  ¿Disminuyen el Crimen en China
+    url: 'https://youtu.be/q6PHyTmcTDA'
+  - title: Castigos Extremos  ¿Funciona para Reducir Delitos
+    url: 'https://youtu.be/RmKMPg6REW8'
+  - title: ¿Cómo Roban Fondos Públicos  La Verdad Oculta
+    url: 'https://youtu.be/Kj4PIaHh__w'
+  - title: Impuestos Autónomos  Ventajas Clave Reveladas
+    url: 'https://youtu.be/bJ_soLDxC5I'
 ---
 En este episodio de Sociedad Limitada, nos sentamos a la mesa con tres invitados que no dejan indiferente a nadie: Samuel Machín, Hugo Calero y Carlos Ramos. Lo que empezó como una charla sobre la gestión del éxito y el peso de las estructuras actuales, terminó siendo un análisis crudo y sin filtros sobre la realidad social y económica que nos rodea.
 
