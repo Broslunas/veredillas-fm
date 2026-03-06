@@ -21,7 +21,7 @@ participants:
 season: 2
 episode: 3
 duration: ¿?
-pubDate: '2026-03-06T17:00:00.000Z'
+pubDate: '2026-03-13T17:00:00.000Z'
 ---
 El auge de la comunidad Therian ha dejado de ser un rincón oscuro de internet para convertirse en un fenómeno sociológico que desafía nuestras nociones tradicionales de identidad. Pero, ¿dónde termina la conexión espiritual y dónde comienza la construcción mediática?
 
