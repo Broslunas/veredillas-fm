@@ -15,7 +15,7 @@ images:
     src: 'https://cdn.veredillasfm.es/images/004-v2.jpg'
   - title: T1 E3 - El camino de un docente
     src: 'https://cdn.veredillasfm.es/images/003-v2.JPG'
-  - title: T1 E3 - El Biólogo que nos guía en la Informática
+  - title: T1 E2 - El Biólogo que nos guía en la Informática
     src: 'https://cdn.veredillasfm.es/images/002-v2.jpeg'
   - title: T1 E1 - El Futuro de la Tecnología
     src: 'https://cdn.veredillasfm.es/images/001-v2.jpeg'
