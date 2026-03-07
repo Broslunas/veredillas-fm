@@ -71,7 +71,6 @@ export default defineConfig({
         !page.includes('/verify-comment') &&
         !page.includes('/verify-delete') &&
         !page.includes('/dashboard') &&
-        !page.includes('/login') &&
         !page.includes('/perfil') &&
         !page.includes('/favoritos') &&
         !page.includes('/historial') &&
