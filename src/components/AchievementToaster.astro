@@ -373,14 +373,27 @@ function queueAchievementToast(item: ToastItem) {
   } catch {}
 };
 
-async function checkNewAchievements() {
+const ACHIEVEMENT_CHECK_THROTTLE = 5 * 60 * 1000; // 5 minutes
+
+async function checkNewAchievements(force = false) {
   // Don't auto-check on /logros because AchievementsPanel already does it
-  if (window.location.pathname === '/logros') return;
+  if (window.location.pathname === '/logros' && !force) return;
+
+  // Throttling logic
+  const lastCheck = sessionStorage.getItem('last_achievement_check');
+  const now = Date.now();
+  
+  // Skip if not forced and checked recently (unless on profile which we want fresh)
+  if (!force && lastCheck && (now - parseInt(lastCheck)) < ACHIEVEMENT_CHECK_THROTTLE && window.location.pathname !== '/perfil' && !window.location.pathname.startsWith('/perfil/')) {
+    return;
+  }
 
   try {
-    const res = await fetch('/api/achievements', { credentials: 'include' });
+    const res = await fetch('/api/achievements?light=true', { credentials: 'include' });
     if (!res.ok) return;
     const data = await res.json();
+    
+    sessionStorage.setItem('last_achievement_check', now.toString());
 
     if (data.newlyUnlocked?.length > 0) {
       await new Promise<void>(r => setTimeout(r, 1000));
@@ -400,10 +413,13 @@ async function checkNewAchievements() {
   } catch (err) {}
 }
 
+// Global event listener to allow other components to trigger a check
+document.addEventListener('check-achievements', () => checkNewAchievements(true));
+
 // Boot check
 if (document.readyState === 'complete') {
   checkNewAchievements();
 } else {
-  window.addEventListener('load', checkNewAchievements);
+  window.addEventListener('load', () => checkNewAchievements());
 }
 </script>

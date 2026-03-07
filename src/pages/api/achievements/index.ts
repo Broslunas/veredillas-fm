@@ -156,47 +156,75 @@ export const GET: APIRoute = async ({ request }) => {
       return sum;
     }, 0);
 
-    const achievementsPayload = ACHIEVEMENTS.map(a => {
-      const unlocked = allUnlockedIds.has(a.id);
-      const isNew = newlyUnlocked.includes(a.id);
+    // Only return everything if NOT light mode
+    const isLight = new URL(request.url).searchParams.get('light') === 'true';
 
-      // Compute progress if the achievement supports it
-      let progressCurrent: number | null = null;
-      let progressMax: number | null = null;
-      let progressPct: number | null = null;
-      let progressUnit: string | null = null;
+    let achievementsPayload = [];
+    if (!isLight) {
+      achievementsPayload = ACHIEVEMENTS.map(a => {
+        const unlocked = allUnlockedIds.has(a.id);
+        const isNew = newlyUnlocked.includes(a.id);
 
-      if (a.progress && (!a.secret || unlocked)) {
-        try {
-          const p = a.progress(stats);
-          progressCurrent = p.current;
-          progressMax     = p.max;
-          progressPct     = Math.min(100, Math.round((p.current / p.max) * 100));
-          progressUnit    = p.unit;
-        } catch {}
-      }
+        // Compute progress if the achievement supports it
+        let progressCurrent: number | null = null;
+        let progressMax: number | null = null;
+        let progressPct: number | null = null;
+        let progressUnit: string | null = null;
 
-      return {
-        id: a.id,
-        name: unlocked || !a.secret ? a.name : '???',
-        description: unlocked || !a.secret ? a.description : 'Logro secreto — ¡descúbrelo!',
-        icon: unlocked || !a.secret ? a.icon : '🔒',
-        rarity: a.rarity,
-        rarityLabel: RARITY_LABELS[a.rarity],
-        rarityColor: RARITY_COLORS[a.rarity],
-        category: a.category,
-        categoryLabel: CATEGORY_LABELS[a.category],
-        points: a.points,
-        unlocked,
-        isNew,
-        unlockedAt: unlockedAtMap.get(a.id) ?? null,
-        secret: a.secret ?? false,
-        progressCurrent,
-        progressMax,
-        progressPct,
-        progressUnit,
-      };
-    });
+        if (a.progress && (!a.secret || unlocked)) {
+          try {
+            const p = a.progress(stats);
+            progressCurrent = p.current;
+            progressMax     = p.max;
+            progressPct     = Math.min(100, Math.round((p.current / p.max) * 100));
+            progressUnit    = p.unit;
+          } catch {}
+        }
+
+        return {
+          id: a.id,
+          name: unlocked || !a.secret ? a.name : '???',
+          description: unlocked || !a.secret ? a.description : 'Logro secreto — ¡descúbrelo!',
+          icon: unlocked || !a.secret ? a.icon : '🔒',
+          rarity: a.rarity,
+          rarityLabel: RARITY_LABELS[a.rarity],
+          rarityColor: RARITY_COLORS[a.rarity],
+          category: a.category,
+          categoryLabel: CATEGORY_LABELS[a.category],
+          points: a.points,
+          unlocked,
+          isNew,
+          unlockedAt: unlockedAtMap.get(a.id) ?? null,
+          secret: a.secret ?? false,
+          progressCurrent,
+          progressMax,
+          progressPct,
+          progressUnit,
+        };
+      });
+    } else if (newlyUnlocked.length > 0) {
+      // If light but has new achievements, return JUST the full data for the new ones
+      achievementsPayload = newlyUnlocked.map(id => {
+        const a = ACHIEVEMENTS.find(ach => ach.id === id);
+        if (!a) return null;
+        return {
+          id: a.id,
+          name: a.name,
+          description: a.description,
+          icon: a.icon,
+          rarity: a.rarity,
+          rarityLabel: RARITY_LABELS[a.rarity],
+          rarityColor: RARITY_COLORS[a.rarity],
+          category: a.category,
+          categoryLabel: CATEGORY_LABELS[a.category],
+          points: a.points,
+          unlocked: true,
+          isNew: true,
+          unlockedAt: new Date(),
+          secret: a.secret ?? false
+        };
+      }).filter(Boolean);
+    }
 
     return new Response(
       JSON.stringify({
@@ -205,6 +233,7 @@ export const GET: APIRoute = async ({ request }) => {
         totalUnlocked: allUnlockedIds.size,
         totalAchievements: ACHIEVEMENTS.length,
         newlyUnlocked,
+        mode: isLight ? 'light' : 'full'
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );

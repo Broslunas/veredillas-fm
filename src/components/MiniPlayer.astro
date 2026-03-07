@@ -210,6 +210,10 @@ import './player/SharedPlayerStyles.css';
 
             if (response.ok && slug) {
                 const data = await response.json();
+                
+                // Trigger achievement check (Toaster will handle throttling)
+                document.dispatchEvent(new CustomEvent('check-achievements'));
+
                 if (data.newlyUnlockedCards && data.newlyUnlockedCards.length > 0) {
                     data.newlyUnlockedCards.forEach((guestName: string) => {
                         if (window.showToast) {
