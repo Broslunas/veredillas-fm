@@ -814,7 +814,7 @@ import './player/SharedPlayerStyles.css';
              
              if(immTitle) immTitle.innerText = title;
              if(immAuthor) immAuthor.innerText = author;
-             if(immCover) immCover.src = cover || '/logo.png';
+             if(immCover) immCover.src = cover || '/logo.webp';
              
              // Setup Seek Sync with Immersive
              setupImmersiveSync(audioElement, {
@@ -922,7 +922,7 @@ import './player/SharedPlayerStyles.css';
                 const slug = placeholder.getAttribute('data-slug');
 
                 if (title) {
-                    window.playerMeta = { title, image: image || '/logo.png', author: author || 'Veredillas FM' };
+                    window.playerMeta = { title, image: image || '/logo.webp', author: author || 'Veredillas FM' };
                     if(slug) window.playerSlug = slug;
                 }
 

@@ -62,7 +62,7 @@ export const POST: APIRoute = async ({ request, url }) => {
           <tr style="background: linear-gradient(180deg, #1e1e2d 0%, #0a0a0a 100%);">
             <td align="center" style="padding:40px 32px 24px;">
               <a href="${siteUrl}" target="_blank">
-                <img src="${siteUrl}/logo.png" width="90" height="90" alt="Veredillas FM" style="display:block; border:0; border-radius:18px; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);">
+                <img src="${siteUrl}/logo.webp" width="90" height="90" alt="Veredillas FM" style="display:block; border:0; border-radius:18px; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);">
               </a>
               <div style="margin:24px 0 0; display:inline-block; background:rgba(139, 92, 246, 0.2); padding:6px 16px; border-radius:24px; border:1px solid #8b5cf6;">
                 <p style="margin:0; font-size:12px; color:#a78bfa; font-weight:800; text-transform:uppercase; letter-spacing:2px;">🔑 ENLACE DE ACCESO</p>
@@ -109,7 +109,7 @@ export const POST: APIRoute = async ({ request, url }) => {
                         </td>
                         <td style="padding:0 12px;">
                           <a href="https://veredillasfm.es" target="_blank" style="color:#ffffff;">
-                            <img src="${siteUrl}/logo.png" width="24" height="24" alt="Web">
+                            <img src="${siteUrl}/logo.webp" width="24" height="24" alt="Web">
                           </a>
                         </td>
                       </tr>

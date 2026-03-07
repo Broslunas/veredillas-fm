@@ -7,7 +7,7 @@ interface Props {
   triggerId?: string;
 }
 
-const { title, image = '/logo.png', guests = [], url = Astro.url, triggerId } = Astro.props;
+const { title, image = '/logo.webp', guests = [], url = Astro.url, triggerId } = Astro.props;
 ---
 
 <!-- Trigger Button (Only if no external trigger ID provided) -->
@@ -183,7 +183,7 @@ const { title, image = '/logo.png', guests = [], url = Astro.url, triggerId } = 
                             <!-- Top Bar -->
                             <div class="card-top-bar">
                                 <div class="brand-badge" id="el-logo">
-                                    <img src="/logo.png" alt="Logo" class="brand-logo" />
+                                    <img src="/logo.webp" alt="Logo" class="brand-logo" />
                                     <span class="brand-name">VEREDILLAS FM</span>
                                 </div>
                                 <div class="episode-pill" id="el-tag">NUEVO EPISODIO</div>
@@ -321,8 +321,8 @@ const { title, image = '/logo.png', guests = [], url = Astro.url, triggerId } = 
     // Image Error Handling
     document.querySelectorAll('.share-card img').forEach(img => {
         img.addEventListener('error', function() {
-            if ((this as HTMLImageElement).src !== '/logo.png') {
-                (this as HTMLImageElement).src = '/logo.png';
+            if ((this as HTMLImageElement).src !== '/logo.webp') {
+                (this as HTMLImageElement).src = '/logo.webp';
             }
         });
     });

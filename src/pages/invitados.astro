@@ -140,7 +140,7 @@ const dateFormatter = new Intl.DateTimeFormat('es-ES', { month: 'short', year: '
 <Layout 
   title="Invitados"
   description="Hall of Fame de Veredillas FM. Descubre quiénes son los que más han aportado a nuestros micrófonos."
-  image="/logo.png"
+  image="/logo.webp"
 >
     <!-- Background Decor -->
     <div class="page-bg"></div>
@@ -176,7 +176,7 @@ const dateFormatter = new Intl.DateTimeFormat('es-ES', { month: 'short', year: '
 
                         <div class="image-box">
                             <img 
-                                src={guest.data.image || '/logo.png'} 
+                                src={guest.data.image || '/logo.webp'} 
                                 alt={guest.data.name} 
                                 loading={index < 3 ? "eager" : "lazy"} 
                             />

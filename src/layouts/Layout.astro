@@ -33,7 +33,7 @@ interface Props {
 const { 
 	title, 
 	description = "Veredillas FM es el podcast oficial del IES Veredillas. Descubre entrevistas exclusivas, noticias del instituto, cultura estudiantil y mucho más. Una radio hecha por alumnos, para alumnos.",
-	image = "/logo.png",
+	image = "/logo.webp",
 	imageAlt = "Veredillas FM - El podcast oficial del IES Veredillas",
 	type = "website",
 	publishedTime,
@@ -139,7 +139,7 @@ const fullTitle = title === "Inicio" ? "Veredillas FM - El Podcast del IES Vered
 				"name": "Veredillas FM",
 				"logo": {
 					"@type": "ImageObject",
-					"url": new URL("/logo.png", Astro.site).href
+					"url": new URL("/logo.webp", Astro.site).href
 				}
 			},
 			...(type === 'article' && publishedTime ? {
@@ -191,7 +191,7 @@ const fullTitle = title === "Inicio" ? "Veredillas FM - El Podcast del IES Vered
         <!-- Global Loader -->
         <div id="global-loader" aria-hidden="true">
             <div class="loader-content">
-                <img src="/logo.png" alt="Veredillas FM" class="loader-logo" />
+                <img src="/logo.webp" alt="Veredillas FM" class="loader-logo" />
                 <div class="loader-spinner"></div>
             </div>
         </div>

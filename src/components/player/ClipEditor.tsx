@@ -131,13 +131,13 @@ export default function ClipEditor({ audioUrl, title, author, cover, duration: t
     useEffect(() => {
         const img = new Image();
         img.crossOrigin = "anonymous";
-        img.src = cover || '/logo.png';
+        img.src = cover || '/logo.webp';
         img.onload = () => { 
             coverImgRef.current = img; 
             setImageLoaded(true);
         };
         img.onerror = () => {
-            if (cover && cover !== '/logo.png') img.src = '/logo.png';
+            if (cover && cover !== '/logo.webp') img.src = '/logo.webp';
         }
     }, [cover]);
 

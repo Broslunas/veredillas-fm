@@ -141,7 +141,7 @@ const podcastEpisodeSchema = {
         "name": "Veredillas FM",
         "description": "El podcast oficial del IES Veredillas. Entrevistas exclusivas, noticias del instituto, cultura estudiantil y mucho más.",
         "url": siteUrl,
-        "image": `${siteUrl}/logo.png`
+        "image": `${siteUrl}/logo.webp`
     },
     "episodeNumber": entry.data.episode,
     ...(entry.data.season !== undefined ? { "partOfSeason": { "@type": "PodcastSeason", "seasonNumber": entry.data.season } } : {}),
@@ -150,7 +150,7 @@ const podcastEpisodeSchema = {
         "@type": "Organization",
         "name": "Veredillas FM",
         "url": siteUrl,
-        "logo": { "@type": "ImageObject", "url": `${siteUrl}/logo.png` }
+        "logo": { "@type": "ImageObject", "url": `${siteUrl}/logo.webp` }
     },
     "keywords": entry.data.tags?.join(', '),
     "inLanguage": "es-ES"

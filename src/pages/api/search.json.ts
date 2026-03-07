@@ -55,7 +55,7 @@ export async function GET() {
     { title: 'Newsletter', description: 'Suscríbete a nuestro newsletter', slug: '/newsletter', type: 'Navegación', date: new Date().toISOString(), image: '/favicon.png' },
     { title: 'Calendario', description: 'Ver calendario de eventos', slug: '/calendario', type: 'Navegación', date: new Date().toISOString(), image: '/favicon.png' },
     { title: 'Galeria', description: 'Ver galeria de imagenes', slug: '/galeria', type: 'Navegación', date: new Date().toISOString(), image: '/favicon.png' },
-    { title: 'IA Veredillas', description: 'Chat con inteligencia artificial', slug: '#chat-toggle-btn', type: 'Herramienta', date: new Date().toISOString(), image: '/logo.png' },
+    { title: 'IA Veredillas', description: 'Chat con inteligencia artificial', slug: '#chat-toggle-btn', type: 'Herramienta', date: new Date().toISOString(), image: '/logo.webp' },
   ];
 
   // Ordenar por fecha (más reciente primero)

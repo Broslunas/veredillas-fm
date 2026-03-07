@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Veredillas FM Logo](public/logo.png)
+![Veredillas FM Logo](public/logo.webp)
 
 **El podcast oficial del IES Veredillas**
 
@@ -152,7 +152,7 @@ veredillas-fm/
 │   └── SEO-IMPROVEMENTS.md
 ├── public/                    # Archivos estáticos
 │   ├── favicon.ico
-│   ├── logo.png
+│   ├── logo.webp
 │   ├── robots.txt
 │   ├── humans.txt
 │   └── manifest.json

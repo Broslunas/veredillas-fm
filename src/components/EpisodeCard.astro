@@ -41,6 +41,8 @@ const isAboutToPremiere = isUpcoming && diffInHours <= 2;
                     src={post.data.image} 
                     alt={post.data.title} 
                     class="card-image" 
+                    loading="lazy"
+                    decoding="async"
                     transition:name={!disableTransition ? `cover-${post.slug}` : undefined}
                 />
                 <div class="play-overlay">

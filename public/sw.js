@@ -11,7 +11,7 @@ self.addEventListener('push', function(event) {
   
   const options = {
     body: data.body,
-    icon: '/logo.png',
+    icon: '/logo.webp',
     badge: '/favicon.png',
     data: data.url || '/',
     vibrate: [100, 50, 100],
