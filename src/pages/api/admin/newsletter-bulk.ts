@@ -13,13 +13,34 @@ export const POST: APIRoute = async ({ request }) => {
     const userPayload = getUserFromCookie(cookieHeader);
 
     if (!userPayload) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+      console.warn('[Admin] Unauthorized attempt to trigger bulk newsletter');
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     await dbConnect();
     const currentUser = await User.findById(userPayload.userId);
-    if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'owner')) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
+    
+    // Detailed role check with logging
+    if (!currentUser) {
+      console.error(`[Admin] Authenticated user not found in DB: ${userPayload.userId}`);
+      return new Response(JSON.stringify({ error: 'User not found' }), { 
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    if (currentUser.role !== 'admin' && currentUser.role !== 'owner') {
+      console.warn(`[Admin] Access denied for user ${currentUser.name} (${currentUser.role})`);
+      return new Response(JSON.stringify({ 
+        error: 'Forbidden: Admin or Owner role required',
+        currentRole: currentUser.role
+      }), { 
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     // 2. Process the newsletter for all users
@@ -37,6 +58,9 @@ export const POST: APIRoute = async ({ request }) => {
 
   } catch (error) {
     console.error('Error in bulk newsletter:', error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Internal server error' }), { status: 500 });
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Internal server error' }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 };
