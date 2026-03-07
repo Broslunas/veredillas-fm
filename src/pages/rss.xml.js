@@ -1,6 +1,8 @@
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
 
+export const prerender = true;
+
 export async function GET(context) {
   const episodios = await getCollection('episodios');
   const blog = await getCollection('blog');
@@ -27,7 +29,7 @@ export async function GET(context) {
     }))
   ].sort((a, b) => b.pubDate.valueOf() - a.pubDate.valueOf());
 
-  return rss({
+  const response = await rss({
     title: 'Veredillas FM',
     description: 'El podcast oficial de Veredillas. Donde te mantenemos al pendiente de los temas más candentes.',
     site: context.site,
@@ -44,4 +46,9 @@ export async function GET(context) {
     })),
     customData: `<language>es-ES</language>`,
   });
+
+  // Add cache control headers: 1 hour in CDN, with stale-while-revalidate for 30 minutes
+  response.headers.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=1800');
+  
+  return response;
 }

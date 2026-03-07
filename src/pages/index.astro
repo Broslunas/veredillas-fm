@@ -31,6 +31,9 @@ const latestPublishedEpisode = sortedPublished[0];
 
 const allPosts = await getCollection('blog');
 const recentPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
+
+// Cache this page in the Edge for 10 minutes, with 5 minutes stale period
+Astro.response.headers.set('Cache-Control', 's-maxage=600, stale-while-revalidate=300');
 ---
 
 <Layout 

@@ -48,6 +48,9 @@ const episodesWithMeta = sortedEpisodes.map(post => {
         participantsStr
     };
 });
+
+// Cache this list for 10 minutes in the CDN
+Astro.response.headers.set('Cache-Control', 's-maxage=600, stale-while-revalidate=300');
 ---
 
 <Layout 

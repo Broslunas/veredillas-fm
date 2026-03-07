@@ -156,6 +156,16 @@ const podcastEpisodeSchema = {
     "inLanguage": "es-ES"
 };
 
+// Conditionally cache if NOT logged in
+const token = Astro.cookies.get('auth-token')?.value;
+if (!token) {
+    // 1 hour for guests, with 30 min revalidation
+    Astro.response.headers.set('Cache-Control', 's-maxage=3600, stale-while-revalidate=1800');
+} else {
+    // For logged-in users, don't cache at all to keep progress accurate
+    Astro.response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    Astro.response.headers.set('Vary', 'Cookie');
+}
 ---
 
 <Layout 
