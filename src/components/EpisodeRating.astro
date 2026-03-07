@@ -30,55 +30,73 @@ const { slug } = Astro.props;
 </div>
 
 <script>
-  const initEpisodeRating = () => {
-    const widgets = document.querySelectorAll('.episode-rating-widget');
-    
-    widgets.forEach(async (widget) => {
-      const slug = widget.getAttribute('data-slug');
-      if (!slug) return;
+  const initEpisodeRating = async () => {
+    const widgets = document.querySelectorAll('.episode-rating-widget:not([data-loaded="true"])');
+    if (widgets.length === 0) return;
 
-      const skeleton = widget.querySelector('.rating-skeleton') as HTMLElement;
-      const content = widget.querySelector('.rating-content') as HTMLElement;
-      const empty = widget.querySelector('.rating-empty') as HTMLElement;
+    const slugs = Array.from(widgets).map(w => w.getAttribute('data-slug')).filter(Boolean);
 
-      try {
-        const res = await fetch(`/api/ratings/${slug}`);
-        const json = await res.json();
+    try {
+      const res = await fetch('/api/ratings/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slugs })
+      });
+      const json = await res.json();
 
-        if (json.success && json.data.count > 0) {
-          const { average, count } = json.data;
+      if (json.success) {
+        const data = json.data;
+        widgets.forEach((widget) => {
+          const slug = widget.getAttribute('data-slug');
+          if (!slug || !data[slug]) return;
+
+          const skeleton = widget.querySelector('.rating-skeleton') as HTMLElement;
+          const content = widget.querySelector('.rating-content') as HTMLElement;
+          const empty = widget.querySelector('.rating-empty') as HTMLElement;
           
-          // Update stars
-          const stars = widget.querySelectorAll('.star-display');
-          stars.forEach((star) => {
-            const index = parseInt(star.getAttribute('data-index') || '0', 10);
-            if (index <= average) {
-              star.classList.add('filled');
-            } else if (index - 1 < average && index > average) {
-              // Partial star (for future half-star support)
-              star.classList.add('filled');
-            }
-          });
+          const ratingData = data[slug];
 
-          // Update text
-          const avgEl = widget.querySelector('.rating-average');
-          const countEl = widget.querySelector('.rating-count');
-          if (avgEl) avgEl.textContent = average.toFixed(1);
-          if (countEl) countEl.textContent = `(${count} valoración${count !== 1 ? 'es' : ''})`;
+          if (ratingData.count > 0) {
+            const { average, count } = ratingData;
+            
+            // Update stars
+            const stars = widget.querySelectorAll('.star-display');
+            stars.forEach((star) => {
+              const index = parseInt(star.getAttribute('data-index') || '0', 10);
+              if (index <= average) {
+                star.classList.add('filled');
+              } else if (index - 1 < average && index > average) {
+                star.classList.add('filled');
+              }
+            });
 
-          // Show content
-          skeleton.style.display = 'none';
-          content.style.display = 'flex';
-        } else {
-          // No ratings
-          skeleton.style.display = 'none';
-          empty.style.display = 'flex';
-        }
-      } catch (e) {
-        skeleton.style.display = 'none';
-        empty.style.display = 'flex';
+            // Update text
+            const avgEl = widget.querySelector('.rating-average');
+            const countEl = widget.querySelector('.rating-count');
+            if (avgEl) avgEl.textContent = average.toFixed(1);
+            if (countEl) countEl.textContent = `(${count} valoración${count !== 1 ? 'es' : ''})`;
+
+            // Show content
+            if (skeleton) skeleton.style.display = 'none';
+            if (content) content.style.display = 'flex';
+            widget.setAttribute('data-loaded', 'true');
+          } else {
+            // No ratings
+            if (skeleton) skeleton.style.display = 'none';
+            if (empty) empty.style.display = 'flex';
+            widget.setAttribute('data-loaded', 'true');
+          }
+        });
       }
-    });
+    } catch (e) {
+      console.error("Bulk ratings load failed", e);
+      widgets.forEach(w => {
+        const skel = w.querySelector('.rating-skeleton') as HTMLElement;
+        const emp = w.querySelector('.rating-empty') as HTMLElement;
+        if (skel) skel.style.display = 'none';
+        if (emp) emp.style.display = 'flex';
+      });
+    }
   };
 
   // Run on initial load and on page transitions

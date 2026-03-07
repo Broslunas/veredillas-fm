@@ -377,34 +377,42 @@ const isAboutToPremiere = isUpcoming && diffInHours <= 2;
 
 <script>
     const loadCardRatings = async () => {
-        const ratingElements = document.querySelectorAll('.card-rating[data-rating-slug]');
+        const ratingElements = document.querySelectorAll('.card-rating[data-rating-slug]:not([data-loaded="true"])');
+        if (ratingElements.length === 0) return;
+
+        const slugs = Array.from(ratingElements).map(el => el.getAttribute('data-rating-slug')).filter(Boolean);
         
-        ratingElements.forEach(async (el) => {
-            const slug = el.getAttribute('data-rating-slug');
-            if (!slug || el.getAttribute('data-loaded') === 'true') return;
+        try {
+            const res = await fetch('/api/ratings/bulk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ slugs })
+            });
+            const json = await res.json();
 
-            try {
-                const res = await fetch(`/api/ratings/${slug}`);
-                const json = await res.json();
-
-                if (json.success && json.data.count > 0) {
-                    const { average, count } = json.data;
-                    const starsEl = el.querySelector('.rating-stars-mini');
-                    
-                    if (starsEl) {
-                        // Generate stars based on rating
-                        let starsHtml = '';
-                        for (let i = 1; i <= 5; i++) {
-                            starsHtml += i <= Math.round(average) ? '★' : '☆';
+            if (json.success) {
+                const data = json.data;
+                ratingElements.forEach((el) => {
+                    const slug = el.getAttribute('data-rating-slug');
+                    if (slug && data[slug] && data[slug].count > 0) {
+                        const { average, count } = data[slug];
+                        const starsEl = el.querySelector('.rating-stars-mini');
+                        
+                        if (starsEl) {
+                            // Generate stars based on rating
+                            let starsHtml = '';
+                            for (let i = 1; i <= 5; i++) {
+                                starsHtml += i <= Math.round(average) ? '★' : '☆';
+                            }
+                            starsEl.textContent = starsHtml;
+                            el.setAttribute('data-loaded', 'true');
                         }
-                        starsEl.textContent = starsHtml;
-                        el.setAttribute('data-loaded', 'true');
                     }
-                }
-            } catch (e) {
-                // Silent fail
+                });
             }
-        });
+        } catch (e) {
+            console.error("Bulk ratings load failed", e);
+        }
     };
 
     // Run on load and page transitions
