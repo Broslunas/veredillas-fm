@@ -8,255 +8,269 @@ const { episodeSlug, className = '' } = Astro.props;
 ---
 
 <button 
-  class={`favorite-btn ${className}`}
+  class={`favorite-premium-btn ${className}`}
   data-episode-slug={episodeSlug}
   aria-label="Agregar a favoritos"
   title="Agregar a favoritos"
 >
-  <svg class="heart-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-  </svg>
-  <span class="favorite-text">
-    <span class="favorite-label">Favorito</span>
-    <span class="favorite-count" data-count="0">0</span>
+  <div class="btn-background"></div>
+  <div class="btn-glow"></div>
+  
+  <span class="icon-wrapper">
+    <svg class="heart-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+    </svg>
+    <div class="pulse-ring"></div>
+  </span>
+
+  <span class="btn-labels">
+    <span class="label-main">Favorito</span>
+    <span class="label-count" data-count="0">0</span>
   </span>
 </button>
 
 <style is:global>
-  .favorite-btn {
+  .favorite-premium-btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     padding: 0.625rem 1.25rem;
-    border: 2px solid rgba(139, 92, 246, 0.3);
-    border-radius: 50px;
-    background: rgba(139, 92, 246, 0.1);
-    color: var(--color-text);
-    font-weight: 600;
-    font-size: 0.9rem;
+    background: transparent;
+    border: none;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    -webkit-tap-highlight-color: transparent;
+    min-height: 48px;
   }
 
-  .favorite-btn:hover {
-    background: rgba(139, 92, 246, 0.2);
-    border-color: rgba(139, 92, 246, 0.5);
-    transform: translateY(-2px);
+  .btn-background {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    z-index: 1;
+    transition: all 0.4s ease;
   }
 
-  .favorite-btn.favorited {
+  .btn-glow {
+    position: absolute;
+    inset: -2px;
     background: linear-gradient(135deg, #ec4899, #ef4444);
-    border-color: #ef4444;
-    color: white;
+    border-radius: 18px;
+    opacity: 0;
+    filter: blur(10px);
+    z-index: 0;
+    transition: opacity 0.4s ease;
   }
 
-  .favorite-btn.favorited:hover {
-    background: linear-gradient(135deg, #db2777, #dc2626);
-    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+  .favorite-premium-btn:hover .btn-background {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+  }
+
+  .favorite-premium-btn.favorited .btn-background {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+
+  .favorite-premium-btn.favorited:hover .btn-glow {
+    opacity: 0.2;
+  }
+
+  /* Icon System */
+  .icon-wrapper {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
   }
 
   .heart-icon {
     width: 20px;
     height: 20px;
-    transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.4);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
-  .favorite-btn.favorited .heart-icon {
-    fill: currentColor;
-    animation: heartBeat 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  .favorite-premium-btn.favorited .heart-icon {
+    color: #ef4444;
+    fill: #ef4444;
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4));
   }
 
-  .favorite-btn:active .heart-icon {
-    transform: scale(0.9);
-  }
-
-  @keyframes heartBeat {
-    0%, 100% {
-      transform: scale(1);
-    }
-    25% {
-      transform: scale(1.3);
-    }
-    50% {
-      transform: scale(1.1);
-    }
-  }
-
-  .favorite-btn.loading {
-    opacity: 0.6;
-    cursor: wait;
+  .pulse-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid #ef4444;
+    opacity: 0;
     pointer-events: none;
   }
 
-  .favorite-text {
+  .favorite-premium-btn.favorited .pulse-ring {
+    animation: pulse-ring 0.6s cubic-bezier(0.215, 0.61, 0.355, 1);
+  }
+
+  @keyframes pulse-ring {
+    0% { transform: scale(0.5); opacity: 1; }
+    100% { transform: scale(3); opacity: 0; }
+  }
+
+  /* Labels */
+  .btn-labels {
+    position: relative;
+    z-index: 2;
     display: flex;
-    flex-direction: row;
     align-items: center;
-    gap: 0.4rem;
-    line-height: 1;
+    gap: 0.5rem;
   }
 
-  .favorite-label {
-    font-size: 0.9rem;
+  .label-main {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.01em;
   }
 
-  .favorite-count {
-    font-size: 0.85rem;
-    opacity: 0.8;
-    font-weight: 500;
-    margin-left: 2px;
+  .label-count {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 6px;
+    min-width: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .favorite-premium-btn.favorited .label-count {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+  }
+
+  /* Loading State */
+  .favorite-premium-btn.loading {
+    opacity: 0.6;
+    pointer-events: none;
   }
 
   @media (max-width: 640px) {
-    .favorite-text {
-      display: none;
-    }
-    
-    .favorite-btn {
-      padding: 0.625rem;
-      min-width: 44px;
-      justify-content: center;
-    }
+    .label-main { display: none; }
+    .favorite-premium-btn { padding: 0.625rem 0.875rem; }
+  }
+
+  [data-theme="light"] .btn-background {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.07);
+  }
+  
+  [data-theme="light"] .label-main { color: #1a1a2e; }
+  [data-theme="light"] .heart-icon { color: rgba(0, 0, 0, 0.2); }
+  [data-theme="light"] .label-count {
+    background: rgba(0, 0, 0, 0.03);
+    color: rgba(0, 0, 0, 0.4);
   }
 </style>
 
 <script>
-  // Load favorites and init buttons
-  async function initFavoriteButtons() {
-    try {
-      // Get user's favorites
-      const response = await fetch('/api/favorites/list');
-      const data = await response.json();
-      const favorites = data.favorites || [];
+  function initFavoriteButtons() {
+    async function loadState() {
+      try {
+        const response = await fetch('/api/favorites/list');
+        const data = await response.json();
+        const favorites = data.favorites || [];
 
-      // Mark favorited buttons and load counts
-      const buttons = document.querySelectorAll('.favorite-btn');
-      
-      for (const button of buttons) {
-        const slug = button.getAttribute('data-episode-slug');
+        const buttons = document.querySelectorAll('.favorite-premium-btn');
         
-        // Mark if favorited
-        if (favorites.includes(slug)) {
-          button.classList.add('favorited');
-          button.setAttribute('aria-label', 'Quitar de favoritos');
-          button.setAttribute('title', 'Quitar de favoritos');
-        }
-
-        // Load favorite count for this episode
-        if (slug) {
-          loadFavoriteCount(slug, button as HTMLElement);
-        }
-
-        // Add click handler
-        button.addEventListener('click', async (e) => {
-          e.preventDefault();
-          await toggleFavorite(button as HTMLButtonElement);
-        });
-      }
-    } catch (error) {
-      console.error('Error loading favorites:', error);
-    }
-  }
-
-  async function loadFavoriteCount(slug: string, button: HTMLElement) {
-    try {
-      const response = await fetch(`/api/favorites/count?slug=${encodeURIComponent(slug)}`);
-      const data = await response.json();
-      
-      if (data.favoritesCount !== undefined) {
-        updateCountDisplay(button, data.favoritesCount);
-      }
-    } catch (error) {
-      console.error('Error loading favorite count:', error);
-    }
-  }
-
-  function updateCountDisplay(button: HTMLElement, count: number) {
-    const countEl = button.querySelector('.favorite-count');
-    if (countEl) {
-      countEl.textContent = count.toString();
-      countEl.setAttribute('data-count', count.toString());
-    }
-  }
-
-  async function toggleFavorite(button: HTMLButtonElement) {
-    const slug = button.getAttribute('data-episode-slug');
-    if (!slug) return;
-
-    const wasFavorited = button.classList.contains('favorited');
-
-    // Optimistic UI update
-    button.classList.toggle('favorited');
-    button.classList.add('loading');
-
-    try {
-      const response = await fetch('/api/favorites/toggle', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ episodeSlug: slug }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Revert optimistic update immediately
-          if (wasFavorited) {
-            button.classList.add('favorited');
-          } else {
-            button.classList.remove('favorited');
-          }
+        for (const button of buttons) {
+          const slug = button.getAttribute('data-episode-slug');
           
-          if ((window as any).triggerAuthPrompt) {
-            (window as any).triggerAuthPrompt();
-          } else if (window.showToast) {
-            window.showToast('Inicia sesión para guardar favoritos ❤️', 'info');
-          } else {
-            alert('Debes iniciar sesión para guardar favoritos');
+          if (favorites.includes(slug)) {
+            button.classList.add('favorited');
           }
-          return;
+
+          if (slug) {
+            loadCount(slug, button as HTMLElement);
+          }
+
+          // Important: remove old listeners if re-initializing
+          const newBtn = button.cloneNode(true);
+          button.parentNode?.replaceChild(newBtn, button);
+          
+          newBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await toggleFavorite(newBtn as HTMLButtonElement);
+          });
         }
-        throw new Error(data.error || 'Error al actualizar favorito');
+      } catch (error) {
+        console.error('Error loading favorites:', error);
       }
-
-      // Update UI based on response
-      if (data.isFavorite) {
-        button.classList.add('favorited');
-        button.setAttribute('aria-label', 'Quitar de favoritos');
-        button.setAttribute('title', 'Quitar de favoritos');
-        if (window.showToast) window.showToast('Añadido a favoritos', 'success');
-      } else {
-        button.classList.remove('favorited');
-        button.setAttribute('aria-label', 'Agregar a favoritos');
-        button.setAttribute('title', 'Agregar a favoritos');
-        if (window.showToast) window.showToast('Eliminado de favoritos', 'info');
-      }
-
-      // Reload count from server to ensure accuracy
-      await loadFavoriteCount(slug, button);
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      // Revert optimistic update on error
-      if (wasFavorited) {
-        button.classList.add('favorited');
-      } else {
-        button.classList.remove('favorited');
-      }
-      
-      if (window.showToast) {
-         window.showToast('Error al actualizar favorito', 'error');
-      } else {
-        alert('Error al actualizar favorito. Por favor, intenta de nuevo.');
-      }
-    } finally {
-      button.classList.remove('loading');
     }
+
+    async function loadCount(slug: string, button: HTMLElement) {
+      try {
+        const response = await fetch(`/api/favorites/count?slug=${encodeURIComponent(slug)}`);
+        const data = await response.json();
+        const countEl = button.querySelector('.label-count');
+        if (countEl && data.favoritesCount !== undefined) {
+          countEl.textContent = data.favoritesCount;
+        }
+      } catch (e) {}
+    }
+
+    async function toggleFavorite(button: HTMLButtonElement) {
+      const slug = button.getAttribute('data-episode-slug');
+      if (!slug) return;
+
+      const wasFavorited = button.classList.contains('favorited');
+      button.classList.add('loading');
+
+      try {
+        const response = await fetch('/api/favorites/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ episodeSlug: slug }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            if (window.showToast) window.showToast('Inicia sesión para esto ❤️', 'info');
+            return;
+          }
+          throw new Error();
+        }
+
+        if (data.isFavorite) {
+          button.classList.add('favorited');
+          if (window.showToast) window.showToast('¡Guardado!', 'success');
+        } else {
+          button.classList.remove('favorited');
+          if (window.showToast) window.showToast('Eliminado', 'info');
+        }
+
+        loadCount(slug, button);
+      } catch (error) {
+        if (window.showToast) window.showToast('Error de conexión', 'error');
+      } finally {
+        button.classList.remove('loading');
+      }
+    }
+
+    loadState();
   }
 
-  // Initialize on page load
   document.addEventListener('DOMContentLoaded', initFavoriteButtons);
+  document.addEventListener('astro:page-load', initFavoriteButtons);
 </script>

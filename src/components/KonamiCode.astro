@@ -1,132 +1,172 @@
----
----
+<div id="konami-overlay" class="konami-overlay">
+    <div class="konami-emblem">
+        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
+        <span>SECRET UNLOCKED</span>
+    </div>
+</div>
 
 <script>
     import confetti from 'canvas-confetti';
 
-    const konamiCode = [
-        'ArrowUp', 'ArrowUp', 
-        'ArrowDown', 'ArrowDown', 
-        'ArrowLeft', 'ArrowRight', 
-        'ArrowLeft', 'ArrowRight', 
-        'b', 'a'
-    ];
-
+    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
     let cursor = 0;
-
-    document.addEventListener('keydown', (e: KeyboardEvent) => {
-        // Reset if key doesn't match expected key in sequence
-        if (e.key !== konamiCode[cursor]) {
-            cursor = 0;
-            // Also check if the new key is the start of the sequence
-            if (e.key === konamiCode[0]) {
-                cursor = 1;
-            }
-            return;
-        }
-
-        cursor++;
-
-        if (cursor === konamiCode.length) {
-            activatePartyMode();
-            cursor = 0;
-            // Unlock the secret Konami achievement
-            if (typeof (window as any).unlockAchievement === 'function') {
-                (window as any).unlockAchievement('konami');
-            }
-        }
-    });
-
     let partyAudio: HTMLAudioElement | null = null;
+    let isPartyActive = false;
 
-    function activatePartyMode() {
-        // 1. Confetti Explosion
-        const duration = 5 * 1000;
-        const animationEnd = Date.now() + duration;
-        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 99999 };
+    function shakeScreen() {
+        document.body.classList.add('konami-shake');
+        setTimeout(() => document.body.classList.remove('konami-shake'), 800);
+    }
 
-        const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+    function showEmblem() {
+        const overlay = document.getElementById('konami-overlay');
+        if (overlay) {
+            overlay.classList.add('active');
+            setTimeout(() => overlay.classList.remove('active'), 3000);
+        }
+    }
 
-        const interval = setInterval(function() {
-            const timeLeft = animationEnd - Date.now();
+    function triggerConfetti() {
+        const end = Date.now() + 3000;
+        const colors = ['#8b5cf6', '#ec4899', '#ef4444', '#f59e0b', '#10b981'];
 
-            if (timeLeft <= 0) {
-                return clearInterval(interval);
+        (function frame() {
+            confetti({
+                particleCount: 5,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: colors
+            });
+            confetti({
+                particleCount: 5,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: colors
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
             }
+        }());
+    }
 
-            const particleCount = 50 * (timeLeft / duration);
-            
-            confetti({
-                ...defaults, 
-                particleCount,
-                origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
-            });
-            confetti({
-                ...defaults, 
-                particleCount,
-                origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
-            });
-        }, 250);
-
-        // 2. Toggle Party Mode Class
+    function togglePartyMode() {
+        isPartyActive = !isPartyActive;
         const isPartyOn = document.documentElement.classList.toggle('party-mode');
         
-        // 3. Play Cringe/Creepy Music (Titanic Flute Fail)
         if (isPartyOn) {
+            shakeScreen();
+            showEmblem();
+            triggerConfetti();
+            
             if (!partyAudio) {
                 partyAudio = new Audio('https://www.myinstants.com/media/sounds/los-tralaleritos-dicem-tralala.mp3');
                 partyAudio.loop = true;
-                partyAudio.volume = 0.6;
+                partyAudio.volume = 0.5;
             }
-            partyAudio.play().catch(e => console.error("Audio playback failed", e));
-            console.log("👻 CREEPY/CRINGE MODE ACTIVATED! 👻");
+            partyAudio.play().catch(() => {});
+            
+            if (window.showToast) window.showToast('💀 MODO CRINGE ACTIVADO 💀', 'error');
         } else {
             if (partyAudio) {
                 partyAudio.pause();
-                partyAudio.currentTime = 0; // Reset track
+                partyAudio.currentTime = 0;
             }
-            console.log("Party mode deactivated");
+            if (window.showToast) window.showToast('Volviendo a la normalidad... uff', 'success');
         }
         
-        // Show a small toast/alert via custom event
-        const toastEvent = new CustomEvent('toast', { 
-            detail: { 
-                message: isPartyOn 
-                    ? '💀 MODO CRINGE ACTIVADO 💀' 
-                    : 'Modo cringe desactivado... uff',
-                type: isPartyOn ? 'error' : 'success'
-            }
-        });
-        window.dispatchEvent(toastEvent);
+        if (typeof (window as any).unlockAchievement === 'function') {
+            (window as any).unlockAchievement('konami');
+        }
     }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === konamiCode[cursor]) {
+            cursor++;
+            if (cursor === konamiCode.length) {
+                togglePartyMode();
+                cursor = 0;
+            }
+        } else {
+            cursor = (e.key === konamiCode[0]) ? 1 : 0;
+        }
+    });
 </script>
 
 <style is:global>
+    .konami-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+    }
+
+    .konami-overlay.active { opacity: 1; }
+
+    .konami-emblem {
+        transform: scale(0.5) rotate(-10deg);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        color: var(--color-primary);
+        filter: drop-shadow(0 0 30px var(--color-primary));
+        transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .konami-overlay.active .konami-emblem {
+        transform: scale(1) rotate(0deg);
+    }
+
+    .konami-emblem span {
+        font-weight: 900;
+        font-size: 1.5rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        background: linear-gradient(to right, #8b5cf6, #ec4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .konami-shake {
+        animation: konami-shake-anim 0.82s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    @keyframes konami-shake-anim {
+        10%, 90% { transform: translate3d(-1px, 0, 0); }
+        20%, 80% { transform: translate3d(2px, 0, 0); }
+        30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+        40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+
     :root.party-mode {
-        animation: rainbow-bg 5s linear infinite;
+        --color-primary-old: var(--color-primary);
+        animation: party-colors 4s linear infinite;
     }
-    
+
     :root.party-mode body {
-        /* Filter inversion for a trippy dark mode invert, or just hue rotate */
-        animation: hue-rotate 3s linear infinite;
+        animation: party-vibe 2s ease-in-out infinite alternate;
+        cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 21a5.5 5.5 0 0 0 0-11H14V3l-7 12h4v6a5.5 5.5 0 0 0 3.5 0z"/></svg>'), auto;
     }
 
-    /* Make images pop more in party mode */
-    :root.party-mode img {
-        filter: contrast(1.2) saturate(1.5);
+    @keyframes party-colors {
+        0% { --color-primary: #ff0000; }
+        25% { --color-primary: #00ff00; }
+        50% { --color-primary: #0000ff; }
+        75% { --color-primary: #ffff00; }
+        100% { --color-primary: #ff00ff; }
     }
 
-    @keyframes rainbow-bg {
-        0% { --color-primary: #ff0000; --color-accent: #00ff00; }
-        20% { --color-primary: #ffff00; --color-accent: #00ffff; }
-        40% { --color-primary: #00ff00; --color-accent: #0000ff; }
-        60% { --color-primary: #00ffff; --color-accent: #ff00ff; }
-        80% { --color-primary: #0000ff; --color-accent: #ff0000; }
-        100% { --color-primary: #ff00ff; --color-accent: #ffff00; }
-    }
-
-    @keyframes hue-rotate {
-        from { filter: hue-rotate(0deg); }
-        to { filter: hue-rotate(360deg); }
+    @keyframes party-vibe {
+        from { filter: hue-rotate(0deg) contrast(1.1); }
+        to { filter: hue-rotate(360deg) contrast(1.3); transform: scale(1.005); }
     }
 </style>

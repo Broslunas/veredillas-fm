@@ -18,15 +18,13 @@ export const GET: APIRoute = async ({ params, request }) => {
   
   try {
     await dbConnect();
-    
+
     // Messages Logic
     let query: any = { room: slug };
     if (since) {
         query.createdAt = { $gt: new Date(parseInt(since)) };
     }
 
-    // Optimization: if 'since' is present, we likely don't need the last 50, just the new ones.
-    // But if it's the first load (no since), we want last 50.
     const projection = { 'user.sessionId': 0 }; // Hide session ID
     let messages;
     if(since) {
@@ -43,7 +41,6 @@ export const GET: APIRoute = async ({ params, request }) => {
     if (since) {
         const sinceDate = new Date(parseInt(since));
         
-        // REACTION AGGREGATION
         const stats = await ChatReaction.aggregate([
             { $match: { room: slug, createdAt: { $gt: sinceDate } } },
             { $group: { _id: "$type", count: { $sum: 1 } } }
@@ -54,14 +51,11 @@ export const GET: APIRoute = async ({ params, request }) => {
             return acc;
         }, {} as Record<string, number>);
         
-        // DELETED MESSAGES FETCH
         const deletedLogs = await DeletedMessageLog.find({ room: slug, deletedAt: { $gt: sinceDate } }).lean();
         deletedIds = deletedLogs.map(log => log.messageId);
     }
 
-    // PINNED MESSAGE
     const pinnedMessage = await ChatMessage.findOne({ room: slug, isPinned: true }, projection).lean();
-
     const serverTime = Date.now();
 
     return new Response(JSON.stringify({ 

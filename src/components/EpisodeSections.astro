@@ -27,25 +27,43 @@ const parseTime = (t: string) => {
 ---
 
 <SidebarWidget title="Capítulos del Episodio" isOpen={true}>
-    <ul class="sections-list" data-is-premiere={isPremiere}>
-        {sections.map((sec, index) => (
-            <li class={isPremiere ? "premiere-hidden" : ""} style={isPremiere && index > 0 ? "display:none;" : ""}>
-                <button class="section-btn" data-time={parseTime(sec.time)}>
-                    <span class="sec-time">{sec.time}</span>
-                    <span class="sec-title">{sec.title}</span>
-                    <svg class="play-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M5 3l14 9-14 9V3z"/></svg>
-                </button>
-            </li>
-        ))}
-    </ul>
+    <div class="sections-container">
+        <div class="timeline-track"></div>
+        <ul class="sections-list" data-is-premiere={isPremiere}>
+            {sections.map((sec, index) => (
+                <li class={`section-item ${isPremiere ? "premiere-hidden" : ""}`} style={isPremiere && index > 0 ? "display:none;" : ""}>
+                    <button class="section-trigger" data-time={parseTime(sec.time)}>
+                        <div class="section-marker">
+                            <span class="marker-dot"></span>
+                            <div class="marker-glow"></div>
+                        </div>
+                        
+                        <div class="section-body">
+                            <div class="section-meta">
+                                <span class="section-time-badge">{sec.time}</span>
+                            </div>
+                            <span class="section-title">{sec.title}</span>
+                        </div>
+                        
+                        <div class="section-action-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="play-svg"><path d="M5 3l14 9-14 9V3z"/></svg>
+                            <div class="playing-bars">
+                                <span></span><span></span><span></span>
+                            </div>
+                        </div>
+                    </button>
+                </li>
+            ))}
+        </ul>
+    </div>
 </SidebarWidget>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    function initSections() {
         const list = document.querySelector('.sections-list') as HTMLElement;
         const isPremiere = list?.getAttribute('data-is-premiere') === 'true';
+        const btns = document.querySelectorAll('.section-trigger');
         
-        const btns = document.querySelectorAll('.section-btn');
         btns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const time = Number(btn.getAttribute('data-time'));
@@ -57,162 +75,251 @@ const parseTime = (t: string) => {
             });
         });
         
-        // Active state highlighting & Premiere Reveal
         document.addEventListener('veredillas:audio-timeupdate', (e: Event) => {
             const customEvent = e as CustomEvent;
             const currentTime = customEvent.detail.currentTime;
-            
-            const btnsArray = Array.from(document.querySelectorAll('.section-btn'));
-            let activeBtnIndex = -1;
+            const btnsArray = Array.from(document.querySelectorAll('.section-trigger'));
+            let activeIdx = -1;
 
             if (isPremiere) {
-                // Check for items to reveal
                 const hiddenItems = document.querySelectorAll('.premiere-hidden');
                 hiddenItems.forEach(item => {
-                   const btn = item.querySelector('.section-btn');
+                   const btn = item.querySelector('.section-trigger');
                    if (btn) {
                        const time = Number(btn.getAttribute('data-time'));
                        if (currentTime >= time) {
                            (item as HTMLElement).style.display = '';
                            item.classList.remove('premiere-hidden');
-                           item.classList.add('fade-in');
+                           item.classList.add('reveal-anim');
                        }
                    }
                 });
             }
 
             for (let i = 0; i < btnsArray.length; i++) {
-                const btn = btnsArray[i] as HTMLElement;
-                const time = Number(btn.getAttribute('data-time'));
-                // Next section time or Infinity if it's the last one
-                const nextBtn = btnsArray[i+1] as HTMLElement;
-                const nextTime = nextBtn ? Number(nextBtn.getAttribute('data-time')) : Infinity;
-                
+                const time = Number(btnsArray[i].getAttribute('data-time'));
+                const nextTime = btnsArray[i+1] ? Number(btnsArray[i+1].getAttribute('data-time')) : Infinity;
                 if (currentTime >= time && currentTime < nextTime) {
-                    activeBtnIndex = i;
+                    activeIdx = i;
                     break;
                 }
             }
 
-            btnsArray.forEach((btn, index) => {
-                if (index === activeBtnIndex) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
+            btnsArray.forEach((btn, idx) => {
+                if (idx === activeIdx) btn.classList.add('active');
+                else btn.classList.remove('active');
             });
         });
-    });
+    }
+
+    document.addEventListener('DOMContentLoaded', initSections);
+    document.addEventListener('astro:page-load', initSections);
 </script>
 
 <style>
+    .sections-container {
+        position: relative;
+        padding-left: 0.5rem;
+    }
+
+    .timeline-track {
+        position: absolute;
+        left: 1rem;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: linear-gradient(to bottom, 
+            rgba(139, 92, 246, 0.2) 0%, 
+            rgba(139, 92, 246, 0.05) 100%
+        );
+        z-index: 1;
+    }
+
     .sections-list {
         list-style: none;
         padding: 0;
         margin: 0;
         display: flex;
         flex-direction: column;
-        gap: 8px;
-        max-height: 350px; /* Limit height */
-        overflow-y: auto;  /* Enable vertical scroll */
-        padding-right: 4px; /* Space for scrollbar */
-
-        /* Custom Scrollbar */
+        gap: 0.5rem;
+        max-height: 420px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
         scrollbar-width: thin;
-        scrollbar-color: var(--color-primary) rgba(255,255,255,0.05);
+        scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
+        z-index: 2;
+        position: relative;
     }
 
-    .sections-list::-webkit-scrollbar {
-        width: 6px;
+    .sections-list::-webkit-scrollbar { width: 4px; }
+    .sections-list::-webkit-scrollbar-thumb { 
+        background: rgba(139, 92, 246, 0.2); 
+        border-radius: 10px; 
     }
 
-    .sections-list::-webkit-scrollbar-track {
-        background: rgba(255,255,255,0.05);
-        border-radius: 4px;
+    .section-item {
+        position: relative;
     }
 
-    .sections-list::-webkit-scrollbar-thumb {
-        background-color: var(--color-primary);
-        border-radius: 4px;
-    }
-    
-    .section-btn {
+    .section-trigger {
         width: 100%;
         display: flex;
         align-items: center;
-        gap: 12px;
-        background: transparent;
-        border: 1px solid transparent;
-        border-radius: 8px;
-        padding: 8px 12px;
+        gap: 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        padding: 0.75rem 1rem;
+        border-radius: 14px;
         cursor: pointer;
-        color: var(--color-text-muted);
+        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         text-align: left;
-        transition: all 0.2s;
-        font-family: inherit;
-        flex-shrink: 0; /* Prevent shrinking in flex container */
-    }
-    
-    .section-btn:hover {
-        background: rgba(255,255,255,0.03);
-        color: var(--color-text-main);
-        border-color: rgba(255,255,255,0.05);
     }
 
-    .section-btn.active {
-        background: rgba(139, 92, 246, 0.1);
-        color: var(--color-text-main);
-        border-color: rgba(139, 92, 246, 0.3);
-    }
-    
-    .sec-time {
-        font-family: monospace;
-        font-size: 0.85rem;
-        color: var(--color-primary);
-        background: rgba(139, 92, 246, 0.1);
-        padding: 2px 6px;
-        border-radius: 4px;
-        transition: all 0.2s;
+    .section-trigger:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+        transform: translateX(4px);
     }
 
-    .section-btn.active .sec-time {
-       background: var(--color-primary);
-       color: #000;
-       font-weight: bold;
+    .section-trigger.active {
+        background: rgba(139, 92, 246, 0.1);
+        border-color: rgba(139, 92, 246, 0.25);
+        box-shadow: 0 4px 15px -5px rgba(139, 92, 246, 0.2);
     }
-    
-    .sec-title {
+
+    /* Marker */
+    .section-marker {
+        position: relative;
+        width: 12px;
+        height: 12px;
+        flex-shrink: 0;
+        z-index: 10;
+        margin-left: -0.375rem;
+    }
+
+    .marker-dot {
+        display: block;
+        width: 8px;
+        height: 8px;
+        background: rgba(139, 92, 246, 0.3);
+        border-radius: 50%;
+        margin: 2px;
+        transition: all 0.3s ease;
+    }
+
+    .section-trigger.active .marker-dot {
+        background: var(--color-primary);
+        transform: scale(1.2);
+    }
+
+    .marker-glow {
+        position: absolute;
+        inset: -4px;
+        background: var(--color-primary);
+        border-radius: 50%;
+        opacity: 0;
+        filter: blur(8px);
+        transition: opacity 0.3s ease;
+    }
+
+    .section-trigger.active .marker-glow {
+        opacity: 0.4;
+    }
+
+    /* Body */
+    .section-body {
         flex: 1;
-        font-size: 0.95rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        min-width: 0;
+    }
+
+    .section-time-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: var(--color-primary);
+        background: rgba(139, 92, 246, 0.08);
+        padding: 1px 6px;
+        border-radius: 4px;
+        letter-spacing: 0.02em;
+    }
+
+    .section-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.7);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        transition: color 0.3s ease;
     }
-    
-    .play-icon {
+
+    .section-trigger.active .section-title {
+        color: white;
+    }
+
+    /* Icons & Bars */
+    .section-action-icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .play-svg {
+        color: var(--color-primary);
         opacity: 0;
         transform: translateX(-5px);
-        transition: all 0.2s;
-        color: var(--color-text-main);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    
-    .section-btn:hover .play-icon {
+
+    .section-trigger:hover .play-svg {
         opacity: 1;
         transform: translateX(0);
     }
 
-    .section-btn.active .play-icon {
-        opacity: 1;
-        transform: translateX(0);
-        color: var(--color-primary);
+    .playing-bars {
+        display: none;
+        align-items: flex-end;
+        gap: 2px;
+        height: 12px;
     }
 
-    .fade-in {
-        animation: fadeIn 0.5s ease-out forwards;
+    .section-trigger.active .playing-bars { display: flex; }
+    .section-trigger.active .play-svg { display: none; }
+
+    .playing-bars span {
+        width: 2px;
+        background: var(--color-primary);
+        border-radius: 1px;
+        animation: bar-grow 0.6s ease-in-out infinite alternate;
     }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
+
+    .playing-bars span:nth-child(2) { animation-delay: 0.2s; }
+    .playing-bars span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bar-grow {
+        0% { height: 4px; }
+        100% { height: 12px; }
+    }
+
+    .reveal-anim {
+        animation: reveal 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @keyframes reveal {
+        from { opacity: 0; transform: translateY(15px); }
         to { opacity: 1; transform: translateY(0); }
     }
+
+    [data-theme='light'] .section-trigger {
+        background: rgba(0, 0, 0, 0.02);
+        border-color: rgba(0, 0, 0, 0.04);
+    }
+    [data-theme='light'] .section-title { color: #4b5563; }
+    [data-theme='light'] .section-trigger.active .section-title { color: #1f2937; }
 </style>

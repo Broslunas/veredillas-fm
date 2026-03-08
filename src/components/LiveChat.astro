@@ -558,14 +558,21 @@ const currentUserEncoded = currentUserSafe ? btoa(unescape(encodeURIComponent(JS
         input: HTMLInputElement;
         guestInput: HTMLInputElement | null;
         sendBtn: HTMLElement;
-        lastMsgId: string | null;
-        lastPollTime: number;
+        lastPollTime: number = 0;
         polling: number | undefined;
         reactionsContainer: HTMLElement | null;
         pinnedContainer: HTMLElement | null = null;
         toastEl: HTMLElement | null;
         confirmEl: HTMLElement | null;
         confirmCallback: (() => void) | null = null;
+    
+        // POLLING CONFIG
+        baseInterval = 20000;  // 20s
+        idleInterval = 60000;  // 60s
+        idleThreshold = 120000; // 2 minutes
+        currentInterval = 20000;
+        lastInteractionTime = Date.now();
+        isTabVisible = true;
     
         constructor(el: HTMLElement) {
             this.el = el;
@@ -574,11 +581,8 @@ const currentUserEncoded = currentUserSafe ? btoa(unescape(encodeURIComponent(JS
             try {
                 this.currentUser = encoded ? JSON.parse(decodeURIComponent(escape(atob(encoded)))) : null;
             } catch(e) {
-                console.error('[LiveChat] Error parsing currentUser:', e);
                 this.currentUser = null;
             }
-            console.log('[LiveChat] currentUser parsed:', this.currentUser);
-            console.log('[LiveChat] role:', this.currentUser?.role, 'isAdmin:', !!(this.currentUser && (this.currentUser.role === "admin" || this.currentUser.role === "owner")));
             
             this.msgArea = el.querySelector('#chat-messages') as HTMLElement;
             this.input = el.querySelector('#chat-input') as HTMLInputElement;
@@ -589,25 +593,44 @@ const currentUserEncoded = currentUserSafe ? btoa(unescape(encodeURIComponent(JS
             this.toastEl = el.querySelector('#live-chat-toast');
             this.confirmEl = el.querySelector('#live-chat-confirm');
             
-            this.lastMsgId = null;
-            this.lastPollTime = 0;
-            
             this.init();
         }
 
         init() {
             this.fetchMessages(); // Initial load
-            this.polling = window.setInterval(() => this.fetchMessages(), 3000); // 3s polling
+            this.startPolling();
             
-            this.sendBtn.addEventListener('click', () => this.sendMessage());
+            this.sendBtn.addEventListener('click', () => {
+                this.recordInteraction();
+                this.sendMessage();
+            });
             this.input.addEventListener('keypress', (e) => {
+                this.recordInteraction();
                 if(e.key === 'Enter') this.sendMessage();
+            });
+            
+            // Interaction tracking
+            const track = () => this.recordInteraction();
+            this.el.addEventListener('mousemove', track);
+            this.el.addEventListener('click', track);
+            this.el.addEventListener('touchstart', track);
+
+            // Visibility detection
+            document.addEventListener('visibilitychange', () => {
+                this.isTabVisible = document.visibilityState === 'visible';
+                if (this.isTabVisible) {
+                    this.resetInterval();
+                    this.fetchMessages(); // Immediate refresh
+                } else {
+                    this.stopPolling();
+                }
             });
             
             // Reaction Buttons
             const reactionBtns = this.el.querySelectorAll('.reaction-btn');
             reactionBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
+                   this.recordInteraction();
                    const type = (btn as HTMLElement).dataset.type;
                    if(type) this.sendReaction(type); 
                 });
@@ -622,6 +645,47 @@ const currentUserEncoded = currentUserSafe ? btoa(unescape(encodeURIComponent(JS
                 if(this.confirmCallback) this.confirmCallback();
                 if(this.confirmEl) this.confirmEl.classList.add('hidden');
             });
+        }
+
+        recordInteraction() {
+            this.lastInteractionTime = Date.now();
+            if (this.currentInterval !== this.baseInterval && this.isTabVisible) {
+                this.resetInterval();
+            }
+        }
+
+        resetInterval() {
+            this.currentInterval = this.baseInterval;
+            this.startPolling();
+        }
+
+        startPolling() {
+            this.stopPolling();
+            if (!this.isTabVisible) return;
+            this.polling = window.setInterval(() => {
+                const idleTime = Date.now() - this.lastInteractionTime;
+                if (idleTime > this.idleThreshold) {
+                    if (this.currentInterval !== this.idleInterval) {
+                        this.currentInterval = this.idleInterval;
+                        this.startPolling();
+                    }
+                }
+                this.fetchMessages();
+            }, this.currentInterval);
+        }
+
+        stopPolling() {
+            if (this.polling) clearInterval(this.polling);
+            this.polling = undefined;
+        }
+
+        animateMessageDelete(id: string) {
+            const el = this.msgArea.querySelector(`.chat-msg[data-id="${id}"]`) as HTMLElement;
+            if (el && el.style.opacity !== '0') {
+                el.style.opacity = '0';
+                el.style.transform = 'translateX(20px)';
+                setTimeout(() => el.remove(), 300);
+            }
         }
         
         showToast(msg: string, type: 'success' | 'error' = 'success') {
@@ -647,10 +711,7 @@ const currentUserEncoded = currentUserSafe ? btoa(unescape(encodeURIComponent(JS
         }
         
         async sendReaction(type: string) {
-            // 1. Local animation immediately
             this.spawnFloatingEmoji(type);
-            
-            // 2. Send API
             try {
                 fetch(`/api/live-chat/${this.slug}/reaction`, {
                     method: 'POST',
@@ -675,22 +736,16 @@ const currentUserEncoded = currentUserSafe ? btoa(unescape(encodeURIComponent(JS
             const el = document.createElement('div');
             el.className = 'floating-emoji';
             el.textContent = emojiMap[type] || '❤️';
-            
-            // Randomize position across entire screen width
-            const randomX = Math.random() * 100; 
-            el.style.left = `${randomX}vw`;
+            el.style.left = `${Math.random() * 100}vw`;
             el.style.bottom = '-50px';
-            
-            // Randomize animation duration/scale slightly
-            el.style.animationDuration = `${2 + Math.random() * 2}s`; // Slower float for full screen
+            el.style.animationDuration = `${2 + Math.random() * 2}s`;
             
             this.reactionsContainer.appendChild(el);
-            
-            // Cleanup
             setTimeout(() => el.remove(), 4000);
         }
 
         async fetchMessages() {
+            if (!this.isTabVisible) return;
             try {
                 let url = `/api/live-chat/${this.slug}`;
                 if (this.lastPollTime > 0) {
@@ -703,62 +758,36 @@ const currentUserEncoded = currentUserSafe ? btoa(unescape(encodeURIComponent(JS
                 if(data.success) {
                     if (data.timestamp) this.lastPollTime = data.timestamp;
 
-                    // Render Pinned Message
-                    console.log("Fetching messages. Pinned:", data.pinnedMessage);
                     this.renderPinnedMessage(data.pinnedMessage || null);
                     
-                    // Render Messages
                     if (data.messages && Array.isArray(data.messages)) {
                          this.renderMessages(data.messages);
                     }
                     
-                    // Handle Deletions
                     if (data.deletedIds && Array.isArray(data.deletedIds)) {
-                        data.deletedIds.forEach((id: string) => {
-                            const el = this.msgArea.querySelector(`.chat-msg[data-id="${id}"]`) as HTMLElement;
-                            if (el) {
-                                // Animate removal if not already removing
-                                if (el.style.opacity !== '0') {
-                                    el.style.opacity = '0';
-                                    el.style.transform = 'translateX(20px)';
-                                    setTimeout(() => el.remove(), 300);
-                                }
+                        data.deletedIds.forEach((id: string) => this.animateMessageDelete(id));
+                    }
+
+                    if (data.reactions && Object.keys(data.reactions).length > 0) {
+                        Object.keys(data.reactions).forEach(type => {
+                            const count = Math.min(data.reactions[type], 10);
+                            for(let i=0; i<count; i++) {
+                                setTimeout(() => this.spawnFloatingEmoji(type), Math.random() * 3000);
                             }
                         });
                     }
-                    
-                    // Trigger Reactions
-                    if (data.reactions) {
-                         const types = Object.keys(data.reactions);
-                         types.forEach(type => {
-                             const count = data.reactions[type];
-                             // Don't spawn overly massive amounts if pollling lag
-                             const safeCount = Math.min(count, 10); 
-                             
-                             for(let i=0; i<safeCount; i++) {
-                                 // Add small random delay so they don't clump perfectly
-                                 setTimeout(() => this.spawnFloatingEmoji(type), Math.random() * 2000);
-                             }
-                         });
-                    }
                 }
             } catch(e) {
-                console.error("Chat poll error", e);
+                console.error("Chat fetch error", e);
             }
         }
 
         async sendMessage() {
-            console.log("Attempting to send message...");
             const text = this.input.value.trim();
-            if(!text) {
-                console.log("Empty text");
-                return;
-            }
+            if(!text) return;
             
             let guestName = null;
-            // Check if user is NOT logged in (guest mode)
             if(!this.currentUser) {
-                console.log("User is guest. Checking guest input name...");
                 if(this.guestInput) {
                     guestName = this.guestInput.value.trim();
                     if(!guestName) {
@@ -766,19 +795,13 @@ const currentUserEncoded = currentUserSafe ? btoa(unescape(encodeURIComponent(JS
                         this.guestInput.focus();
                         return;
                     }
-                } else {
-                    console.error("Guest input not found despite being guest.");
-                    this.showToast("Error: Campo nombre no encontrado", "error");
-                    return; 
                 }
             }
 
-            // Optimistic clear
             const originalValue = this.input.value;
             this.input.value = '';
             
             try {
-                console.log("Sending fetch request...");
                 const res = await fetch(`/api/live-chat/${this.slug}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -789,40 +812,26 @@ const currentUserEncoded = currentUserSafe ? btoa(unescape(encodeURIComponent(JS
                 });
                 
                 const data = await res.json();
-                console.log("Response:", data);
 
                 if(data.success && data.message) {
-                    // Optimistic-like update: Render immediately using the server response
-                    // This avoids waiting for the next poll or a second fetch
                     this.renderMessages([data.message]);
                 } else {
-                    this.input.value = originalValue; // Restore on error
+                    this.input.value = originalValue;
                     this.showToast(data.error || "Error enviando mensaje", "error");
                 }
             } catch(e) {
-                console.error("Fetch error:", e);
-                this.input.value = originalValue; // Restore on error
+                this.input.value = originalValue;
                 this.showToast("Error de conexión.", "error");
             }
         }
 
         renderMessages(messages: ChatMessage[]) {
-            // Simple render: clear and redraw OR smart append?
-            // Simple approach for now to avoid duplication complexity: 
-            // clear list except system message, then append all.
-            // Better: only append NEW messages if we tracked IDs.
-            // Let's implement smart append based on ID.
-            
-            // Note: This naive approach might re-render existing ones if we don't check ID.
-            // Let's iterate and only add if ID > lastKnownId (if sorted).
-            // Or just check if element exists.
-            
             messages.forEach(msg => {
                 const exists = this.msgArea.querySelector(`[data-id="${msg._id}"]`);
                 if(!exists) {
                     const msgEl = this.createMessageElement(msg);
                     this.msgArea.appendChild(msgEl);
-                    this.msgArea.scrollTop = this.msgArea.scrollHeight; // Auto scroll
+                    this.msgArea.scrollTop = this.msgArea.scrollHeight;
                 }
             });
         }
@@ -858,7 +867,6 @@ const currentUserEncoded = currentUserSafe ? btoa(unescape(encodeURIComponent(JS
                 ` : ''}
             `;
             
-            // Add handler to unpin button
             const unpinBtn = this.pinnedContainer.querySelector('.delete-btn');
             if(unpinBtn) {
                 unpinBtn.addEventListener('click', () => {
@@ -961,8 +969,9 @@ const currentUserEncoded = currentUserSafe ? btoa(unescape(encodeURIComponent(JS
                 const data = await res.json();
                 
                 if(data.success) {
-                    // Update will happen on next poll automatically
-                    this.fetchMessages();
+                    // BROADCAST to peers
+                    this.broadcast({ type: 'pin', pinnedMessage: isPinned ? data.message : null });
+                    this.renderPinnedMessage(isPinned ? data.message : null);
                     this.showToast(isPinned ? "Mensaje fijado" : "Mensaje desfijado", "success");
                 } else {
                     this.showToast(data.error || "Error al fijar", "error");
@@ -974,22 +983,18 @@ const currentUserEncoded = currentUserSafe ? btoa(unescape(encodeURIComponent(JS
         }
 
         async deleteMessage(id: string, el: HTMLElement) {
-            // Instant feedback
             el.style.opacity = '0.3';
-            el.style.pointerEvents = 'none'; // Prevent double clicks
+            el.style.pointerEvents = 'none';
             
             try {
                 const res = await fetch(`/api/live-chat/message/${id}`, { method: 'DELETE' });
                 const data = await res.json();
                 
                 if(data.success) {
-                    // Animate out
-                    el.style.transform = 'translateX(20px)';
-                    el.style.opacity = '0';
-                    setTimeout(() => el.remove(), 300);
+                    this.broadcast({ type: 'delete', messageId: id });
+                    this.animateMessageDelete(id);
                     this.showToast("Mensaje eliminado", "success");
                 } else {
-                    // Revert if failed
                     el.style.opacity = '1';
                     el.style.pointerEvents = 'auto';
                     this.showToast(data.error || "Error al borrar", "error");
@@ -1009,7 +1014,7 @@ const currentUserEncoded = currentUserSafe ? btoa(unescape(encodeURIComponent(JS
         }
 
         destroy() {
-             if(this.polling) clearInterval(this.polling);
+             if (this.peer) this.peer.destroy();
         }
     }
 
