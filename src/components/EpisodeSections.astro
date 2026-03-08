@@ -26,31 +26,47 @@ const parseTime = (t: string) => {
 };
 ---
 
-<SidebarWidget title="Capítulos del Episodio" isOpen={true}>
-    <div class="sections-container">
-        <div class="timeline-track"></div>
-        <ul class="sections-list" data-is-premiere={isPremiere}>
+<SidebarWidget title="Selector de Capítulos" isOpen={true}>
+    <div class="relative px-2">
+        <!-- Technical Vertical Line (Dashed) -->
+        <div class="absolute left-6 top-6 bottom-6 w-px border-l border-dashed border-primary/30 z-0"></div>
+        
+        <ul class="sections-list relative z-10 flex flex-col gap-3 max-h-[480px] overflow-y-auto pr-2 scrollbar-none" data-is-premiere={isPremiere}>
             {sections.map((sec, index) => (
-                <li class={`section-item ${isPremiere ? "premiere-hidden" : ""}`} style={isPremiere && index > 0 ? "display:none;" : ""}>
-                    <button class="section-trigger" data-time={parseTime(sec.time)}>
-                        <div class="section-marker">
-                            <span class="marker-dot"></span>
-                            <div class="marker-glow"></div>
+                <li class={`section-item relative flex items-center gap-3 ${isPremiere ? "premiere-hidden opacity-0 scale-95 pointer-events-none" : ""}`} style={isPremiere && index > 0 ? "display:none;" : ""}>
+                    <!-- Numbered Marker (Smaller) -->
+                    <div class="flex-shrink-0 relative z-10">
+                        <div class="marker-box w-6 h-6 rounded border border-primary/20 bg-zinc-900/50 dark:bg-black/50 flex items-center justify-center transition-all duration-500 group-[.active]:border-primary group-[.active]:bg-primary group-[.active]:shadow-[0_0_10px_rgba(var(--color-primary-rgb,139,92,246),0.4)] group-[.active]:rotate-[360deg]">
+                            <span class="text-[0.55rem] font-black text-primary/60 group-[.active]:text-white transition-colors">
+                                {(index + 1).toString().padStart(2, '0')}
+                            </span>
                         </div>
-                        
-                        <div class="section-body">
-                            <div class="section-meta">
-                                <span class="section-time-badge">{sec.time}</span>
+                    </div>
+
+                    <!-- Compact Content -->
+                    <button 
+                        class="section-trigger group flex-1 text-left focus:outline-none min-w-0" 
+                        data-time={parseTime(sec.time)}
+                    >
+                        <div class="flex items-center justify-between gap-3 transition-all duration-300 group-hover:translate-x-1">
+                            <h4 class="text-[0.85rem] leading-tight font-bold text-zinc-500 group-hover:text-zinc-200 dark:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors group-[.active]:text-zinc-900 dark:group-[.active]:text-white truncate">
+                                {sec.title}
+                            </h4>
+                            
+                            <div class="flex items-center gap-3 flex-shrink-0">
+                                <!-- Playing Status Badge -->
+                                <div class="hidden group-[.active]:flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-primary/10 border border-primary/20">
+                                    <span class="w-1 h-1 rounded-full bg-primary animate-ping"></span>
+                                    <span class="text-[0.55rem] font-black text-primary uppercase tracking-tighter">Live</span>
+                                </div>
+                                
+                                <span class="font-mono text-[0.65rem] font-bold text-primary group-[.active]:animate-pulse bg-primary/5 px-1 rounded border border-primary/10">
+                                    {sec.time}
+                                </span>
                             </div>
-                            <span class="section-title">{sec.title}</span>
                         </div>
-                        
-                        <div class="section-action-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="play-svg"><path d="M5 3l14 9-14 9V3z"/></svg>
-                            <div class="playing-bars">
-                                <span></span><span></span><span></span>
-                            </div>
-                        </div>
+                        <!-- Progress Underline (Subtle) -->
+                        <div class="h-[1px] w-0 bg-primary/30 group-[.active]:w-full transition-all duration-700 ease-out mt-1"></div>
                     </button>
                 </li>
             ))}
@@ -61,7 +77,9 @@ const parseTime = (t: string) => {
 <script>
     function initSections() {
         const list = document.querySelector('.sections-list') as HTMLElement;
-        const isPremiere = list?.getAttribute('data-is-premiere') === 'true';
+        if (!list) return;
+        
+        const isPremiere = list.getAttribute('data-is-premiere') === 'true';
         const btns = document.querySelectorAll('.section-trigger');
         
         btns.forEach(btn => {
@@ -82,15 +100,19 @@ const parseTime = (t: string) => {
             let activeIdx = -1;
 
             if (isPremiere) {
-                const hiddenItems = document.querySelectorAll('.premiere-hidden');
-                hiddenItems.forEach(item => {
-                   const btn = item.querySelector('.section-trigger');
-                   if (btn) {
-                       const time = Number(btn.getAttribute('data-time'));
-                       if (currentTime >= time) {
-                           (item as HTMLElement).style.display = '';
-                           item.classList.remove('premiere-hidden');
-                           item.classList.add('reveal-anim');
+                const items = document.querySelectorAll('.section-item');
+                items.forEach(item => {
+                   if (item.classList.contains('premiere-hidden')) {
+                       const btn = item.querySelector('.section-trigger');
+                       if (btn) {
+                           const time = Number(btn.getAttribute('data-time'));
+                           if (currentTime >= time) {
+                               (item as HTMLElement).style.display = 'flex';
+                               requestAnimationFrame(() => {
+                                   item.classList.remove('premiere-hidden', 'opacity-0', 'scale-95', 'pointer-events-none');
+                                   item.classList.add('reveal-anim');
+                               });
+                           }
                        }
                    }
                 });
@@ -106,6 +128,7 @@ const parseTime = (t: string) => {
             }
 
             btnsArray.forEach((btn, idx) => {
+                const listItem = btn.closest('.section-item');
                 if (idx === activeIdx) btn.classList.add('active');
                 else btn.classList.remove('active');
             });
@@ -117,209 +140,28 @@ const parseTime = (t: string) => {
 </script>
 
 <style>
-    .sections-container {
-        position: relative;
-        padding-left: 0.5rem;
+    @keyframes progress-slide {
+        from { transform: translateX(-100%); }
+        to { transform: translateX(300%); }
     }
-
-    .timeline-track {
-        position: absolute;
-        left: 1rem;
-        top: 0;
-        bottom: 0;
-        width: 1px;
-        background: linear-gradient(to bottom, 
-            rgba(139, 92, 246, 0.2) 0%, 
-            rgba(139, 92, 246, 0.05) 100%
-        );
-        z-index: 1;
-    }
-
-    .sections-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        max-height: 420px;
-        overflow-y: auto;
-        padding-right: 0.5rem;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
-        z-index: 2;
-        position: relative;
-    }
-
-    .sections-list::-webkit-scrollbar { width: 4px; }
-    .sections-list::-webkit-scrollbar-thumb { 
-        background: rgba(139, 92, 246, 0.2); 
-        border-radius: 10px; 
-    }
-
-    .section-item {
-        position: relative;
-    }
-
-    .section-trigger {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.04);
-        padding: 0.75rem 1rem;
-        border-radius: 14px;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-        text-align: left;
-    }
-
-    .section-trigger:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(255, 255, 255, 0.1);
-        transform: translateX(4px);
-    }
-
-    .section-trigger.active {
-        background: rgba(139, 92, 246, 0.1);
-        border-color: rgba(139, 92, 246, 0.25);
-        box-shadow: 0 4px 15px -5px rgba(139, 92, 246, 0.2);
-    }
-
-    /* Marker */
-    .section-marker {
-        position: relative;
-        width: 12px;
-        height: 12px;
-        flex-shrink: 0;
-        z-index: 10;
-        margin-left: -0.375rem;
-    }
-
-    .marker-dot {
-        display: block;
-        width: 8px;
-        height: 8px;
-        background: rgba(139, 92, 246, 0.3);
-        border-radius: 50%;
-        margin: 2px;
-        transition: all 0.3s ease;
-    }
-
-    .section-trigger.active .marker-dot {
-        background: var(--color-primary);
-        transform: scale(1.2);
-    }
-
-    .marker-glow {
-        position: absolute;
-        inset: -4px;
-        background: var(--color-primary);
-        border-radius: 50%;
-        opacity: 0;
-        filter: blur(8px);
-        transition: opacity 0.3s ease;
-    }
-
-    .section-trigger.active .marker-glow {
-        opacity: 0.4;
-    }
-
-    /* Body */
-    .section-body {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 0.15rem;
-        min-width: 0;
-    }
-
-    .section-time-badge {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.7rem;
-        font-weight: 800;
-        color: var(--color-primary);
-        background: rgba(139, 92, 246, 0.08);
-        padding: 1px 6px;
-        border-radius: 4px;
-        letter-spacing: 0.02em;
-    }
-
-    .section-title {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.7);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        transition: color 0.3s ease;
-    }
-
-    .section-trigger.active .section-title {
-        color: white;
-    }
-
-    /* Icons & Bars */
-    .section-action-icon {
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-    }
-
-    .play-svg {
-        color: var(--color-primary);
-        opacity: 0;
-        transform: translateX(-5px);
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .section-trigger:hover .play-svg {
-        opacity: 1;
-        transform: translateX(0);
-    }
-
-    .playing-bars {
-        display: none;
-        align-items: flex-end;
-        gap: 2px;
-        height: 12px;
-    }
-
-    .section-trigger.active .playing-bars { display: flex; }
-    .section-trigger.active .play-svg { display: none; }
-
-    .playing-bars span {
-        width: 2px;
-        background: var(--color-primary);
-        border-radius: 1px;
-        animation: bar-grow 0.6s ease-in-out infinite alternate;
-    }
-
-    .playing-bars span:nth-child(2) { animation-delay: 0.2s; }
-    .playing-bars span:nth-child(3) { animation-delay: 0.4s; }
-
-    @keyframes bar-grow {
-        0% { height: 4px; }
-        100% { height: 12px; }
-    }
-
+    
     .reveal-anim {
-        animation: reveal 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        animation: reveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
     @keyframes reveal {
-        from { opacity: 0; transform: translateY(15px); }
-        to { opacity: 1; transform: translateY(0); }
+        from { opacity: 0; transform: scale(0.9) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
     }
 
-    [data-theme='light'] .section-trigger {
-        background: rgba(0, 0, 0, 0.02);
-        border-color: rgba(0, 0, 0, 0.04);
+    /* Hide scrollbar but keep functionality */
+    .scrollbar-none::-webkit-scrollbar {
+        display: none;
     }
-    [data-theme='light'] .section-title { color: #4b5563; }
-    [data-theme='light'] .section-trigger.active .section-title { color: #1f2937; }
+    .scrollbar-none {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 </style>
+
+
