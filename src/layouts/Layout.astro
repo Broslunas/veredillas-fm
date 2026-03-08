@@ -223,7 +223,48 @@ const fullTitle = title === "Inicio" ? "Veredillas FM - El Podcast del IES Vered
         if (loader) {
             setTimeout(() => {
                 loader.classList.add('fade-out');
-            }, 500); // Small delay for smoother experience
+            }, 250); // Reduced delay for snappier experience feeling
+        }
+    });
+
+    // Show loader immediately on link click for better perceived performance
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (!link) return;
+        
+        const href = link.getAttribute('href');
+        // Ignorar anclas internas o scripts
+        if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+        
+        try {
+            const url = new URL(link.href);
+            const currentUrl = new URL(window.location.href);
+            
+            // Si es un enlace interno que no abre nueva pestaña, y no es descarga, ni la misma ruta del todo
+            if (url.origin === currentUrl.origin && 
+                link.target !== '_blank' && 
+                !link.hasAttribute('download') &&
+                (url.pathname !== currentUrl.pathname || url.search !== currentUrl.search)) {
+                
+                const loader = document.getElementById('global-loader');
+                if (loader) {
+                    loader.classList.remove('fade-out');
+                }
+            }
+        } catch (err) {
+            // Ignorar errores de URL
+        }
+    });
+
+    // Show loader on form submit if it's doing a normal GET/POST navigation
+    document.addEventListener('submit', (e) => {
+        const form = e.target.closest('form');
+        // If it's not a preventDefault() form submission (like an AJAX form)
+        if (form && !e.defaultPrevented) {
+             const loader = document.getElementById('global-loader');
+             if (loader) {
+                 loader.classList.remove('fade-out');
+             }
         }
     });
 </script>
