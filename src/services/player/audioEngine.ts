@@ -1,7 +1,18 @@
 // src/services/player/audioEngine.ts
 
 // Shared AudioContext to prevent "Max AudioContexts" error
-let globalAudioCtx: AudioContext | null = null;
+export let globalAudioCtx: AudioContext | null = null;
+
+export const resumeAudioContext = () => {
+    if (!globalAudioCtx) {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        globalAudioCtx = new AudioContext();
+    }
+    if (globalAudioCtx.state === 'suspended') {
+        globalAudioCtx.resume();
+    }
+    return globalAudioCtx;
+};
     
 // ---- AUTO-LOUDNESS NORMALIZATION CONFIG ----
 const AUTO_LOUDNESS_TARGET_RMS = 0.20; 

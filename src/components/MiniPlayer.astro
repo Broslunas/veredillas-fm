@@ -98,7 +98,7 @@ import './player/SharedPlayerStyles.css';
          </div>
       </div>
       <!-- Core Audio Element -->
-      <audio id="audioElement" preload="metadata"></audio>
+      <audio id="audioElement" preload="metadata" crossorigin="anonymous"></audio>
   </div>
 </template>
 
@@ -110,7 +110,7 @@ import './player/SharedPlayerStyles.css';
 <!-- Controller Logic -->
 <script>
     import { FastAverageColor } from 'fast-average-color';
-    import { AudioEngine } from '../services/player/audioEngine';
+    import { AudioEngine, resumeAudioContext } from '../services/player/audioEngine';
     import { syncPlaybackData, recordListen } from '../services/player/playbackSync';
     
     declare global {
@@ -243,6 +243,7 @@ import './player/SharedPlayerStyles.css';
 
              // Listeners
              playBtn.onclick = () => {
+                 try { resumeAudioContext(); } catch(e) { console.warn("AudioContext resume failed:", e); }
                  if(audioElement.paused) audioElement.play();
                  else audioElement.pause();
              };
@@ -470,6 +471,11 @@ import './player/SharedPlayerStyles.css';
              let engineInstance: AudioEngine | null = null;
              
              const initVisualizer = () => {
+                 // BYPASS WEB AUDIO TO ALLOW NATIVE SOUND IF CORS FALLBACK TRIGGERED
+                 if (!audioElement.hasAttribute("crossorigin")) {
+                     console.warn("Bypassing Web Audio API (visualizer) to ensure audio plays natively without CORS.");
+                     return; 
+                 }
                  if (!engineInstance) {
                      engineInstance = new AudioEngine(audioElement, canvas, autoLoudnessIndicator);
                  }
@@ -519,6 +525,7 @@ import './player/SharedPlayerStyles.css';
 
              if(immPlayBtn) {
                  immPlayBtn.onclick = () => {
+                     try { resumeAudioContext(); } catch(e) { console.warn("AudioContext resume failed:", e); }
                      if(audio.paused) audio.play();
                      else audio.pause();
                  };
