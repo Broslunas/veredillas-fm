@@ -1,72 +1,38 @@
 ---
 const currentPath = Astro.url.pathname;
+
+const navLinks = [
+  { href: '/dashboard/admin', label: '📊 Dashboard', active: currentPath === '/dashboard/admin' },
+  { href: '/dashboard/admin/users', label: '👥 Usuarios', active: currentPath === '/dashboard/admin/users' },
+  { href: '/dashboard/admin/user-stats', label: '📈 Analíticas', active: currentPath === '/dashboard/admin/user-stats' },
+  { href: '/dashboard/admin/content', label: '🎙️ Contenido', active: currentPath === '/dashboard/admin/content' },
+  { href: '/dashboard/admin/live', label: '🔴 En Vivo', active: currentPath === '/dashboard/admin/live' },
+  { href: '/dashboard/admin/interviews', label: '📅 Entrevistas', active: currentPath.startsWith('/dashboard/admin/interviews') },
+  { href: '/dashboard/admin/push', label: '🔔 Push', active: currentPath.startsWith('/dashboard/admin/push') },
+  { href: '/studio/remote', label: '🎙️ Studio Remoto', active: currentPath.startsWith('/studio/remote') },
+];
 ---
 
-<nav class="admin-nav">
-  <div class="nav-content">
-    <a href="/dashboard/admin" class={currentPath === '/dashboard/admin' ? 'active' : ''}>
-      📊 Dashboard
-    </a>
-    <a href="/dashboard/admin/users" class={currentPath === '/dashboard/admin/users' ? 'active' : ''}>
-      👥 Usuarios
-    </a>
-    <a href="/dashboard/admin/user-stats" class={currentPath === '/dashboard/admin/user-stats' ? 'active' : ''}>
-      📈 Analíticas
-    </a>
-    <a href="/dashboard/admin/content" class={currentPath === '/dashboard/admin/content' ? 'active' : ''}>
-      🎙️ Contenido
-    </a>
-    <a href="/dashboard/admin/live" class={currentPath === '/dashboard/admin/live' ? 'active' : ''}>
-      🔴 En Vivo
-    </a>
-    <a href="/dashboard/admin/interviews" class={currentPath.startsWith('/dashboard/admin/interviews') ? 'active' : ''}>
-      📅 Entrevistas
-    </a>
-    <a href="/dashboard/admin/push" class={currentPath.startsWith('/dashboard/admin/push') ? 'active' : ''}>
-      🔔 Push
-    </a>
-    <a href="/studio/remote" class={currentPath.startsWith('/studio/remote') ? 'active' : ''}>
-      🎙️ Studio Remoto
-    </a>
+<nav class="mb-8 border-b border-white/5">
+  <div class="flex gap-2 overflow-x-auto pb-px">
+    {navLinks.map(({ href, label, active }) => (
+      <a 
+        href={href} 
+        class:list={[
+          "px-5 py-3 text-[0.95rem] font-medium whitespace-nowrap transition-all duration-200 border-b-2 hover:text-white hover:bg-white/5 hover:rounded-t-lg",
+          {
+            "text-violet-400 border-violet-400": active,
+            "text-zinc-400 border-transparent": !active
+          }
+        ]}
+      >
+        {label}
+      </a>
+    ))}
   </div>
 </nav>
-
-<style>
-  .admin-nav {
-    margin-bottom: 2rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  .nav-content {
-    display: flex;
-    gap: 0.5rem;
-    overflow-x: auto;
-    padding-bottom: 1px;
-  }
-
-  a {
-    padding: 0.75rem 1.25rem;
-    color: var(--color-text-muted);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.95rem;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-
-  a:hover {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 0.5rem 0.5rem 0 0;
-  }
-
-  a.active {
-    color: #a78bfa;
-    border-bottom-color: #a78bfa;
-  }
-</style>
 
 <script define:vars={{ currentPath: Astro.url.pathname }}>
   // Optional: Client-side active state if not strictly SSR
 </script>
+
