@@ -23,7 +23,7 @@ const isAboutToPremiere = isUpcoming && diffInHours <= 2;
 ---
 
 
-<article class={`relative group flex flex-col h-full bg-white/3 backdrop-blur-[10px] border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-primary hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] light:hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] ${isUpcoming ? 'opacity-90 hover:opacity-100' : ''}`}>
+<article class={`relative group flex flex-col h-full bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-primary hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] [data-theme='light']:hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] ${isUpcoming ? 'opacity-90 hover:opacity-100' : ''}`}>
     {isUpcoming && (
         <div class={`absolute top-4 right-4 z-10 text-white px-3 py-1.5 rounded-full text-[0.75rem] font-extrabold uppercase flex items-center gap-1.5 shadow-lg border border-white/20 animate-bounce-subtle backdrop-blur-md ${isAboutToPremiere ? 'bg-red-600/90 shadow-red-600/30' : 'bg-primary/90 shadow-primary/30'}`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -79,9 +79,10 @@ const isAboutToPremiere = isUpcoming && diffInHours <= 2;
             </p>
             
             <div class="mt-auto flex justify-between items-center pt-4 border-t border-white/5 text-[0.875rem] text-zinc-500">
-                <span class="card-rating flex items-center gap-1" data-rating-slug={post.slug}>
-                    <span class="rating-stars-mini text-[0.75rem] tracking-tighter text-white/10 light:text-black/10">★★★★★</span>
-                </span>
+                <div class="card-rating flex items-center gap-2" data-rating-slug={post.slug}>
+                    <span class="rating-stars-mini text-[0.75rem] tracking-tighter text-white/10 [data-theme='light']:text-black/10 transition-colors duration-300">★★★★★</span>
+                    <span class="rating-value text-[0.7rem] font-bold text-amber-500/80 hidden"></span>
+                </div>
                 <span class="flex items-center gap-1">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     {post.data.duration || 'N/A'}
@@ -92,6 +93,9 @@ const isAboutToPremiere = isUpcoming && diffInHours <= 2;
 	</div>
     <a href={`${urlPrefix}${post.slug}`} class="absolute inset-0 z-10" aria-label={`Escuchar ${post.data.title}`}></a>
 </article>
+
+
+
 
 <script>
     const loadCardRatings = async () => {
@@ -115,17 +119,30 @@ const isAboutToPremiere = isUpcoming && diffInHours <= 2;
                     if (slug && data[slug] && data[slug].count > 0) {
                         const { average, count } = data[slug];
                         const starsEl = el.querySelector('.rating-stars-mini');
+                        const valueEl = el.querySelector('.rating-value');
                         
                         if (starsEl) {
                             // Generate stars based on rating
                             let starsHtml = '';
+                            const rounded = Math.round(average);
                             for (let i = 1; i <= 5; i++) {
-                                starsHtml += i <= Math.round(average) ? '★' : '☆';
+                                starsHtml += i <= rounded ? '★' : '☆';
                             }
                             starsEl.textContent = starsHtml;
+                            
+                            // Fix color across themes by using inline style which has higher specificity
+                            starsEl.style.color = '#f59e0b';
+                            
+                            if (valueEl) {
+                                valueEl.textContent = average.toFixed(1);
+                                valueEl.classList.remove('hidden');
+                            }
+                            
                             el.setAttribute('data-loaded', 'true');
-                            starsEl.classList.add('text-amber-500');
                         }
+                    } else if (slug) {
+                        // Mark as loaded even if 0 count to avoid re-fetching
+                         el.setAttribute('data-loaded', 'true');
                     }
                 });
             }

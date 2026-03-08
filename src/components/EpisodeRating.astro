@@ -48,12 +48,17 @@ const { slug } = Astro.props;
         const data = json.data;
         widgets.forEach((widget) => {
           const slug = widget.getAttribute('data-slug');
-          if (!slug || !data[slug]) return;
-
+          
           const skeleton = widget.querySelector('.rating-skeleton') as HTMLElement;
           const content = widget.querySelector('.rating-content') as HTMLElement;
           const empty = widget.querySelector('.rating-empty') as HTMLElement;
           
+          if (!slug || !data[slug]) {
+             if (skeleton) skeleton.style.display = 'none';
+             if (empty) empty.style.display = 'flex';
+             return;
+          }
+
           const ratingData = data[slug];
 
           if (ratingData.count > 0) {
@@ -61,12 +66,13 @@ const { slug } = Astro.props;
             
             // Update stars
             const stars = widget.querySelectorAll('.star-display');
+            const rounded = Math.round(average);
             stars.forEach((star) => {
               const index = parseInt(star.getAttribute('data-index') || '0', 10);
-              if (index <= average) {
-                star.classList.add('filled');
-              } else if (index - 1 < average && index > average) {
-                star.classList.add('filled');
+              if (index <= rounded) {
+                (star as HTMLElement).style.color = '#f59e0b';
+              } else {
+                (star as HTMLElement).style.color = '';
               }
             });
 
@@ -79,14 +85,18 @@ const { slug } = Astro.props;
             // Show content
             if (skeleton) skeleton.style.display = 'none';
             if (content) content.style.display = 'flex';
+            if (empty) empty.style.display = 'none';
             widget.setAttribute('data-loaded', 'true');
           } else {
             // No ratings
             if (skeleton) skeleton.style.display = 'none';
             if (empty) empty.style.display = 'flex';
+            if (content) content.style.display = 'none';
             widget.setAttribute('data-loaded', 'true');
           }
         });
+      } else {
+        throw new Error(json.error || 'API error');
       }
     } catch (e) {
       console.error("Bulk ratings load failed", e);
@@ -94,7 +104,11 @@ const { slug } = Astro.props;
         const skel = w.querySelector('.rating-skeleton') as HTMLElement;
         const emp = w.querySelector('.rating-empty') as HTMLElement;
         if (skel) skel.style.display = 'none';
-        if (emp) emp.style.display = 'flex';
+        if (emp) {
+            emp.style.display = 'flex';
+            const txt = emp.querySelector('.no-rating-text');
+            if (txt) txt.textContent = 'Error al cargar';
+        }
       });
     }
   };
