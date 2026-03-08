@@ -13,6 +13,8 @@ export default {
         'blob-float': 'blob-float 10s infinite alternate',
         'blob-float-reverse': 'blob-float 12s infinite alternate-reverse',
         'spectrum': 'spectrum 1s infinite ease-in-out',
+        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+        'shimmer': 'shimmer 1.5s infinite',
       },
       keyframes: {
         marquee: {
@@ -26,6 +28,14 @@ export default {
         spectrum: {
           '0%, 100%': { height: '10px', opacity: '0.5' },
           '50%': { height: '60px', opacity: '1' },
+        },
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '200% 0' },
+          '100%': { backgroundPosition: '-200% 0' },
         }
       },
     },

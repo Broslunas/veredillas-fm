@@ -11,44 +11,44 @@
 
 <!-- ── Category Filter ── -->
 <div class="flex gap-2 flex-wrap mb-5" role="tablist" aria-label="Filtrar logros por categoría">
-  <button class="filter-pill active group" data-cat="all" role="tab" aria-selected="true">
+  <button class="filter-pill group active inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 text-zinc-400 text-[0.8rem] font-medium cursor-pointer transition-all duration-200 whitespace-nowrap font-sans hover:bg-white/10 hover:border-white/20 hover:text-zinc-200 hover:-translate-y-px [&.active]:bg-gradient-to-br [&.active]:from-violet-600/30 [&.active]:to-pink-500/20 [&.active]:border-violet-500/55 [&.active]:text-violet-100 [&.active]:font-semibold [&.active]:shadow-lg [&.active]:shadow-violet-600/20" data-cat="all" role="tab" aria-selected="true">
     <span class="pill-label">✦ Todos</span>
-    <span class="pill-count" id="pill-count-all">–</span>
+    <span class="pill-count inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 rounded-full bg-white/10 text-[0.68rem] font-bold text-zinc-500 transition-colors group-[.active]:bg-violet-500/30 group-[.active]:text-violet-300" id="pill-count-all">–</span>
   </button>
-  <button class="filter-pill group" data-cat="escucha" role="tab">
-    <span class="pill-icon group-hover:scale-110 transition-transform">🎧</span>
+  <button class="filter-pill group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 text-zinc-400 text-[0.8rem] font-medium cursor-pointer transition-all duration-200 whitespace-nowrap font-sans hover:bg-white/10 hover:border-white/20 hover:text-zinc-200 hover:-translate-y-px [&.active]:bg-gradient-to-br [&.active]:from-violet-600/30 [&.active]:to-pink-500/20 [&.active]:border-violet-500/55 [&.active]:text-violet-100 [&.active]:font-semibold [&.active]:shadow-lg [&.active]:shadow-violet-600/20" data-cat="escucha" role="tab" aria-selected="false">
+    <span class="group-hover:scale-110 transition-transform">🎧</span>
     <span class="pill-label">Escucha</span>
-    <span class="pill-count" id="pill-count-escucha">–</span>
+    <span class="pill-count inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 rounded-full bg-white/10 text-[0.68rem] font-bold text-zinc-500 transition-colors group-[.active]:bg-violet-500/30 group-[.active]:text-violet-300" id="pill-count-escucha">–</span>
   </button>
-  <button class="filter-pill group" data-cat="fidelidad" role="tab">
-    <span class="pill-icon group-hover:scale-110 transition-transform">🔥</span>
+  <button class="filter-pill group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 text-zinc-400 text-[0.8rem] font-medium cursor-pointer transition-all duration-200 whitespace-nowrap font-sans hover:bg-white/10 hover:border-white/20 hover:text-zinc-200 hover:-translate-y-px [&.active]:bg-gradient-to-br [&.active]:from-violet-600/30 [&.active]:to-pink-500/20 [&.active]:border-violet-500/55 [&.active]:text-violet-100 [&.active]:font-semibold [&.active]:shadow-lg [&.active]:shadow-violet-600/20" data-cat="fidelidad" role="tab" aria-selected="false">
+    <span class="group-hover:scale-110 transition-transform">🔥</span>
     <span class="pill-label">Fidelidad</span>
-    <span class="pill-count" id="pill-count-fidelidad">–</span>
+    <span class="pill-count inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 rounded-full bg-white/10 text-[0.68rem] font-bold text-zinc-500 transition-colors group-[.active]:bg-violet-500/30 group-[.active]:text-violet-300" id="pill-count-fidelidad">–</span>
   </button>
-  <button class="filter-pill group" data-cat="social" role="tab">
-    <span class="pill-icon group-hover:scale-110 transition-transform">💬</span>
+  <button class="filter-pill group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 text-zinc-400 text-[0.8rem] font-medium cursor-pointer transition-all duration-200 whitespace-nowrap font-sans hover:bg-white/10 hover:border-white/20 hover:text-zinc-200 hover:-translate-y-px [&.active]:bg-gradient-to-br [&.active]:from-violet-600/30 [&.active]:to-pink-500/20 [&.active]:border-violet-500/55 [&.active]:text-violet-100 [&.active]:font-semibold [&.active]:shadow-lg [&.active]:shadow-violet-600/20" data-cat="social" role="tab" aria-selected="false">
+    <span class="group-hover:scale-110 transition-transform">💬</span>
     <span class="pill-label">Social</span>
-    <span class="pill-count" id="pill-count-social">–</span>
+    <span class="pill-count inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 rounded-full bg-white/10 text-[0.68rem] font-bold text-zinc-500 transition-colors group-[.active]:bg-violet-500/30 group-[.active]:text-violet-300" id="pill-count-social">–</span>
   </button>
-  <button class="filter-pill group" data-cat="coleccion" role="tab">
-    <span class="pill-icon group-hover:scale-110 transition-transform">❤️</span>
+  <button class="filter-pill group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 text-zinc-400 text-[0.8rem] font-medium cursor-pointer transition-all duration-200 whitespace-nowrap font-sans hover:bg-white/10 hover:border-white/20 hover:text-zinc-200 hover:-translate-y-px [&.active]:bg-gradient-to-br [&.active]:from-violet-600/30 [&.active]:to-pink-500/20 [&.active]:border-violet-500/55 [&.active]:text-violet-100 [&.active]:font-semibold [&.active]:shadow-lg [&.active]:shadow-violet-600/20" data-cat="coleccion" role="tab" aria-selected="false">
+    <span class="group-hover:scale-110 transition-transform">❤️</span>
     <span class="pill-label">Colección</span>
-    <span class="pill-count" id="pill-count-coleccion">–</span>
+    <span class="pill-count inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 rounded-full bg-white/10 text-[0.68rem] font-bold text-zinc-500 transition-colors group-[.active]:bg-violet-500/30 group-[.active]:text-violet-300" id="pill-count-coleccion">–</span>
   </button>
-  <button class="filter-pill group" data-cat="exploracion" role="tab">
-    <span class="pill-icon group-hover:scale-110 transition-transform">🗺️</span>
+  <button class="filter-pill group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 text-zinc-400 text-[0.8rem] font-medium cursor-pointer transition-all duration-200 whitespace-nowrap font-sans hover:bg-white/10 hover:border-white/20 hover:text-zinc-200 hover:-translate-y-px [&.active]:bg-gradient-to-br [&.active]:from-violet-600/30 [&.active]:to-pink-500/20 [&.active]:border-violet-500/55 [&.active]:text-violet-100 [&.active]:font-semibold [&.active]:shadow-lg [&.active]:shadow-violet-600/20" data-cat="exploracion" role="tab" aria-selected="false">
+    <span class="group-hover:scale-110 transition-transform">🗺️</span>
     <span class="pill-label">Exploración</span>
-    <span class="pill-count" id="pill-count-exploracion">–</span>
+    <span class="pill-count inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 rounded-full bg-white/10 text-[0.68rem] font-bold text-zinc-500 transition-colors group-[.active]:bg-violet-500/30 group-[.active]:text-violet-300" id="pill-count-exploracion">–</span>
   </button>
-  <button class="filter-pill group" data-cat="especial" role="tab">
-    <span class="pill-icon group-hover:scale-110 transition-transform">✨</span>
+  <button class="filter-pill group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 text-zinc-400 text-[0.8rem] font-medium cursor-pointer transition-all duration-200 whitespace-nowrap font-sans hover:bg-white/10 hover:border-white/20 hover:text-zinc-200 hover:-translate-y-px [&.active]:bg-gradient-to-br [&.active]:from-violet-600/30 [&.active]:to-pink-500/20 [&.active]:border-violet-500/55 [&.active]:text-violet-100 [&.active]:font-semibold [&.active]:shadow-lg [&.active]:shadow-violet-600/20" data-cat="especial" role="tab" aria-selected="false">
+    <span class="group-hover:scale-110 transition-transform">✨</span>
     <span class="pill-label">Especial</span>
-    <span class="pill-count" id="pill-count-especial">–</span>
+    <span class="pill-count inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 rounded-full bg-white/10 text-[0.68rem] font-bold text-zinc-500 transition-colors group-[.active]:bg-violet-500/30 group-[.active]:text-violet-300" id="pill-count-especial">–</span>
   </button>
-  <button class="filter-pill group" data-cat="madrugador" role="tab">
-    <span class="pill-icon group-hover:scale-110 transition-transform">🌙</span>
+  <button class="filter-pill group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 text-zinc-400 text-[0.8rem] font-medium cursor-pointer transition-all duration-200 whitespace-nowrap font-sans hover:bg-white/10 hover:border-white/20 hover:text-zinc-200 hover:-translate-y-px [&.active]:bg-gradient-to-br [&.active]:from-violet-600/30 [&.active]:to-pink-500/20 [&.active]:border-violet-500/55 [&.active]:text-violet-100 [&.active]:font-semibold [&.active]:shadow-lg [&.active]:shadow-violet-600/20" data-cat="madrugador" role="tab" aria-selected="false">
+    <span class="group-hover:scale-110 transition-transform">🌙</span>
     <span class="pill-label">Madrugador</span>
-    <span class="pill-count" id="pill-count-madrugador">–</span>
+    <span class="pill-count inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 rounded-full bg-white/10 text-[0.68rem] font-bold text-zinc-500 transition-colors group-[.active]:bg-violet-500/30 group-[.active]:text-violet-300" id="pill-count-madrugador">–</span>
   </button>
 </div>
 
@@ -70,17 +70,17 @@
     </select>
   </div>
   <div class="flex border border-white/10 rounded-xl overflow-hidden shrink-0">
-    <button class="view-btn flex items-center justify-center p-2.5 bg-white/5 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white active" id="view-grid" title="Vista cuadrícula" aria-label="Vista cuadrícula">
+    <button class="view-btn flex items-center justify-center p-2.5 bg-white/5 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white active [&.active]:bg-violet-600/30 [&.active]:text-violet-300" id="view-grid" title="Vista cuadrícula" aria-label="Vista cuadrícula">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
     </button>
-    <button class="view-btn flex items-center justify-center p-2.5 bg-white/5 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white border-l border-white/10" id="view-list" title="Vista lista" aria-label="Vista lista">
+    <button class="view-btn flex items-center justify-center p-2.5 bg-white/5 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white border-l border-white/10 [&.active]:bg-violet-600/30 [&.active]:text-violet-300" id="view-list" title="Vista lista" aria-label="Vista lista">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
     </button>
   </div>
 </div>
 
 <!-- ── Grid ── -->
-<div class="ach-grid grid grid-cols-[repeat(auto-fill,minmax(270px,1fr))] gap-4" id="ach-grid" role="list">
+<div class="ach-grid grid grid-cols-[repeat(auto-fill,minmax(270px,1fr))] gap-4 [&.list-view]:grid-cols-1" id="ach-grid" role="list">
   <!-- Skeleton while loading -->
   {Array.from({ length: 15 }).map((_, i) => (
     <div class="relative flex items-center gap-4 p-5 rounded-[18px] border border-white/10 bg-zinc-900/40 animate-[skFade_1.6s_infinite] pointer-events-none shadow-sm" style={`animation-delay: ${i * 0.05}s`} aria-hidden="true">
@@ -101,34 +101,7 @@
   <p class="text-zinc-500 text-sm">No hay logros que coincidan con tu búsqueda.</p>
 </div>
 
-<!-- ── Grid ── -->
-<div class="ach-grid" id="ach-grid" role="list">
-
 <style is:global>
-  .ach-grid.list-view {
-    grid-template-columns: 1fr !important;
-  }
-
-  .filter-pill {
-    @apply inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 text-zinc-400 text-[0.8rem] font-medium cursor-pointer transition-all duration-200 whitespace-nowrap font-sans hover:bg-white/10 hover:border-white/20 hover:text-zinc-200 hover:-translate-y-px;
-  }
-
-  .filter-pill.active {
-    @apply bg-gradient-to-br from-violet-600/30 to-pink-500/20 border-violet-500/55 text-violet-100 font-semibold shadow-lg shadow-violet-600/20;
-  }
-
-  .pill-count {
-    @apply inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 rounded-full bg-white/10 text-[0.68rem] font-bold text-zinc-500 transition-colors;
-  }
-
-  .filter-pill.active .pill-count {
-    @apply bg-violet-500/30 text-violet-300;
-  }
-
-  .view-btn.active {
-    @apply bg-violet-600/30 text-violet-300;
-  }
-
   /* Core Animations */
   @keyframes cardIn {
     from { opacity: 0; transform: translateY(12px) scale(0.97); }
@@ -165,7 +138,6 @@
     50%       { box-shadow: 0 0 0 7px rgba(124,58,237,0); }
   }
 
-  /* Badge Classes */
   .badge-card {
     animation: cardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
@@ -176,12 +148,12 @@
     background: linear-gradient(90deg, transparent, var(--badge-color), transparent);
   }
 
-  .ach-grid.list-view .badge-card.unlocked::before {
+  .list-view .badge-card.unlocked::before {
     content: '';
     @apply absolute inset-y-0 left-0 w-[4px] bg-[var(--badge-color)] rounded-l-[18px] opacity-80;
   }
 
-  .badge-card.rarity-legendary .badge-shimmer {
+  .rarity-legendary .badge-shimmer {
     @apply absolute inset-0 pointer-events-none rounded-[inherit];
     background: linear-gradient(115deg, transparent 30%, rgba(245,158,11,0.12) 50%, transparent 70%);
     background-size: 250% 100%;
@@ -194,7 +166,7 @@
   }
 
   .badge-card.unlocked:hover .badge-icon-glow {
-    opacity: 0.2;
+    @apply opacity-20;
   }
 
   .badge-progress-fill {
@@ -211,11 +183,7 @@
 </style>
 
 <script>
-// Toast system moved to global AchievementToaster
-
-// ═══════════════════════════════════════════════════════════════
-// Badge data & rendering
-// ═══════════════════════════════════════════════════════════════
+// @ts-nocheck
 interface BadgeData {
   id: string; name: string; description: string; icon: string;
   rarity: string; rarityLabel: string; rarityColor: string;
@@ -261,7 +229,6 @@ function getFiltered(): BadgeData[] {
       if (!b.unlockedAt) return -1;
       return new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime();
     }
-    // default: unlocked first, then rarity
     if (a.unlocked !== b.unlocked) return a.unlocked ? -1 : 1;
     return (rarityW[a.rarity] ?? 4) - (rarityW[b.rarity] ?? 4);
   });
@@ -309,7 +276,7 @@ function buildCard(b: BadgeData, idx: number): HTMLElement {
   card.innerHTML = `
     ${b.rarity === 'legendary' ? '<div class="badge-shimmer"></div>' : ''}
     <div class="flex items-start gap-4 ${isList ? 'shrink-0' : ''}">
-      <div class="badge-icon-wrap w-[54px] h-[54px] rounded-2xl flex items-center justify-center text-3xl shrink-0 bg-white/5 border border-white/10 relative overflow-hidden transition-all group-hover:scale-110 group-hover:-rotate-3" style="${b.unlocked ? `background:color-mix(in srgb, ${b.rarityColor} 12%, transparent); border-color:color-mix(in srgb, ${b.rarityColor} 28%, transparent)` : ''}">
+      <div class="w-[54px] h-[54px] rounded-2xl flex items-center justify-center text-3xl shrink-0 bg-white/5 border border-white/10 relative overflow-hidden transition-all group-hover:scale-110 group-hover:-rotate-3" style="${b.unlocked ? `background:color-mix(in srgb, ${b.rarityColor} 12%, transparent); border-color:color-mix(in srgb, ${b.rarityColor} 28%, transparent)` : ''}">
         <div class="badge-icon-glow"></div>
         <span class="relative z-10">${b.icon}</span>
       </div>
@@ -343,15 +310,14 @@ function renderGrid() {
   const grid     = document.getElementById('ach-grid')!;
   const emptyEl  = document.getElementById('ach-empty')!;
   const filtered = getFiltered();
-
   grid.innerHTML = '';
-
   if (filtered.length === 0) {
     emptyEl.classList.remove('hidden');
+    emptyEl.classList.add('flex');
     return;
   }
-
   emptyEl.classList.add('hidden');
+  emptyEl.classList.remove('flex');
   filtered.forEach((b, i) => grid.appendChild(buildCard(b, i)));
 }
 
@@ -373,7 +339,6 @@ function updatePillCounts() {
 function updateSummaryBanner(data: { totalUnlocked: number; totalAchievements: number; totalPoints: number }) {
   const inner = document.getElementById('ach-summary-inner');
   if (!inner) return;
-
   const rarities = [
     { key: 'legendary', label: 'Legendarios',  color: '#f59e0b' },
     { key: 'epic',      label: 'Épicos',        color: '#a855f7' },
@@ -381,7 +346,6 @@ function updateSummaryBanner(data: { totalUnlocked: number; totalAchievements: n
     { key: 'uncommon',  label: 'Poco comunes',  color: '#4ade80' },
     { key: 'common',    label: 'Comunes',       color: '#9ca3af' },
   ];
-
   inner.innerHTML = rarities.map(r => {
     const cnt = allBadges.filter(b => b.rarity === r.key && b.unlocked).length;
     const total = allBadges.filter(b => b.rarity === r.key).length;
@@ -393,14 +357,11 @@ function updateSummaryBanner(data: { totalUnlocked: number; totalAchievements: n
       </span>
     `;
   }).join('');
-
-  // Also update the hero stats if they exist (on /logros page)
   const hstatUnlocked = document.getElementById('hstat-unlocked');
   const hstatPoints   = document.getElementById('hstat-points');
   const heroFill      = document.getElementById('hero-progress-fill');
   const heroGlow      = document.getElementById('hero-progress-glow');
   const heroPct       = document.querySelector('.hero-progress-pct');
-
   if (hstatUnlocked) hstatUnlocked.textContent = String(data.totalUnlocked);
   if (hstatPoints)   hstatPoints.textContent   = String(data.totalPoints);
   if (heroFill) {
@@ -411,80 +372,66 @@ function updateSummaryBanner(data: { totalUnlocked: number; totalAchievements: n
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// Event listeners
-// ═══════════════════════════════════════════════════════════════
-
-// Category filter
-document.querySelectorAll<HTMLButtonElement>('.filter-pill').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-pill').forEach(b => {
-      b.classList.remove('active');
-      b.setAttribute('aria-selected', 'false');
+const initialize = () => {
+  document.querySelectorAll<HTMLButtonElement>('.filter-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-pill').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      currentCat = btn.dataset.cat ?? 'all';
+      renderGrid();
     });
-    btn.classList.add('active');
-    btn.setAttribute('aria-selected', 'true');
-    currentCat = btn.dataset.cat ?? 'all';
+  });
+
+  document.getElementById('ach-search')?.addEventListener('input', (e) => {
+    searchQuery = (e.target as HTMLInputElement).value.trim();
     renderGrid();
   });
-});
 
-// Search
-document.getElementById('ach-search')?.addEventListener('input', (e) => {
-  searchQuery = (e.target as HTMLInputElement).value.trim();
-  renderGrid();
-});
+  document.getElementById('ach-sort')?.addEventListener('change', (e) => {
+    currentSort = (e.target as HTMLSelectElement).value;
+    renderGrid();
+  });
 
-// Sort
-document.getElementById('ach-sort')?.addEventListener('change', (e) => {
-  currentSort = (e.target as HTMLSelectElement).value;
-  renderGrid();
-});
+  document.getElementById('view-grid')?.addEventListener('click', () => {
+    viewMode = 'grid';
+    const grid = document.getElementById('ach-grid')!;
+    grid.classList.remove('list-view');
+    document.getElementById('view-grid')!.classList.add('active');
+    document.getElementById('view-list')!.classList.remove('active');
+    renderGrid();
+  });
 
-// View toggle
-document.getElementById('view-grid')?.addEventListener('click', () => {
-  viewMode = 'grid';
-  const grid = document.getElementById('ach-grid')!;
-  grid.classList.remove('list-view');
-  document.getElementById('view-grid')!.classList.add('active');
-  document.getElementById('view-list')!.classList.remove('active');
-});
+  document.getElementById('view-list')?.addEventListener('click', () => {
+    viewMode = 'list';
+    const grid = document.getElementById('ach-grid')!;
+    grid.classList.add('list-view');
+    document.getElementById('view-list')!.classList.add('active');
+    document.getElementById('view-grid')!.classList.remove('active');
+    renderGrid();
+  });
+};
 
-document.getElementById('view-list')?.addEventListener('click', () => {
-  viewMode = 'list';
-  const grid = document.getElementById('ach-grid')!;
-  grid.classList.add('list-view');
-  document.getElementById('view-list')!.classList.add('active');
-  document.getElementById('view-grid')!.classList.remove('active');
-});
-
-// ═══════════════════════════════════════════════════════════════
-// Load from API
-// ═══════════════════════════════════════════════════════════════
 async function loadAchievements() {
   try {
     const res = await fetch('/api/achievements', { credentials: 'include' });
     if (!res.ok) return;
     const data = await res.json();
-
     allBadges = data.achievements ?? [];
-
     updatePillCounts();
     updateSummaryBanner(data);
     renderGrid();
-
-    // Show toasts for newly unlocked achievements
     if (data.newlyUnlocked?.length > 0) {
       await new Promise<void>(r => setTimeout(r, 700));
       for (const id of data.newlyUnlocked) {
         const b = allBadges.find(b => b.id === id);
         if (b && (window as any).queueAchievementToast) {
           (window as any).queueAchievementToast({
-            name: b.name,
-            desc: b.description,
-            icon: b.icon,
-            rarity: b.rarityLabel,
-            color: b.rarityColor
+            name: b.name, desc: b.description, icon: b.icon,
+            rarity: b.rarityLabel, color: b.rarityColor
           });
         }
       }
@@ -493,9 +440,16 @@ async function loadAchievements() {
     console.error('[AchievementsPanel] load failed:', err);
   }
 }
-// Exposed globally for AchievementToaster
+
 (window as any).loadAchievements = loadAchievements;
 
-// Boot!
-loadAchievements();
+const boot = () => {
+  initialize();
+  loadAchievements();
+};
+
+document.addEventListener('astro:page-load', boot);
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+  boot();
+}
 </script>

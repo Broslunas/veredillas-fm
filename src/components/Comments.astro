@@ -44,111 +44,106 @@ if (userPayload) {
 const isLoggedIn = !!currentUser;
 ---
 
-<section id="comments-section" class="comments-container">
+<section id="comments-section" class="max-w-[800px] mx-auto my-16 px-4 font-body text-zinc-100">
   <!-- Section Header -->
-  <div class="comments-header fade-in-up">
-    <div class="header-title">
-      <h3 class="gradient-text">Comentarios</h3>
-      <span class="comment-count-pill" id="comment-count-label">0</span>
+  <div class="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4 animate-fade-in-up">
+    <div class="flex items-center gap-4">
+      <h3 class="text-3xl font-display font-bold text-gradient">Comentarios</h3>
+      <span class="bg-zinc-800/50 text-primary px-3 py-1 rounded-full font-bold text-sm border border-zinc-700" id="comment-count-label">0</span>
     </div>
 
     <!-- Sorting Control -->
-    <div class="sort-control">
+    <div class="relative bg-zinc-900/50 rounded-lg px-2 border border-white/5">
       <label for="sort-select" class="sr-only">Ordenar por</label>
-      <select id="sort-select" class="sort-select">
-        <option value="newest">Más recientes</option>
-        <option value="oldest">Más antiguos</option>
-        <option value="top">Mejor valorados</option>
+      <select id="sort-select" class="bg-transparent border-none text-zinc-400 text-sm py-2 pl-2 pr-8 cursor-pointer appearance-none hover:text-white focus:outline-none">
+        <option value="newest" class="bg-zinc-900 text-white">Más recientes</option>
+        <option value="oldest" class="bg-zinc-900 text-white">Más antiguos</option>
+        <option value="top" class="bg-zinc-900 text-white">Mejor valorados</option>
       </select>
-      <svg class="sort-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      <svg class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500 w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
     </div>
   </div>
 
   <!-- Main Content Grid -->
-  <div class="comments-grid">
+  <div class="flex flex-col gap-12">
     
     <!-- Comment Form Card -->
-    <div class="comment-form-wrapper fade-in-up delay-100">
-      <div class="glass-card form-card">
-        <div class="card-header">
-          <div class="avatar-spot">
+    <div class="animate-fade-in-up delay-[100ms]">
+      <div class="bg-zinc-900/80 border border-primary/20 rounded-2xl p-8 shadow-2xl relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:w-full before:h-1 before:bg-gradient-to-r before:from-primary before:to-secondary before:opacity-60">
+        <div class="flex items-center gap-4 mb-6">
+          <div class="shrink-0">
             {isLoggedIn && currentUser?.picture ? (
-              <img src={currentUser.picture} alt={currentUser.name} class="user-avatar" />
+              <img src={currentUser.picture} alt={currentUser.name} class="w-12 h-12 rounded-full object-cover border-2 border-primary" />
             ) : (
-              <div class="user-avatar-placeholder">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <div class="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-500">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               </div>
             )}
           </div>
-          <div class="header-text">
-            <h4>{isLoggedIn && currentUser ? `Hola, ${currentUser.name}` : 'Únete a la conversación'}</h4>
-            <p>{isLoggedIn ? 'Comparte tu opinión sobre este episodio' : 'Inicia sesión o comenta como invitado'}</p>
+          <div>
+            <h4 class="text-lg font-bold m-0 text-white">{isLoggedIn && currentUser ? `Hola, ${currentUser.name}` : 'Únete a la conversación'}</h4>
+            <p class="text-sm text-zinc-400 m-0">{isLoggedIn ? 'Comparte tu opinión sobre este episodio' : 'Inicia sesión o comenta como invitado'}</p>
           </div>
         </div>
 
-        <form id="comment-form" class="comment-form">
+        <form id="comment-form" class="flex flex-col gap-6">
           {isLoggedIn && currentUser ? (
             <input type="hidden" name="name" value={currentUser.name} />
             <input type="hidden" name="email" value={currentUser.email} />
           ) : (
-            <div class="guest-inputs">
-              <div class="input-group">
-                <input type="text" id="name" name="name" placeholder=" " required maxlength="60" />
-                <label for="name">Nombre</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="relative">
+                <input type="text" id="name" name="name" placeholder=" " required maxlength="60" class="peer w-full bg-white/5 border border-zinc-700 rounded-lg pt-6 pb-2 px-4 text-zinc-100 transition-all focus:bg-black/20 focus:border-primary outline-none" />
+                <label for="name" class="absolute left-4 top-5 text-zinc-500 pointer-events-none transition-all peer-focus:top-2 peer-focus:text-xs peer-focus:text-primary peer-focus:font-semibold peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary peer-[:not(:placeholder-shown)]:font-semibold">Nombre</label>
               </div>
-              <div class="input-group">
-                <input type="email" id="email" name="email" placeholder=" " required />
-                <label for="email">Email <span class="dim">(no visible)</span></label>
+              <div class="relative">
+                <input type="email" id="email" name="email" placeholder=" " required class="peer w-full bg-white/5 border border-zinc-700 rounded-lg pt-6 pb-2 px-4 text-zinc-100 transition-all focus:bg-black/20 focus:border-primary outline-none" />
+                <label for="email" class="absolute left-4 top-5 text-zinc-500 pointer-events-none transition-all peer-focus:top-2 peer-focus:text-xs peer-focus:text-primary peer-focus:font-semibold peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary peer-[:not(:placeholder-shown)]:font-semibold">Email <span class="text-xs opacity-50 text-zinc-500">(no visible)</span></label>
               </div>
             </div>
           )}
 
-          <div class="input-group full-width">
-            <textarea id="text" name="text" rows="3" placeholder=" " required maxlength="1000"></textarea>
-            <label for="text">Escribe tu comentario...</label>
-            <div class="focus-border"></div>
+          <div class="relative">
+            <textarea id="text" name="text" rows="3" placeholder=" " required maxlength="1000" class="peer w-full bg-white/5 border border-zinc-700 rounded-lg pt-6 pb-2 px-4 text-zinc-100 transition-all focus:bg-black/20 focus:border-primary outline-none resize-none"></textarea>
+            <label for="text" class="absolute left-4 top-5 text-zinc-500 pointer-events-none transition-all peer-focus:top-2 peer-focus:text-xs peer-focus:text-primary peer-focus:font-semibold peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary peer-[:not(:placeholder-shown)]:font-semibold">Escribe tu comentario...</label>
           </div>
 
           <!-- Bottom Actions: Rating & Submit -->
-          <div class="form-actions">
-            <div class="rating-picker">
-              <span class="rating-label">Tu valoración:</span>
-              <div class="stars-interactive" id="star-interactive">
+          <div class="flex justify-between items-center flex-wrap gap-4">
+            <div class="flex items-center gap-3">
+              <span class="text-sm text-zinc-400">Tu valoración:</span>
+              <div class="flex gap-1" id="star-interactive">
                 {[1, 2, 3, 4, 5].map((val) => (
-                  <button type="button" class="star-btn" data-value={val} aria-label={`${val} estrellas`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <button type="button" class="star-btn p-0.5 transition-transform hover:scale-110 focus:outline-none text-zinc-600" data-value={val} aria-label={`${val} estrellas`}>
+                    <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                   </button>
                 ))}
               </div>
               <input type="hidden" name="rating" id="rating-value" value="0" />
             </div>
 
-            <button type="submit" class="submit-btn">
+            <button type="submit" class="bg-primary hover:brightness-110 text-white font-semibold py-3 px-6 rounded-full flex items-center gap-2 transition-all shadow-lg shadow-primary/30 hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed">
               <span>Publicar</span>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
           </div>
-          <p id="form-status" class="status-msg"></p>
+          <p id="form-status" class="text-sm m-0"></p>
         </form>
       </div>
     </div>
 
     <!-- Comments Feed -->
-    <div class="comments-feed-wrapper fade-in-up delay-200">
-      <div id="comments-list" class="comments-list">
-        <!-- Loading Skeleton -->
-        <div class="skeleton-loader">
-          <div class="skeleton-item"></div>
-          <div class="skeleton-item"></div>
-          <div class="skeleton-item"></div>
-        </div>
+    <div class="animate-fade-in-up delay-[200ms]">
+      <div id="comments-list" class="flex flex-col gap-6">
+        <!-- Loading Skeleton / Comments -->
       </div>
     </div>
   </div>
 
   <!-- Toast Container -->
-  <div id="toast-container" class="toast-container"></div>
+  <div id="toast-container" class="fixed bottom-8 right-8 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 </section>
+
 
 <script define:vars={{ slug }}>
   // UI Elements
@@ -217,37 +212,38 @@ const isLoggedIn = !!currentUser;
 
     // Render List
     list.innerHTML = sorted.map(c => `
-      <article class="comment-card fade-in-up" id="comment-${c._id}">
-        <div class="card-side">
-          <div class="avatar-circle" style="background-color: ${stringToColor(c.name)}">
-             ${c.avatar && !c.avatar.includes('placeholder') ? `<img src="${c.avatar}" alt="${escapeHtml(c.name)}" />` : c.name.charAt(0).toUpperCase()}
+      <article class="flex gap-5 p-6 bg-white/5 border border-white/10 rounded-2xl transition-all hover:bg-white/[0.07] hover:border-white/20 hover:-translate-y-0.5 group relative overflow-hidden animate-fade-in-up" id="comment-${c._id}">
+        <div class="shrink-0">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white uppercase text-xl overflow-hidden shadow-lg border-2 border-white/5" style="background-color: ${stringToColor(c.name)}">
+             ${c.avatar && !c.avatar.includes('placeholder') ? `<img src="${c.avatar}" alt="${escapeHtml(c.name)}" class="w-full h-full object-cover" />` : c.name.charAt(0).toUpperCase()}
           </div>
         </div>
-        <div class="card-main">
-          <header class="comment-header">
-             <div class="author-meta">
-               <span class="author-name">${escapeHtml(c.name)}</span>
+        <div class="flex-1 min-w-0 flex flex-col gap-2">
+          <header class="flex justify-between items-start">
+             <div class="flex flex-col">
+               <span class="font-bold text-base text-zinc-100">${escapeHtml(c.name)}</span>
                ${c.rating > 0 ? renderStars(c.rating) : ''}
              </div>
-             <div class="meta-right">
+             <div class="flex items-center gap-3 text-xs text-zinc-400">
                 <button 
-                  class="like-btn ${c.isLiked ? 'liked' : ''}" 
+                  class="flex items-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-white/5 transition-all hover:bg-white/10 hover:text-white ${c.isLiked ? 'bg-pink-500/10 text-pink-500' : ''} like-btn" 
                   title="${c.isLiked ? 'Quitar like' : 'Me gusta'}" 
                   onclick="requestLike('${c._id}')"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${c.isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                  ${c.likesCount > 0 ? `<span class="like-count">${c.likesCount}</span>` : ''}
+                  <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${c.isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                  ${c.likesCount > 0 ? `<span class="font-semibold like-count">${c.likesCount}</span>` : ''}
                 </button>
-                <time title="${new Date(c.createdAt).toLocaleString()}">${timeAgo(new Date(c.createdAt))}</time>
-                <button class="delete-btn" title="Eliminar" onclick="requestDelete('${c._id}')">
+                <time class="bg-white/5 py-1 px-2 rounded-md" title="${new Date(c.createdAt).toLocaleString()}">${timeAgo(new Date(c.createdAt))}</time>
+                <button class="opacity-0 group-hover:opacity-100 p-1.5 rounded-md text-zinc-500 hover:text-red-500 hover:bg-red-500/10 transition-all focus:outline-none" title="Eliminar" onclick="requestDelete('${c._id}')">
                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 </button>
              </div>
           </header>
-          <div class="comment-body">
+          <div class="text-zinc-500 leading-relaxed text-[0.95rem] whitespace-pre-wrap break-words pt-1 group-hover:text-zinc-100 transition-colors">
             ${escapeHtml(c.text)}
           </div>
         </div>
+        <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
       </article>
     `).join('');
   }
@@ -255,14 +251,14 @@ const isLoggedIn = !!currentUser;
   // --- HELPERS ---
   function getSkeletonHTML() {
     return `
-      <div class="skeleton-wrapper">
+      <div class="flex flex-col gap-6">
          ${[1,2,3].map(() => `
-           <div class="skeleton-card">
-              <div class="sk-avatar"></div>
-              <div class="sk-content">
-                <div class="sk-line w-30"></div>
-                <div class="sk-line w-80"></div>
-                <div class="sk-line w-60"></div>
+           <div class="flex gap-5 p-6 bg-white/[0.02] border border-white/5 rounded-2xl">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-r from-white/5 via-white/10 to-white/5 bg-[length:200%_100%] animate-shimmer"></div>
+              <div class="flex-1 flex flex-col gap-3 justify-center">
+                <div class="h-3 w-1/3 bg-gradient-to-r from-white/5 via-white/10 to-white/5 bg-[length:200%_100%] animate-shimmer rounded"></div>
+                <div class="h-3 w-4/5 bg-gradient-to-r from-white/5 via-white/10 to-white/5 bg-[length:200%_100%] animate-shimmer rounded"></div>
+                <div class="h-3 w-3/5 bg-gradient-to-r from-white/5 via-white/10 to-white/5 bg-[length:200%_100%] animate-shimmer rounded"></div>
               </div>
            </div>
          `).join('')}
@@ -272,10 +268,10 @@ const isLoggedIn = !!currentUser;
 
   function getEmptyStateHTML(msg = 'Sé la primera persona en opinar.') {
     return `
-      <div class="empty-state">
-        <div class="empty-icon shadow-glow">💬</div>
-        <h3>Sin comentarios aún</h3>
-        <p>${msg}</p>
+      <div class="text-center py-16 px-8 opacity-80 bg-white/[0.02] rounded-2xl border border-dashed border-white/10">
+        <div class="text-5xl mb-4 inline-block drop-shadow-[0_0_15px_rgba(139,92,246,0.5)]">💬</div>
+        <h3 class="text-xl font-bold mb-2">Sin comentarios aún</h3>
+        <p class="text-zinc-400">${msg}</p>
       </div>
     `;
   }
@@ -296,9 +292,9 @@ const isLoggedIn = !!currentUser;
   }
 
   function renderStars(rating) {
-    return `<div class="mini-stars" title="${rating}/5">
+    return `<div class="flex gap-px text-amber-500 mt-1" title="${rating}/5">
        ${Array(5).fill(0).map((_, i) => `
-         <svg class="${i < rating ? 'filled' : ''}" viewBox="0 0 24 24" fill="currentColor">
+         <svg class="w-3 h-3 ${i < rating ? 'text-amber-500 drop-shadow-[0_0_2px_rgba(245,158,11,0.5)]' : 'text-zinc-800'}" viewBox="0 0 24 24" fill="currentColor">
            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
          </svg>
        `).join('')}
@@ -318,14 +314,12 @@ const isLoggedIn = !!currentUser;
   
   // Like
   window.requestLike = async (commentId) => {
-      // Optimistic Update
       const commentIndex = allComments.findIndex(c => c._id === commentId);
       if (commentIndex === -1) return;
 
       const previousState = { ...allComments[commentIndex] };
       const comment = allComments[commentIndex];
       
-      // Toggle locally first
       if (comment.isLiked) {
           comment.isLiked = false;
           comment.likesCount--;
@@ -334,17 +328,13 @@ const isLoggedIn = !!currentUser;
           comment.likesCount++;
       }
       
-      // Re-render only that card? Or simpler to just re-render list since it's fast enough 
-      // renderComments() replaces innerHTML which breaks animations/focus. 
-      // Ideally we should update just the DOM element, but for now re-render is okayish or better, query selector.
-      
       const btn = document.querySelector(`#comment-${commentId} .like-btn`);
       if(btn) {
          if(comment.isLiked) {
-            btn.classList.add('liked');
+            btn.classList.add('bg-pink-500/10', 'text-pink-500');
             btn.querySelector('svg').setAttribute('fill', 'currentColor');
          } else {
-            btn.classList.remove('liked');
+            btn.classList.remove('bg-pink-500/10', 'text-pink-500');
             btn.querySelector('svg').setAttribute('fill', 'none');
          }
          const countSpan = btn.querySelector('.like-count');
@@ -352,9 +342,8 @@ const isLoggedIn = !!currentUser;
             countSpan.innerText = comment.likesCount > 0 ? comment.likesCount : '';
             if(comment.likesCount === 0) countSpan.remove();
          } else if (comment.likesCount > 0) {
-            // Append if it didn't exist
             const span = document.createElement('span');
-            span.className = 'like-count';
+            span.className = 'font-semibold like-count';
             span.innerText = comment.likesCount;
             btn.appendChild(span);
          }
@@ -378,15 +367,11 @@ const isLoggedIn = !!currentUser;
                } else {
                   showToast(json.error || 'Error', 'error');
                }
-               // Revert
                allComments[commentIndex] = previousState;
                renderComments();
           } else {
-              // Sync with server source of truth
               allComments[commentIndex].likesCount = json.likesCount;
               allComments[commentIndex].isLiked = json.liked;
-              // Update specific element again just to be sure
-              // renderComments(); 
           }
       } catch (e) {
           showToast('Error de conexión', 'error');
@@ -416,10 +401,9 @@ const isLoggedIn = !!currentUser;
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const btn = form.querySelector('.submit-btn');
+      const btn = form.querySelector('button[type="submit"]');
       const originalContent = btn.innerHTML;
       
-      // Validation
       const formData = new FormData(form);
       const data = {
         name: formData.get('name'),
@@ -430,7 +414,7 @@ const isLoggedIn = !!currentUser;
 
       try {
         btn.disabled = true;
-        btn.innerHTML = `<span class="spinner"></span> Enviando...`;
+        btn.innerHTML = `<span class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> Enviando...`;
         
         const res = await fetch(`/api/comments/${slug}`, {
           method: 'POST',
@@ -441,8 +425,7 @@ const isLoggedIn = !!currentUser;
 
         if (json.success) {
            form.reset();
-           // Reset stars
-           document.querySelectorAll('.star-btn').forEach(s => s.classList.remove('active'));
+           updateInteractiveStars(0);
            document.getElementById('rating-value').value = '0';
            
            if (json.pending === false) {
@@ -486,10 +469,11 @@ const isLoggedIn = !!currentUser;
        starBtns.forEach(btn => {
           const btnVal = parseInt(btn.dataset.value);
           if (btnVal <= val) {
-             btn.classList.add(isHover ? 'hover' : 'active');
-             if(!isHover) btn.classList.remove('hover');
+             btn.classList.add(isHover ? 'text-amber-500' : 'text-amber-400', 'scale-110');
+             btn.classList.remove('text-zinc-600');
           } else {
-             btn.classList.remove('hover', 'active');
+             btn.classList.remove('text-amber-500', 'text-amber-400', 'scale-110');
+             btn.classList.add('text-zinc-600');
           }
        });
     }
@@ -498,525 +482,23 @@ const isLoggedIn = !!currentUser;
   // Toast
   function showToast(msg, type = 'info') {
       const el = document.createElement('div');
-      el.className = `toast toast-${type}`;
-      el.innerHTML = `<span>${type === 'success' ? '✔' : type==='error'?'✖':'ℹ'}</span><p>${msg}</p>`;
+      const accentColor = type === 'success' ? 'border-green-500' : type==='error'?'border-red-500':'border-primary';
+      el.className = `bg-zinc-900 border ${accentColor} border-l-4 p-4 rounded-xl flex items-center gap-4 shadow-2xl translate-y-5 opacity-0 transition-all duration-300 pointer-events-auto text-white`;
+      el.innerHTML = `<span>${type === 'success' ? '✔' : type==='error'?'✖':'ℹ'}</span><p class="m-0">${msg}</p>`;
       toastContainer.appendChild(el);
-      requestAnimationFrame(() => el.classList.add('visible'));
+      requestAnimationFrame(() => el.classList.remove('translate-y-5', 'opacity-0'));
       setTimeout(() => {
-         el.classList.remove('visible');
+         el.classList.add('translate-y-5', 'opacity-0');
          setTimeout(() => el.remove(), 300);
       }, 4000);
   }
 </script>
 
+
 <style is:global>
-  /* --- LAYOUT & CONTAINERS --- */
-  .comments-container {
-      max-width: 800px;
-      margin: 4rem auto;
-      padding: 0 1rem;
-      font-family: var(--font-body);
-      color: var(--color-text-main);
+  /* Base styles for the comments component if needed, mostly handled by tailwind */
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
   }
-
-  .comments-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      border-bottom: 1px solid var(--color-border);
-      padding-bottom: 1rem;
-  }
-
-  .header-title {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-  }
-
-  .header-title h3 {
-      font-size: 1.75rem;
-      margin: 0;
-  }
-
-  .comment-count-pill {
-      background: var(--color-surface-hover);
-      color: var(--color-primary);
-      padding: 0.25rem 0.75rem;
-      border-radius: 99px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      border: 1px solid var(--color-border);
-  }
-
-  /* --- SORT SELECT --- */
-  .sort-control {
-      position: relative;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 8px;
-      padding: 0.25rem 0.5rem;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  .sort-select {
-      background: transparent;
-      border: none;
-      color: var(--color-text-muted);
-      font-size: 0.9rem;
-      font-family: inherit;
-      padding: 0.5rem 2rem 0.5rem 0.5rem;
-      cursor: pointer;
-      appearance: none;
-      transition: color 0.2s;
-  }
-
-  .sort-select option {
-      background: var(--color-surface);
-      color: var(--color-text-main);
-  }
-
-  .sort-select:hover {
-      color: var(--color-text-main);
-  }
-  
-  .sort-select:focus {
-     outline: none;
-  }
-
-  .sort-icon {
-      position: absolute;
-      right: 0.75rem;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-      color: var(--color-text-muted);
-      width: 14px;
-      height: 14px;
-  }
-
-  /* --- GRID --- */
-  .comments-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 3rem;
-  }
-
-  /* --- FORM CARD --- */
-  .glass-card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-primary-glow);
-      border-radius: 16px;
-      padding: 2rem;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-      position: relative;
-      overflow: hidden;
-  }
-  
-  /* Accent light effect */
-  .glass-card::before {
-     content: '';
-     position: absolute;
-     top: 0;
-     left: 0;
-     width: 100%;
-     height: 4px;
-     background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-     opacity: 0.6;
-  }
-
-  .card-header {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-  }
-
-  .header-text h4 { margin: 0; font-size: 1.1rem; }
-  .header-text p { margin: 0; color: var(--color-text-muted); font-size: 0.9rem; }
-
-  .user-avatar {
-     width: 48px;
-     height: 48px;
-     border-radius: 50%;
-     object-fit: cover;
-     border: 2px solid var(--color-primary);
-  }
-
-  .user-avatar-placeholder {
-     width: 48px;
-     height: 48px;
-     border-radius: 50%;
-     background: var(--color-surface-hover);
-     color: var(--color-text-muted);
-     display: flex;
-     align-items: center;
-     justify-content: center;
-  }
-  
-  .user-avatar-placeholder svg { width: 24px; height: 24px; }
-
-  /* --- INPUTS --- */
-  .comment-form {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-  }
-
-  .guest-inputs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-  }
-
-  @media (max-width: 600px) {
-      .guest-inputs { grid-template-columns: 1fr; }
-  }
-
-  .input-group {
-      position: relative;
-  }
-
-  .input-group input,
-  .input-group textarea {
-      width: 100%;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
-      padding: 1.5rem 1rem 0.75rem;
-      color: var(--color-text-main);
-      font-family: inherit;
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
-      resize: vertical;
-  }
-
-  .input-group label {
-      position: absolute;
-      left: 1rem;
-      top: 1.25rem;
-      color: var(--color-text-dim);
-      font-size: 0.95rem;
-      pointer-events: none;
-      transition: all 0.2s ease;
-  }
-  
-  .input-group input:focus,
-  .input-group textarea:focus {
-      background: rgba(0,0,0,0.2);
-      border-color: var(--color-primary);
-      outline: none;
-  }
-
-  .input-group input:focus ~ label,
-  .input-group input:not(:placeholder-shown) ~ label,
-  .input-group textarea:focus ~ label,
-  .input-group textarea:not(:placeholder-shown) ~ label {
-      top: 0.5rem;
-      font-size: 0.75rem;
-      color: var(--color-primary);
-      font-weight: 600;
-  }
-
-  /* --- ACTIONS --- */
-  .form-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-  }
-
-  .rating-picker {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-  }
-
-  .rating-label {
-      font-size: 0.9rem;
-      color: var(--color-text-muted);
-  }
-
-  .stars-interactive {
-      display: flex;
-      gap: 0.25rem;
-  }
-
-  .star-btn {
-      background: none;
-      border: none;
-      padding: 2px;
-      cursor: pointer;
-      color: var(--color-text-dim);
-      transition: transform 0.2s;
-  }
-
-  .star-btn svg { width: 24px; height: 24px; }
-  
-  .star-btn.hover, .star-btn.active { color: #fbbf24; transform: scale(1.1); }
-
-  .submit-btn {
-      background: var(--color-primary);
-      color: #fff;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 99px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-  }
-
-  .submit-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
-      filter: brightness(1.1);
-  }
-
-  .submit-btn:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-      transform: none;
-  }
-
-  /* --- COMMENTS LIST --- */
-  .comments-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-  }
-
-  .comment-card {
-      display: flex;
-      gap: 1.25rem;
-      padding: 1.5rem;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.05); /* Subtle border */
-      border-radius: 16px;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      position: relative;
-      overflow: hidden;
-  }
-
-  .comment-card::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-      opacity: 0;
-      transition: opacity 0.3s;
-  }
-
-  .comment-card:hover {
-      background: rgba(255, 255, 255, 0.04);
-      border-color: rgba(255, 255, 255, 0.1);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-  }
-  
-  .comment-card:hover::after {
-      opacity: 1;
-  }
-
-  .card-side { flex-shrink: 0; }
-
-  .avatar-circle {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: #fff;
-      text-transform: uppercase;
-      font-size: 1.25rem;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      border: 2px solid rgba(255,255,255,0.05);
-  }
-  
-  .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
-
-  .card-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.5rem; }
-
-  .comment-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-  }
-
-  .author-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 0.1rem;
-  }
-
-  .author-name {
-      font-weight: 700;
-      font-size: 1rem;
-      color: var(--color-text-main);
-      letter-spacing: -0.01em;
-  }
-
-  .mini-stars {
-      display: flex;
-      gap: 1px;
-      color: #fbbf24;
-      margin-top: 2px;
-  }
-  .mini-stars svg { width: 12px; height: 12px; color: rgba(255,255,255,0.15); }
-  .mini-stars svg.filled { color: #f59e0b; filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.5)); }
-
-  .meta-right {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-size: 0.8rem;
-      color: var(--color-text-muted);
-  }
-  
-  .meta-right time {
-      background: rgba(255,255,255,0.03);
-      padding: 0.2rem 0.6rem;
-      border-radius: 6px;
-  }
-
-  .delete-btn {
-      background: transparent;
-      border: none;
-      color: var(--color-text-dim);
-      padding: 6px;
-      cursor: pointer;
-      opacity: 0;
-      transition: all 0.2s;
-      border-radius: 6px;
-  }
-
-  .comment-card:hover .delete-btn { opacity: 1; }
-  .delete-btn:hover { color: #ef4444; background: rgba(239, 68, 68, 0.1); transform: scale(1.05); }
-
-  /* Like Btn */
-  .like-btn {
-      background: rgba(255,255,255,0.05);
-      border: none;
-      border-radius: 8px;
-      padding: 0.4rem 0.6rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      cursor: pointer;
-      color: var(--color-text-muted);
-      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  
-  .like-btn:hover {
-      background: rgba(255,255,255,0.1);
-      color: var(--color-text-main);
-      transform: scale(1.05);
-  }
-  
-  .like-btn.liked {
-      background: rgba(236, 72, 153, 0.15); /* Pink tint */
-      color: #ec4899;
-  }
-  
-  .like-btn.liked svg {
-      fill: currentColor;
-      transform: scale(1.1);
-  }
-
-  .like-count {
-      font-weight: 600;
-      font-size: 0.85rem;
-  }
-
-  .comment-body {
-      color: var(--color-text-dim);
-      line-height: 1.6;
-      font-size: 0.95rem;
-      white-space: pre-wrap;
-      word-break: break-word;
-      padding-top: 0.25rem;
-  }
-  
-  /* Make text brighter on hover for better readability */
-  .comment-card:hover .comment-body {
-      color: rgba(255,255,255,0.9);
-      transition: color 0.3s ease;
-  }
-
-  /* --- STATES --- */
-  .empty-state {
-      text-align: center;
-      padding: 4rem 2rem;
-      opacity: 0.8;
-      background: rgba(255,255,255,0.02);
-      border-radius: 16px;
-      border: 1px dashed rgba(255,255,255,0.1);
-  }
-  .empty-icon { font-size: 3rem; margin-bottom: 1rem; display: inline-block; }
-  .shadow-glow { filter: drop-shadow(0 0 15px rgba(139,92,246,0.5)); }
-
-  /* Skeleton */
-  .skeleton-wrapper { display: flex; flex-direction: column; gap: 1.5rem; }
-  .skeleton-card { 
-      display: flex; gap: 1rem; padding: 1.5rem; 
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 16px; 
-  }
-  .sk-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0.05)); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-  .sk-content { flex: 1; display: flex; flex-direction: column; gap: 0.75rem; justify-content: center; }
-  .sk-line { height: 12px; background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0.05)); border-radius: 4px; background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-  .w-30 { width: 30%; } .w-80 { width: 80%; } .w-60 { width: 60%; }
-  
-  @keyframes shimmer { 
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-  }
-
-  /* Toast */
-  .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; }
-  .toast { 
-     background: #18181b; 
-     border: 1px solid var(--color-border); 
-     padding: 1rem 1.5rem; 
-     border-radius: 12px; 
-     display: flex; 
-     gap: 1rem; 
-     align-items: center; 
-     box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-     transform: translateY(20px); 
-     opacity: 0; 
-     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-     color: #fff;
-  }
-  .toast.visible { transform: translateY(0); opacity: 1; }
-  .toast-success { border-left: 4px solid #22c55e; }
-  .toast-error { border-left: 4px solid #ef4444; }
-  .toast-info { border-left: 4px solid var(--color-primary); }
-
-  /* Animations */
-  @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
-  .delay-100 { animation-delay: 0.1s; }
-  .delay-200 { animation-delay: 0.2s; }
-  
-  .spinner {
-     display: inline-block;
-     width: 12px;
-     height: 12px;
-     border: 2px solid rgba(255,255,255,0.3);
-     border-radius: 50%;
-     border-top-color: #fff;
-     animation: spin 1s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
+
