@@ -2,44 +2,33 @@
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 
-export const prerender = false;
+export const prerender = true;
 
 const allEpisodes = await getCollection('episodios');
+// At build time, we use the current date to determine what's "published"
 const now = new Date();
 const publishedEpisodes = allEpisodes.filter(ep => ep.data.pubDate <= now);
 
 // Compute total duration from episodes that have duration string
 function parseDuration(dur?: string): number {
   if (!dur || dur.includes('?')) return 0;
-
-  // "37 min" or "37min"
   const minOnly = dur.match(/^(\d+)\s*min/i);
   if (minOnly) return parseInt(minOnly[1]) * 60;
-
-  // "1h 30min" or "1h30m"
   const hourMin = dur.match(/(\d+)\s*h[a-z]*\s*(\d+)?\s*m?/i);
   if (hourMin) {
     const h = parseInt(hourMin[1]) || 0;
     const m = parseInt(hourMin[2] ?? '0') || 0;
     return h * 3600 + m * 60;
   }
-
-  // "MM:SS" or "HH:MM:SS"
   const parts = dur.split(':').map(Number);
   if (parts.length === 2) return parts[0] * 60 + parts[1];
   if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-
   return 0;
 }
 
 const totalRawMinutes = publishedEpisodes.reduce((acc, ep) => {
   return acc + parseDuration(ep.data.duration) / 60;
 }, 0);
-
-const siteUrl = Astro.site?.href || 'https://veredillasfm.es';
-
-// Cache for 30 minutes in CDN
-Astro.response.headers.set('Cache-Control', 's-maxage=1800, stale-while-revalidate=900');
 ---
 
 <Layout
