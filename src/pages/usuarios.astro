@@ -7,6 +7,13 @@ import { getUserFromCookie } from '../lib/auth';
 
 export const prerender = false;
 
+// Cache community list in CDN to avoid heavy DB hits on every request
+// Cache is kept for 5 mins, and stale content can be served for up to 10 mins
+Astro.response.headers.set(
+  'Cache-Control',
+  's-maxage=300, stale-while-revalidate=600'
+);
+
 // Conectar a MongoDB
 try {
   if (mongoose.connection.readyState !== 1) {
