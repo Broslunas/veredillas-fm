@@ -1,4 +1,6 @@
 ---
+export const prerender = true;
+
 import Layout from '../layouts/Layout.astro';
 import EpisodeCard from '../components/EpisodeCard.astro';
 import PostCard from '../components/PostCard.astro';
@@ -13,27 +15,20 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 const allEpisodes = await getCollection('episodios');
-const now = new Date();
+const allPosts = await getCollection('blog');
 
-// Separate published and upcoming episodes
-const sortedPublished = allEpisodes
-    .filter(ep => ep.data.pubDate <= now)
-    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+// For SSG, we provide a wide pool of episodes. 
+// The client will filter them accurately.
+const sortedEpisodes = allEpisodes.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
-const upcomingEpisodes = allEpisodes
-    .filter(ep => ep.data.pubDate > now)
+// Recent episodes pool (top 12)
+const recentEpisodesPool = sortedEpisodes.slice(0, 12);
+// Upcoming candidate pool (we take a few from the end of all to be safe)
+const upcomingCandidatePool = allEpisodes
+    .filter(ep => ep.data.pubDate > new Date())
     .sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
 
-const recentEpisodes = sortedPublished.slice(0, 6);
-
-// Find the latest episode that has already been published for the Hero Spotlight
-const latestPublishedEpisode = sortedPublished[0];
-
-const allPosts = await getCollection('blog');
 const recentPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
-
-// Cache this page in the Edge for 10 minutes, with 5 minutes stale period
-Astro.response.headers.set('Cache-Control', 's-maxage=600, stale-while-revalidate=300');
 ---
 
 <Layout 
@@ -80,28 +75,27 @@ Astro.response.headers.set('Cache-Control', 's-maxage=600, stale-while-revalidat
                             Conocer Más
                         </a>
                     </div>
-                </div>
-
-                <div class="flex justify-center items-center [perspective:1000px] w-full py-8 hero-visual">
-                    {latestPublishedEpisode ? (
-                        <a href={`/ep/${latestPublishedEpisode.slug}`} class="relative block w-full max-w-[400px] aspect-square mx-auto cursor-pointer decoration-0 group" aria-label={`Escuchar ${latestPublishedEpisode.data.title}`}>
-                            <div class="absolute inset-[5%] bg-[#111] rounded-full bg-[repeating-radial-gradient(#111_0,#111_2px,#222_3px,#222_4px)] shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-[1] flex items-center justify-center vinyl-record">
+                </div>                <div class="flex justify-center items-center [perspective:1000px] w-full py-8 hero-visual" id="hero-spotlight">
+                    {sortedEpisodes.length > 0 ? (
+                        <a id="hero-link" href={`/ep/${sortedEpisodes[0].slug}`} class="relative block w-full max-w-[400px] aspect-square mx-auto cursor-pointer decoration-0 group" aria-label={`Escuchar ${sortedEpisodes[0].data.title}`}>
+                            <div class="absolute inset-[5%] bg-[#111] rounded-full bg-[repeating-radial-gradient(#111_0,#111_2px,#222_3px,#222_4px)] shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-[1] flex items-center justify-center vinyl-record text-[0px]">.
                                 <div class="w-[35%] h-[35%] bg-black rounded-full flex items-center justify-center border-2 border-white overflow-hidden">
                                     <img src="/logo.webp" alt="VFM" class="w-full h-full object-cover" />
                                 </div>
                             </div>
                             <div class="absolute inset-0 bg-gradient-to-br from-[#0e0e11] to-black rounded-lg border border-white/10 z-[2] shadow-[0_20px_50px_rgba(0,0,0,0.5)] -rotate-3 overflow-hidden flex items-center justify-center transition-transform duration-500 group-hover:rotate-[-5deg] lg:group-hover:-translate-x-[40%]">
                                 <img 
-                                    src={latestPublishedEpisode.data.image} 
-                                    alt={latestPublishedEpisode.data.title}
+                                    id="hero-img"
+                                    src={sortedEpisodes[0].data.image} 
+                                    alt={sortedEpisodes[0].data.title}
                                     class="w-full h-full object-cover absolute inset-0 z-[1]"
-                                    transition:name={`cover-${latestPublishedEpisode.slug}`}
+                                    data-slug-name={sortedEpisodes[0].slug}
                                 />
                                 <div class="absolute inset-0 z-10 bg-black/40 flex flex-col justify-between items-center p-6">
                                     <div class="w-full text-center">
-                                        <h3 class="font-display text-lg font-extrabold text-white uppercase leading-tight [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">{latestPublishedEpisode.data.title}</h3>
+                                        <h3 id="hero-title" class="font-display text-lg font-extrabold text-white uppercase leading-tight [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">{sortedEpisodes[0].data.title}</h3>
                                     </div>
-                                    <div class="flex gap-[3px] items-center h-[15%]">
+                                    <div class="flex gap-[3px] items-center h-[15%] pointer-events-none">
                                         <span class="w-1.5 h-full bg-white rounded-full animate-spectrum opacity-50"></span>
                                         <span class="w-1.5 h-full bg-white rounded-full animate-spectrum opacity-50 [animation-duration:0.8s]"></span>
                                         <span class="w-1.5 h-full bg-white rounded-full animate-spectrum opacity-50 [animation-duration:1.2s]"></span>
@@ -114,8 +108,8 @@ Astro.response.headers.set('Cache-Control', 's-maxage=600, stale-while-revalidat
                                         <span class="w-1.5 h-full bg-white rounded-full animate-spectrum opacity-50 [animation-duration:1.15s]"></span>
                                     </div>
                                     <div class="w-full text-center">
-                                        <time class="text-xs font-semibold text-white/90 tracking-wider uppercase bg-black/30 px-3 py-1 rounded-full backdrop-blur-sm">
-                                            {latestPublishedEpisode.data.pubDate.toLocaleDateString('es-ES', { 
+                                        <time id="hero-date" class="text-xs font-semibold text-white/90 tracking-wider uppercase bg-black/30 px-3 py-1 rounded-full backdrop-blur-sm">
+                                            {sortedEpisodes[0].data.pubDate.toLocaleDateString('es-ES', { 
                                                 year: 'numeric', 
                                                 month: 'long', 
                                                 day: 'numeric' 
@@ -127,30 +121,11 @@ Astro.response.headers.set('Cache-Control', 's-maxage=600, stale-while-revalidat
                         </a>
                     ) : (
                         <div class="relative block w-full max-w-[400px] aspect-square mx-auto">
-                            <div class="absolute inset-[5%] bg-[#111] rounded-full bg-[repeating-radial-gradient(#111_0,#111_2px,#222_3px,#222_4px)] shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-[1] flex items-center justify-center vinyl-record">
-                                <div class="w-[35%] h-[35%] bg-black rounded-full flex items-center justify-center border-2 border-white overflow-hidden">
-                                    <img src="/logo.webp" alt="VFM" class="w-full h-full object-cover" />
-                                </div>
-                            </div>
-                            <div class="absolute inset-0 bg-gradient-to-br from-[#0e0e11] to-black rounded-lg border border-white/10 z-[2] shadow-[0_20px_50px_rgba(0,0,0,0.5)] -rotate-3 overflow-hidden flex items-center justify-center transition-transform duration-500">
-                                <div class="w-full h-full bg-gradient-to-br from-primary to-secondary opacity-20 flex items-center justify-center">
-                                    <div class="flex gap-[3px] items-center h-[15%]">
-                                        <span class="w-1.5 h-full bg-white rounded-full animate-spectrum opacity-50"></span>
-                                        <span class="w-1.5 h-full bg-white rounded-full animate-spectrum opacity-50 [animation-duration:0.8s]"></span>
-                                        <span class="w-1.5 h-full bg-white rounded-full animate-spectrum opacity-50 [animation-duration:1.2s]"></span>
-                                        <span class="w-1.5 h-full bg-white rounded-full animate-spectrum opacity-50 [animation-duration:0.9s]"></span>
-                                        <span class="w-1.5 h-full bg-white rounded-full animate-spectrum opacity-50 [animation-duration:1.1s]"></span>
-                                        <span class="w-1.5 h-full bg-white rounded-full animate-spectrum opacity-50 [animation-duration:1.3s]"></span>
-                                        <span class="w-1.5 h-full bg-white rounded-full animate-spectrum opacity-50 [animation-duration:0.7s]"></span>
-                                        <span class="w-1.5 h-full bg-white rounded-full animate-spectrum opacity-50 [animation-duration:1.4s]"></span>
-                                        <span class="w-1.5 h-full bg-white rounded-full animate-spectrum opacity-50 [animation-duration:0.85s]"></span>
-                                        <span class="w-1.5 h-full bg-white rounded-full animate-spectrum opacity-50 [animation-duration:1.15s]"></span>
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- Placeholder -->
                         </div>
                     )}
                 </div>
+v>
             </div>
         </div>
     </section>
@@ -185,9 +160,9 @@ Astro.response.headers.set('Cache-Control', 's-maxage=600, stale-while-revalidat
             </div>
 
             <div class="swiper episodes-swiper gs-fade-up">
-                <div class="swiper-wrapper">
-                    {recentEpisodes.map((post, index) => (
-                        <div class="swiper-slide">
+                <div class="swiper-wrapper" id="latest-episodes-wrapper">
+                    {recentEpisodesPool.map((post, index) => (
+                        <div class="swiper-slide episode-container" data-pub-date={post.data.pubDate.toISOString()}>
                             <EpisodeCard post={post} disableTransition={index === 0} />
                         </div>
                     ))}
@@ -202,7 +177,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=600, stale-while-revalidat
     </section>
 
     <!-- Upcoming Episodes Slider (Conditional) -->
-    {upcomingEpisodes.length > 0 && (
+    {upcomingCandidatePool.length > 0 && (
         <section id="upcoming-episodes" class="py-16 md:py-24 overflow-hidden relative bg-purple-900/10">
             <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 pointer-events-none"></div>
             <div class="container relative z-10">
@@ -225,9 +200,9 @@ Astro.response.headers.set('Cache-Control', 's-maxage=600, stale-while-revalidat
                 </div>
 
                 <div class="swiper episodes-swiper gs-fade-up">
-                    <div class="swiper-wrapper">
-                        {upcomingEpisodes.map((post) => (
-                            <div class="swiper-slide">
+                    <div class="swiper-wrapper" id="upcoming-episodes-wrapper">
+                        {upcomingCandidatePool.map((post) => (
+                            <div class="swiper-slide episode-container" data-pub-date={post.data.pubDate.toISOString()}>
                                 <EpisodeCard post={post} />
                             </div>
                         ))}
@@ -456,9 +431,90 @@ Astro.response.headers.set('Cache-Control', 's-maxage=600, stale-while-revalidat
             });
         }
 
+        // Dynamic Reshuffle (SSG hydration)
+        const now = new Date();
+        const allEpisodeSlides = document.querySelectorAll('.episode-container');
+        const latestWrapper = document.getElementById('latest-episodes-wrapper');
+        const upcomingWrapper = document.getElementById('upcoming-episodes-wrapper');
+        const upcomingSection = document.getElementById('upcoming-episodes');
+        
+        const publishedPool: HTMLElement[] = [];
+        const upcomingPool: HTMLElement[] = [];
+
+        allEpisodeSlides.forEach((slideNode) => {
+            const slide = slideNode as HTMLElement;
+            const pubDateStr = slide.dataset.pubDate;
+            if (!pubDateStr) return;
+            
+            const pubDate = new Date(pubDateStr);
+            const badge = slide.querySelector('.dynamic-upcoming-badge');
+            const badgeText = badge?.querySelector('.badge-text');
+            
+            if (pubDate > now) {
+                upcomingPool.push(slide);
+                if (badge) {
+                    badge.classList.remove('hidden');
+                    
+                    // Update about to premiere status
+                    const diffHours = (pubDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+                    if (diffHours <= 2 && badgeText) {
+                        badgeText.textContent = '¡Falta muy poco!';
+                        badge.classList.remove('bg-primary/90', 'shadow-primary/30');
+                        badge.classList.add('bg-red-600/90', 'shadow-red-600/30');
+                    }
+                }
+            } else {
+                publishedPool.push(slide);
+                if (badge) badge.classList.add('hidden');
+                slide.classList.remove('opacity-90');
+            }
+        });
+
+        // Update Hero Spotlight with REAL latest published
+        const realLatest = publishedPool.length > 0 ? publishedPool[0] : null;
+        const heroSection = document.getElementById('hero-spotlight');
+        if (realLatest && heroSection) {
+            const title = realLatest.querySelector('h3')?.textContent || "";
+            const img = (realLatest.querySelector('img') as HTMLImageElement | null)?.src || "";
+            const href = (realLatest.querySelector('a') as HTMLAnchorElement | null)?.href || "";
+            const slug = href.split('/ep/')[1] || "";
+            const date = realLatest.querySelector('time')?.textContent || "";
+
+            const heroTitle = document.getElementById('hero-title');
+            const heroImg = document.getElementById('hero-img') as HTMLImageElement | null;
+            const heroLink = document.getElementById('hero-link') as HTMLAnchorElement | null;
+            const heroDate = document.getElementById('hero-date');
+
+            if (heroTitle) heroTitle.textContent = title;
+            if (heroImg && img) heroImg.src = img;
+            if (heroLink && slug) {
+                heroLink.href = `/ep/${slug}`;
+                heroLink.setAttribute('aria-label', `Escuchar ${title}`);
+            }
+            if (heroDate) heroDate.textContent = date;
+        }
+
+        // Re-distribute nodes
+        if (latestWrapper) {
+            latestWrapper.innerHTML = '';
+            publishedPool.slice(0, 8).forEach(el => latestWrapper.appendChild(el));
+        }
+        
+        if (upcomingWrapper) {
+            upcomingWrapper.innerHTML = '';
+            upcomingPool.forEach(el => upcomingWrapper.appendChild(el));
+            
+            if (upcomingPool.length === 0 && upcomingSection) {
+                upcomingSection.classList.add('hidden');
+            } else if (upcomingSection) {
+                upcomingSection.classList.remove('hidden');
+            }
+        }
+
         // Swiper Init (Scoped for multiple sliders)
         const swipers = document.querySelectorAll('.episodes-swiper');
-        swipers.forEach(swiperEl => {
+        swipers.forEach(swiperNode => {
+            const swiperEl = swiperNode as HTMLElement;
             // Find controls within the same section parent
             const section = swiperEl.closest('section');
             const nextEl = section?.querySelector('.swiper-button-next-custom');
