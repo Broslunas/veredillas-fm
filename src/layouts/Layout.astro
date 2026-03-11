@@ -206,41 +206,72 @@ const fullTitle = title === "Inicio" ? "Veredillas FM - El Podcast del IES Vered
         <Analytics />
         <SpeedInsights />
 
-        <!-- Global Loader -->
-        <div id="global-loader" aria-hidden="true" class="fixed inset-0 z-[99999] bg-slate-950 flex items-center justify-center transition-all duration-500 ease-out opacity-100 [&.fade-out]:opacity-0 [&.fade-out]:invisible [&.fade-out]:pointer-events-none">
-            <div class="relative flex items-center justify-center">
-                <img src="/logo.webp" alt="Veredillas FM" class="w-20 h-20 relative z-[2] rounded-full animate-pulse" />
-                <div class="absolute -inset-[15px] border-[3px] border-transparent border-t-primary border-r-accent rounded-full animate-spin"></div>
+        <!-- Global Cinematic Loader -->
+        <div id="global-loader" class="fixed inset-0 z-[100000] bg-black flex items-center justify-center overflow-hidden pointer-events-none transition-opacity duration-500 [&.fade-out]:opacity-0">
+            <div class="relative scale-150 opacity-0 intro-logo-global flex flex-col items-center gap-6 text-center">
+                <h1 class="text-4xl md:text-8xl font-black tracking-tighter text-white italic uppercase">
+                    VEREDILLAS <span class="text-primary italic">FM</span>
+                </h1>
+                <div class="absolute inset-0 bg-primary blur-[120px] opacity-10 -z-10 animate-pulse"></div>
             </div>
         </div>
 	</body>
 </html>
 
 <script>
-    // Handle Loader
-    window.addEventListener('load', () => {
-        const loader = document.getElementById('global-loader');
-        if (loader) {
-            setTimeout(() => {
-                loader.classList.add('fade-out');
-            }, 250); // Reduced delay for snappier experience feeling
-        }
-    });
+    import { gsap } from "gsap";
 
-    // Show loader immediately on link click for better perceived performance
+    // Handle Loader Animation
+    function playGlobalIntro() {
+        const loader = document.getElementById('global-loader');
+        if (!loader) return;
+
+        const tl = gsap.timeline({
+            onComplete: () => {
+                loader.classList.add('fade-out');
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    // Dispatch custom event so pages can start their own animations
+                    window.dispatchEvent(new CustomEvent('loaderFinished'));
+                }, 500);
+            }
+        });
+
+        tl.to(".intro-logo-global", {
+            opacity: 1,
+            scale: 1,
+            duration: 1,
+            ease: "power4.out"
+        })
+        .to(".intro-logo-global", {
+            opacity: 0,
+            scale: 1.1,
+            duration: 0.6,
+            ease: "power4.in",
+            delay: 0.8
+        })
+        .to(loader, {
+            yPercent: -100,
+            duration: 1,
+            ease: "expo.inOut"
+        }, "-=0.2");
+    }
+
+    // Run on initial load
+    window.addEventListener('load', playGlobalIntro);
+
+    // Show loader on link click for better perceived performance
     document.addEventListener('click', (e) => {
-        const link = e.target.closest('a');
+        const link = (e.target as HTMLElement).closest('a');
         if (!link) return;
         
         const href = link.getAttribute('href');
-        // Ignorar anclas internas o scripts
         if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
         
         try {
             const url = new URL(link.href);
             const currentUrl = new URL(window.location.href);
             
-            // Si es un enlace interno que no abre nueva pestaña, y no es descarga, ni la misma ruta del todo
             if (url.origin === currentUrl.origin && 
                 link.target !== '_blank' && 
                 !link.hasAttribute('download') &&
@@ -248,25 +279,45 @@ const fullTitle = title === "Inicio" ? "Veredillas FM - El Podcast del IES Vered
                 
                 const loader = document.getElementById('global-loader');
                 if (loader) {
+                    loader.style.display = 'flex';
+                    loader.style.transform = 'translateY(100%)';
                     loader.classList.remove('fade-out');
+                    gsap.to(loader, {
+                        yPercent: 0,
+                        duration: 0.6,
+                        ease: "expo.out"
+                    });
                 }
             }
-        } catch (err) {
-            // Ignorar errores de URL
-        }
+        } catch (err) {}
     });
 
-    // Show loader on form submit if it's doing a normal GET/POST navigation
+    // Show loader on form submit
     document.addEventListener('submit', (e) => {
-        const form = e.target.closest('form');
-        // If it's not a preventDefault() form submission (like an AJAX form)
+        const form = (e.target as HTMLElement).closest('form');
         if (form && !e.defaultPrevented) {
              const loader = document.getElementById('global-loader');
              if (loader) {
-                 loader.classList.remove('fade-out');
+                loader.style.display = 'flex';
+                loader.style.transform = 'translateY(100%)';
+                loader.classList.remove('fade-out');
+                gsap.to(loader, {
+                    yPercent: 0,
+                    duration: 0.6,
+                    ease: "expo.out"
+                });
              }
         }
     });
+
+    // Astro View Transitions support
+    document.addEventListener('astro:after-swap', () => {
+        const loader = document.getElementById('global-loader');
+        if (loader) {
+            loader.style.display = 'none';
+        }
+    });
 </script>
+
 
 
