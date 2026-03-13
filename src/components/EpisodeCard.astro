@@ -103,49 +103,68 @@ const isAboutToPremiere = isUpcoming && diffInHours <= 2;
         const ratingElements = document.querySelectorAll('.card-rating[data-rating-slug]:not([data-loaded="true"])');
         if (ratingElements.length === 0) return;
 
-        const slugs = Array.from(ratingElements).map(el => el.getAttribute('data-rating-slug')).filter(Boolean);
+        const slugs = Array.from(ratingElements).map(el => el.getAttribute('data-rating-slug')).filter(Boolean) as string[];
         
+        // Try to get from cache first
+        const cacheKey = 'vfm_ratings_cache';
+        let cache: Record<string, any> = {};
+        try {
+            const stored = sessionStorage.getItem(cacheKey);
+            if (stored) cache = JSON.parse(stored);
+        } catch (e) {}
+
+        const slugsToFetch = slugs.filter(s => !cache[s]);
+        
+        const updateUI = (data: Record<string, any>) => {
+            ratingElements.forEach((el) => {
+                const slug = el.getAttribute('data-rating-slug');
+                if (slug && data[slug] && data[slug].count > 0) {
+                    const { average, count } = data[slug];
+                    const starsEl = el.querySelector('.rating-stars-mini') as HTMLElement;
+                    const valueEl = el.querySelector('.rating-value');
+                    
+                    if (starsEl) {
+                        let starsHtml = '';
+                        const rounded = Math.round(average);
+                        for (let i = 1; i <= 5; i++) {
+                            starsHtml += i <= rounded ? '★' : '☆';
+                        }
+                        starsEl.textContent = starsHtml;
+                        starsEl.style.color = '#f59e0b';
+                        
+                        if (valueEl) {
+                            valueEl.textContent = average.toFixed(1);
+                            valueEl.classList.remove('hidden');
+                        }
+                        el.setAttribute('data-loaded', 'true');
+                    }
+                } else if (slug) {
+                     el.setAttribute('data-loaded', 'true');
+                }
+            });
+        };
+
+        // If all in cache, update and return
+        if (slugsToFetch.length === 0) {
+            updateUI(cache);
+            return;
+        }
+
         try {
             const res = await fetch('/api/ratings/bulk', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ slugs })
+                body: JSON.stringify({ slugs: slugsToFetch })
             });
             const json = await res.json();
 
             if (json.success) {
-                const data = json.data;
-                ratingElements.forEach((el) => {
-                    const slug = el.getAttribute('data-rating-slug');
-                    if (slug && data[slug] && data[slug].count > 0) {
-                        const { average, count } = data[slug];
-                        const starsEl = el.querySelector('.rating-stars-mini');
-                        const valueEl = el.querySelector('.rating-value');
-                        
-                        if (starsEl) {
-                            // Generate stars based on rating
-                            let starsHtml = '';
-                            const rounded = Math.round(average);
-                            for (let i = 1; i <= 5; i++) {
-                                starsHtml += i <= rounded ? '★' : '☆';
-                            }
-                            starsEl.textContent = starsHtml;
-                            
-                            // Fix color across themes by using inline style which has higher specificity
-                            starsEl.style.color = '#f59e0b';
-                            
-                            if (valueEl) {
-                                valueEl.textContent = average.toFixed(1);
-                                valueEl.classList.remove('hidden');
-                            }
-                            
-                            el.setAttribute('data-loaded', 'true');
-                        }
-                    } else if (slug) {
-                        // Mark as loaded even if 0 count to avoid re-fetching
-                         el.setAttribute('data-loaded', 'true');
-                    }
-                });
+                const newData = json.data;
+                // Update cache
+                const updatedCache = { ...cache, ...newData };
+                sessionStorage.setItem(cacheKey, JSON.stringify(updatedCache));
+                
+                updateUI(updatedCache);
             }
         } catch (e) {
             console.error("Bulk ratings load failed", e);

@@ -45,91 +45,98 @@ const { slug } = Astro.props;
     const widgets = document.querySelectorAll('.episode-rating-widget:not([data-loaded="true"])');
     if (widgets.length === 0) return;
 
-    const slugs = Array.from(widgets).map(w => w.getAttribute('data-slug')).filter(Boolean);
+    const slugs = Array.from(widgets).map(w => w.getAttribute('data-slug')).filter(Boolean) as string[];
 
+    // Simple cache to avoid redundant bulk fetches
+    const cacheKey = 'vfm_ratings_cache';
+    let cache: Record<string, any> = {};
     try {
-      const res = await fetch('/api/ratings/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slugs })
-      });
-      const json = await res.json();
+        const stored = sessionStorage.getItem(cacheKey);
+        if (stored) cache = JSON.parse(stored);
+    } catch (e) {}
 
-      if (json.success) {
-        const data = json.data;
-        widgets.forEach((widget) => {
-          const slug = widget.getAttribute('data-slug');
-          
-          const skeleton = widget.querySelector('.rating-skeleton') as HTMLElement;
-          const content = widget.querySelector('.rating-content') as HTMLElement;
-          const empty = widget.querySelector('.rating-empty') as HTMLElement;
-          
-          if (!slug || !data[slug]) {
-             if (skeleton) skeleton.style.display = 'none';
-             if (empty) empty.style.display = 'flex';
-             return;
-          }
+    const slugsToFetch = slugs.filter(s => !cache[s]);
 
-          const ratingData = data[slug];
+    const updateWidgetUI = (widget: Element, ratingData: any) => {
+        const skeleton = widget.querySelector('.rating-skeleton') as HTMLElement;
+        const content = widget.querySelector('.rating-content') as HTMLElement;
+        const empty = widget.querySelector('.rating-empty') as HTMLElement;
 
-          if (ratingData.count > 0) {
+        if (ratingData && ratingData.count > 0) {
             const { average, count } = ratingData;
-            
-            // Update stars
             const stars = widget.querySelectorAll('.star-display');
             const rounded = Math.round(average);
             stars.forEach((star) => {
-              const index = parseInt(star.getAttribute('data-index') || '0', 10);
-              const svg = star.querySelector('svg');
-              if (index <= rounded) {
-                if (svg) {
-                  svg.style.fill = '#f59e0b';
-                  svg.style.stroke = '#f59e0b';
+                const index = parseInt(star.getAttribute('data-index') || '0', 10);
+                const svg = star.querySelector('svg');
+                if (index <= rounded) {
+                    if (svg) {
+                        svg.style.fill = '#f59e0b';
+                        svg.style.stroke = '#f59e0b';
+                    }
+                    star.classList.add('filled');
+                } else {
+                    if (svg) {
+                        svg.style.fill = 'none';
+                        svg.style.stroke = 'currentColor';
+                    }
+                    star.classList.remove('filled');
                 }
-                star.classList.add('filled');
-              } else {
-                if (svg) {
-                  svg.style.fill = 'none';
-                  svg.style.stroke = 'currentColor';
-                }
-                star.classList.remove('filled');
-              }
             });
 
-            // Update text
             const avgEl = widget.querySelector('.rating-average');
             const countEl = widget.querySelector('.rating-count');
             if (avgEl) avgEl.textContent = average.toFixed(1);
             if (countEl) countEl.textContent = count.toString();
 
-            // Show content
             if (skeleton) skeleton.style.display = 'none';
             if (content) content.style.display = 'flex';
             if (empty) empty.style.display = 'none';
             widget.setAttribute('data-loaded', 'true');
-          } else {
-            // No ratings
+        } else {
             if (skeleton) skeleton.style.display = 'none';
             if (empty) empty.style.display = 'flex';
             if (content) content.style.display = 'none';
             widget.setAttribute('data-loaded', 'true');
+        }
+    };
+
+    // Use cached data for those already present
+    widgets.forEach(w => {
+        const slug = w.getAttribute('data-slug');
+        if (slug && cache[slug]) {
+            updateWidgetUI(w, cache[slug]);
+        }
+    });
+
+    if (slugsToFetch.length === 0) return;
+
+    try {
+      const res = await fetch('/api/ratings/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slugs: slugsToFetch })
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        const newData = json.data;
+        // Update cache
+        const updatedCache = { ...cache, ...newData };
+        sessionStorage.setItem(cacheKey, JSON.stringify(updatedCache));
+
+        widgets.forEach((widget) => {
+          if (widget.getAttribute('data-loaded') === 'true') return;
+          const slug = widget.getAttribute('data-slug');
+          if (slug && newData[slug]) {
+              updateWidgetUI(widget, newData[slug]);
+          } else {
+              updateWidgetUI(widget, null);
           }
         });
-      } else {
-        throw new Error(json.error || 'API error');
       }
     } catch (e) {
       console.error("Bulk ratings load failed", e);
-      widgets.forEach(w => {
-        const skel = w.querySelector('.rating-skeleton') as HTMLElement;
-        const emp = w.querySelector('.rating-empty') as HTMLElement;
-        if (skel) skel.style.display = 'none';
-        if (emp) {
-            emp.style.display = 'flex';
-            const txt = emp.querySelector('.no-rating-text');
-            if (txt) txt.textContent = 'Error';
-        }
-      });
     }
   };
 

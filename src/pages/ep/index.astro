@@ -36,11 +36,13 @@ const uniqueGuests = uniqueGuestNames.map(name => {
 const episodesWithMeta = sortedEpisodes.map(post => {
     const searchContent = `${post.data.title} ${post.data.description || ''} ${post.data.participants?.join(' ') || ''}`.toLowerCase();
     const participantsStr = (post.data.participants || []).join('|').toLowerCase();
+    const tagsStr = (post.data.tags || []).join('|').toLowerCase();
     
     return {
         post,
         searchContent,
-        participantsStr
+        participantsStr,
+        tagsStr
     };
 });
 ---
@@ -157,11 +159,17 @@ const episodesWithMeta = sortedEpisodes.map(post => {
                         </label>
                     </div>
                 </div>
+
+                <!-- Active Filters Display -->
+                <div id="active-filters-container" class="active-filters hidden">
+                    <span class="active-filters-label">Filtrado por:</span>
+                    <div id="active-filters-list" class="active-filters-list"></div>
+                </div>
             </div>
         </header>
 
         <div class="episodes-grid" id="episodes-grid">
-            {episodesWithMeta.map(({ post, searchContent, participantsStr }, index) => {
+            {episodesWithMeta.map(({ post, searchContent, participantsStr, tagsStr }, index) => {
                  return (
                     <div 
                         class="episode-item fade-in-up"
@@ -169,6 +177,7 @@ const episodesWithMeta = sortedEpisodes.map(post => {
                         data-search-content={searchContent}
                         data-season={post.data.season || 'unknown'}
                         data-participants={participantsStr}
+                        data-tags={tagsStr}
                         style={`--delay: ${index % 6}`}
                     >
                          <EpisodeCard post={post} />
@@ -209,6 +218,27 @@ const episodesWithMeta = sortedEpisodes.map(post => {
 
         let currentSeason = 'all';
         let selectedGuest = '';
+        let selectedTag = new URLSearchParams(window.location.search).get('tag')?.toLowerCase() || '';
+
+        // Initial setup for tag if present
+        if (selectedTag) {
+            // We could show a tag chip or just filter, let's just filter for now
+            // and maybe update the search input or show a message
+            console.log("Filtering by tag:", selectedTag);
+        }
+
+        // ── Debounce function ───────────────────────────────────────────
+        function debounce(func: Function, wait: number) {
+            let timeout: number | null = null;
+            return function executedFunction(...args: any[]) {
+                const later = () => {
+                    timeout = null;
+                    func(...args);
+                };
+                if (timeout) clearTimeout(timeout);
+                timeout = window.setTimeout(later, wait);
+            };
+        }
 
         // ── Custom dropdown logic ──────────────────────────────────────
         function openDropdown() {
@@ -232,19 +262,16 @@ const episodesWithMeta = sortedEpisodes.map(post => {
             toggleDropdown();
         });
 
-        // Close on outside click
         document.addEventListener('click', (e) => {
             if (guestDropdown && !guestDropdown.contains(e.target as Node)) {
                 closeDropdown();
             }
         });
 
-        // Close on Escape
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeDropdown();
         });
 
-        // Select a guest option
         guestOptions.forEach(option => {
             option.addEventListener('click', () => {
                 const value = (option as HTMLElement).getAttribute('data-value') || '';
@@ -253,7 +280,6 @@ const episodesWithMeta = sortedEpisodes.map(post => {
 
                 selectedGuest = value;
 
-                // Update active state
                 guestOptions.forEach(o => {
                     o.classList.remove('active');
                     o.setAttribute('aria-selected', 'false');
@@ -261,7 +287,6 @@ const episodesWithMeta = sortedEpisodes.map(post => {
                 option.classList.add('active');
                 option.setAttribute('aria-selected', 'true');
 
-                // Update trigger label & avatar
                 if (guestTriggerLabel) {
                     guestTriggerLabel.textContent = value === '' ? 'Invitado' : name;
                 }
@@ -275,7 +300,6 @@ const episodesWithMeta = sortedEpisodes.map(post => {
                     }
                 }
 
-                // Active styling on trigger
                 if (value !== '') {
                     guestTrigger?.classList.add('has-selection');
                 } else {
@@ -294,6 +318,30 @@ const episodesWithMeta = sortedEpisodes.map(post => {
             const searchTerm = searchInput.value.toLowerCase().trim();
             let visibleCount = 0;
 
+            const activeFiltersContainer = document.getElementById('active-filters-container');
+            const activeFiltersList = document.getElementById('active-filters-list');
+
+            // Update active filters UI
+            if (activeFiltersList && activeFiltersContainer) {
+                activeFiltersList.innerHTML = '';
+                if (selectedTag) {
+                    activeFiltersContainer.classList.remove('hidden');
+                    activeFiltersList.innerHTML += `
+                        <span class="filter-chip">
+                            #${selectedTag}
+                            <button id="clear-tag" class="clear-chip-btn">&times;</button>
+                        </span>
+                    `;
+                    document.getElementById('clear-tag')?.addEventListener('click', () => {
+                        selectedTag = '';
+                        window.history.replaceState({}, '', window.location.pathname);
+                        filterItems();
+                    });
+                } else {
+                    activeFiltersContainer.classList.add('hidden');
+                }
+            }
+
             items.forEach((item) => {
                 const itemEl = item as HTMLElement;
                 const pubDateStr = itemEl.getAttribute('data-pub-date');
@@ -307,15 +355,16 @@ const episodesWithMeta = sortedEpisodes.map(post => {
                 const searchContent = itemEl.getAttribute('data-search-content') || '';
                 const itemSeason = itemEl.getAttribute('data-season') || '';
                 const participants = itemEl.getAttribute('data-participants') || '';
+                const tags = itemEl.getAttribute('data-tags') || '';
                 
                 const matchesSeason = currentSeason === 'all' || itemSeason === currentSeason;
                 const matchesUpcoming = showUpcoming || !isUpcoming || isAboutToPremiere;
                 const matchesSearch = searchTerm === '' || searchContent.includes(searchTerm);
                 const matchesGuest = selectedGuest === '' || participants.split('|').some(p => p.trim() === selectedGuest);
+                const matchesTag = selectedTag === '' || tags.split('|').some(t => t.trim() === selectedTag);
 
-                if (matchesSeason && matchesUpcoming && matchesSearch && matchesGuest) {
+                if (matchesSeason && matchesUpcoming && matchesSearch && matchesGuest && matchesTag) {
                     itemEl.classList.remove('hidden-anim');
-                    // Ensure the card itself updates its internal upcoming state
                     const badge = itemEl.querySelector('.dynamic-upcoming-badge') as HTMLElement | null;
                     const badgeText = badge?.querySelector('.badge-text');
                     
@@ -340,7 +389,7 @@ const episodesWithMeta = sortedEpisodes.map(post => {
                         if (itemEl.classList.contains('hidden-anim')) {
                              itemEl.style.display = 'none';
                         }
-                    }, 500);
+                    }, 400); // Slightly faster
                 }
             });
 
@@ -350,6 +399,8 @@ const episodesWithMeta = sortedEpisodes.map(post => {
                 noResults?.classList.add('hidden');
             }
         }
+
+        const debouncedFilter = debounce(filterItems, 300);
 
         // Season Buttons Logic
         seasonBtns.forEach(btn => {
@@ -362,18 +413,26 @@ const episodesWithMeta = sortedEpisodes.map(post => {
         });
 
         // Event Listeners
-        searchInput.addEventListener('input', filterItems);
+        searchInput.addEventListener('input', () => {
+            if (searchInput.value === '') filterItems();
+            else debouncedFilter();
+        });
+        
         upcomingToggle.addEventListener('change', filterItems);
         
         resetBtn?.addEventListener('click', () => {
             searchInput.value = '';
             upcomingToggle.checked = false;
             selectedGuest = '';
+            selectedTag = '';
             currentSeason = 'all';
+            
+            // Clear URL search params without reload
+            window.history.replaceState({}, '', window.location.pathname);
+
             seasonBtns.forEach(b => b.classList.remove('active'));
             document.querySelector('.season-btn[data-season="all"]')?.classList.add('active');
 
-            // Reset guest dropdown UI
             guestOptions.forEach(o => {
                 o.classList.remove('active');
                 o.setAttribute('aria-selected', 'false');
@@ -437,32 +496,110 @@ const episodesWithMeta = sortedEpisodes.map(post => {
         display: flex;
         flex-direction: column;
         gap: 0;
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(12px);
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         width: 100%;
         margin: 0 auto;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        box-shadow: 
+            0 10px 30px rgba(0, 0, 0, 0.2),
+            0 0 0 1px rgba(255, 255, 255, 0.05);
         overflow: visible;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .controls-wrapper:hover {
+        box-shadow: 
+            0 15px 40px rgba(0, 0, 0, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.1);
     }
 
     .controls-row {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        gap: 0.75rem;
-        padding: 0.85rem 1.25rem;
+        gap: 1rem;
+        padding: 1rem 1.5rem;
     }
 
     .controls-row--top {
         justify-content: center;
+        background: rgba(255, 255, 255, 0.02);
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
     }
 
     .controls-row--bottom {
         justify-content: center;
-        gap: 0.75rem;
+        gap: 1rem;
         flex-wrap: wrap;
+    }
+
+    /* Active Filters Display */
+    .active-filters {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 1.5rem;
+        background: rgba(139, 92, 246, 0.05);
+        border-bottom-left-radius: 24px;
+        border-bottom-right-radius: 24px;
+        border-top: 1px solid rgba(139, 92, 246, 0.1);
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from { transform: translateY(-10px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .active-filters-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--color-primary);
+        letter-spacing: 0.05em;
+    }
+
+    .active-filters-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--color-primary);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+    }
+
+    .clear-chip-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        transition: background 0.2s;
+    }
+
+    .clear-chip-btn:hover {
+        background: rgba(255, 255, 255, 0.4);
     }
 
     @media (min-width: 680px) {
