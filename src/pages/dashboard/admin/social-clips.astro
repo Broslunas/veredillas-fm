@@ -1,0 +1,580 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import AdminNav from '../../../components/admin/AdminNav.astro';
+import { getUserFromCookie } from '../../../lib/auth';
+import User from '../../../models/User';
+import dbConnect from '../../../lib/mongodb';
+
+export const prerender = false;
+
+const cookieHeader = Astro.request.headers.get('cookie');
+const userPayload = getUserFromCookie(cookieHeader);
+
+if (!userPayload) {
+  return Astro.redirect('/404');
+}
+
+await dbConnect();
+
+const currentUser = await User.findById(userPayload.userId);
+if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'owner')) {
+  return Astro.redirect('/404'); 
+}
+
+const N8N_WEBHOOK_URL = "https://n8n.broslunas.com/webhook-test/clips-upload-vfm";
+const WEBHOOK_SECRET = import.meta.env.CONTACT_WEBHOOK_SECRET;
+const DRIVE_FOLDER_ID = "1Bbc-VKX-k5ndMGKp2X05wdDQNk5I5LE7";
+---
+
+<Layout title="Social Clips Manager" robots="noindex, nofollow">
+  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <div class="admin-container fade-in-up">
+    <AdminNav />
+
+    <div class="layout-wrapper">
+        <!-- Header Section -->
+        <header class="page-hero card glass-panel">
+            <div class="hero-text">
+                <h1>Social Clips</h1>
+                <p>Centro de carga rápida para la carpeta compartida de Veredillas FM.</p>
+            </div>
+            <div id="status-badge" class="status-badge">
+                <span class="dot pulse"></span>
+                Automatización: ON
+            </div>
+        </header>
+
+        <main class="content-layout">
+            <!-- Upload Section (Main Area) -->
+            <section class="upload-section">
+                <div class="card glass-panel drop-area-container" id="drop-zone">
+                    <div class="drop-content">
+                        <div class="icon-circle">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        </div>
+                        <div class="text-group">
+                            <p class="primary-text">Arrastra el clip de video</p>
+                            <p class="secondary-text">o haz clic para buscar en tu equipo</p>
+                        </div>
+                        <span class="file-limits">MP4, MOV • Hasta 500MB</span>
+                    </div>
+                    <input type="file" id="file-input" accept="video/*" hidden />
+                </div>
+
+                <!-- Active Upload Card (Hidden until file selected) -->
+                <div id="upload-status-card" class="card glass-panel active-upload hidden">
+                    <div class="preview-container">
+                        <video id="video-preview" controls class="video-preview-player"></video>
+                    </div>
+                    
+                    <div class="file-summary">
+                        <div class="file-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 15V9a2 2 0 0 0-2-2h-3.32a2 2 0 0 1-1.42-.59l-1.52-1.52A2 2 0 0 0 12.32 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1.5"></path></svg>
+                        </div>
+                        <div class="file-details">
+                            <span id="display-filename" class="filename text-gradient">video.mp4</span>
+                            <span id="progress-status" class="status-label">Listo para subir</span>
+                        </div>
+                        <button id="remove-file" class="close-btn" title="Quitar archivo">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
+
+                    <div class="premium-progress">
+                        <div class="progress-track">
+                            <div id="progress-bar" class="progress-fill shadow-glow"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span id="progress-percent">0%</span>
+                            <span id="progress-bytes">0 MB / 0 MB</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Metadata Section -->
+            <section class="meta-section">
+                <div class="card glass-panel meta-card">
+                    <h2 class="card-title">Información</h2>
+                    <div class="input-field">
+                        <label for="clip-title">Título del Clip</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="clip-title" placeholder="Ej: Entrevista Entropia Parte 1" class="custom-input" />
+                            <div class="input-focus-line"></div>
+                        </div>
+                    </div>
+                    
+                    <button id="upload-btn" class="btn-action pulse-on-hover" disabled>
+                        <span>Cargar a Google Drive</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </div>
+
+                <!-- Live Log Sidebar -->
+                <div class="card glass-panel log-card">
+                    <div class="log-header">
+                        <span class="terminal-dots"><span></span><span></span><span></span></span>
+                        <span class="log-title">Actividad</span>
+                    </div>
+                    <div id="log-container" class="log-entries">
+                        <div class="log-entry"><span class="log-t">[*]</span> Sistema preparado.</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+  </div>
+</Layout>
+
+<script define:vars={{ WEBHOOK_URL: N8N_WEBHOOK_URL, WEBHOOK_SECRET: WEBHOOK_SECRET, FOLDER_ID: DRIVE_FOLDER_ID }}>
+    let selectedFile = null;
+
+    const uploadBtn = document.getElementById('upload-btn');
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const uploadStatusCard = document.getElementById('upload-status-card');
+    const displayFilename = document.getElementById('display-filename');
+    const removeFileBtn = document.getElementById('remove-file');
+    const progressBar = document.getElementById('progress-bar');
+    const progressPercent = document.getElementById('progress-percent');
+    const progressStatus = document.getElementById('progress-status');
+    const progressBytes = document.getElementById('progress-bytes');
+    const logContainer = document.getElementById('log-container');
+    const titleInput = document.getElementById('clip-title');
+
+    function checkReadiness() {
+        const hasTitle = titleInput.value.trim().length > 0;
+        uploadBtn.disabled = !(selectedFile && hasTitle);
+    }
+
+    titleInput.addEventListener('input', checkReadiness);
+
+    function addLog(message, type = 'info') {
+        const div = document.createElement('div');
+        div.className = `log-entry ${type}`;
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        div.innerHTML = `<span class="log-t">${time}</span> ${message}`;
+        logContainer.prepend(div);
+    }
+
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const dm = 1;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
+    dropZone.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => handleFile(e.target.files[0]);
+    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('drag-active'); };
+    dropZone.ondragleave = () => dropZone.classList.remove('drag-active');
+    dropZone.ondrop = (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-active');
+        handleFile(e.dataTransfer.files[0]);
+    };
+
+    function handleFile(file) {
+        if (!file || !file.type.startsWith('video/')) {
+            addLog('Solo archivos de video.', 'error');
+            return;
+        }
+        selectedFile = file;
+        displayFilename.innerText = file.name;
+        dropZone.classList.add('hidden');
+        uploadStatusCard.classList.remove('hidden');
+        progressBytes.innerText = `0 MB / ${formatBytes(file.size)}`;
+        checkReadiness();
+        addLog(`Clip cargado: ${file.name}`);
+    }
+
+    removeFileBtn.onclick = () => {
+        selectedFile = null;
+        fileInput.value = '';
+        dropZone.classList.remove('hidden');
+        uploadStatusCard.classList.add('hidden');
+        progressBar.style.width = '0%';
+        progressPercent.innerText = '0%';
+        checkReadiness();
+    };
+
+    uploadBtn.onclick = async () => {
+        const title = titleInput.value.trim();
+        if (!selectedFile || !title) return;
+
+        uploadBtn.disabled = true;
+        progressStatus.innerText = 'Autorizando...';
+        addLog('Estableciendo conexión segura...');
+
+        try {
+            const tokenRes = await fetch('/api/admin/drive-token');
+            if (!tokenRes.ok) throw new Error('Error de token.');
+            const { access_token } = await tokenRes.json();
+            
+            addLog('Conexión establecida. Subiendo video...');
+
+            const metadata = { name: selectedFile.name, mimeType: selectedFile.type, parents: [FOLDER_ID] };
+            const initResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${access_token}`,
+                    'X-Upload-Content-Type': selectedFile.type,
+                    'X-Upload-Content-Length': selectedFile.size.toString(),
+                    'Content-Type': 'application/json; charset=UTF-8',
+                },
+                body: JSON.stringify(metadata),
+            });
+
+            if (!initResponse.ok) throw new Error('Error en Google Drive.');
+            const uploadUrl = initResponse.headers.get('Location');
+
+            const fileId = await performUpload(uploadUrl);
+            addLog('Subida a Drive completada.', 'success');
+            
+            await notifyN8n(fileId, title);
+
+        } catch (error) {
+            addLog(`Fallo: ${error.message}`, 'error');
+            progressStatus.innerText = 'Error';
+            uploadBtn.disabled = false;
+        }
+    };
+
+    async function performUpload(url) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', url, true);
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = percent + '%';
+                    progressPercent.innerText = percent + '%';
+                    progressBytes.innerText = `${formatBytes(e.loaded)} / ${formatBytes(e.total)}`;
+                    progressStatus.innerText = 'Subiendo archivo...';
+                }
+            };
+            xhr.onload = () => (xhr.status === 200 || xhr.status === 201) ? resolve(JSON.parse(xhr.response).id) : reject(new Error('Fallo HTTP'));
+            xhr.onerror = () => reject(new Error('Red interrumpida.'));
+            xhr.send(selectedFile);
+        });
+    }
+
+    async function notifyN8n(fileId, title) {
+        progressStatus.innerText = 'Notificando flujo...';
+        addLog('Sincronizando con n8n...');
+        try {
+            const res = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${WEBHOOK_SECRET}` },
+                body: JSON.stringify({ fileId, title, fileName: selectedFile.name, timestamp: new Date().toISOString() })
+            });
+            if (res.ok) {
+                addLog('¡Proceso finalizado con éxito!', 'success');
+                progressStatus.innerText = 'Completado';
+                setTimeout(() => location.reload(), 3000);
+            } else throw new Error(`n8n (${res.status})`);
+        } catch (error) {
+            addLog(error.message, 'error');
+            uploadBtn.disabled = false;
+        }
+    }
+</script>
+
+<style>
+  /* Base & Variables */
+  :root {
+      --card-bg: rgba(13, 14, 18, 0.7);
+      --accent: #8b5cf6;
+      --accent-glow: rgba(139, 92, 246, 0.4);
+      --success: #10b981;
+      --error: #ef4444;
+  }
+
+  .admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .layout-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-top: 1rem;
+  }
+
+  /* Cards */
+  .card {
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      position: relative;
+      overflow: hidden;
+  }
+
+  /* Hero Section */
+  .page-hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(0,0,0,0));
+      border-left: 4px solid var(--accent);
+  }
+
+  .hero-text h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 0.2rem;
+      color: #fff;
+  }
+
+  .hero-text p {
+      color: rgba(255,255,255,0.5);
+      font-size: 0.95rem;
+  }
+
+  .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.6rem 1.2rem;
+      background: rgba(0,0,0,0.4);
+      border-radius: 99px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+  .pulse { animation: pulse 2s infinite; }
+
+  /* Content Layout */
+  .content-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 1.5rem;
+  }
+
+  /* Upload Section */
+  .upload-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+  }
+
+  .drop-area-container {
+      flex: 1;
+      min-height: 300px;
+      border: 2px dashed rgba(255,255,255,0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .drop-area-container:hover, .drag-active {
+      border-color: var(--accent);
+      background: rgba(139, 92, 246, 0.05);
+  }
+
+  .drop-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      text-align: center;
+  }
+
+  .icon-circle {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.03);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--accent);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .primary-text { font-size: 1.2rem; font-weight: 600; color: #fff; margin: 0; }
+  .secondary-text { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin: 0; }
+  .file-limits { font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 0.3rem 0.8rem; border-radius: 6px; color: rgba(255,255,255,0.3); }
+
+  /* Premium Progress Card */
+  .active-upload {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0));
+  }
+
+  .file-summary {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+  }
+
+  .file-icon { color: var(--accent); }
+  .file-details { flex: 1; display: flex; flex-direction: column; }
+  .filename { font-weight: 700; font-size: 1rem; }
+  .status-label { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+
+  .close-btn { 
+      background: rgba(255, 255, 255, 0.03); 
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--error);
+      padding: 0.5rem;
+      border-radius: 10px;
+      cursor: pointer;
+  }
+
+  /* Barra de Carga Mejorada */
+  .premium-progress {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+  }
+
+  .progress-track {
+      height: 12px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.05);
+      position: relative;
+  }
+
+  .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), #c084fc);
+      border-radius: 20px;
+      transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+  }
+
+  .shadow-glow {
+      box-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  .progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+  }
+
+  #progress-percent { color: #fff; font-size: 1rem; }
+
+  /* Metadata Section */
+  .meta-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+  }
+
+  .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.5); }
+
+  .input-field { display: flex; flex-direction: column; gap: 0.6rem; }
+  .input-field label { font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.4); }
+
+  .input-wrapper { position: relative; }
+  .custom-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 1rem;
+      color: #fff;
+      font-family: inherit;
+      transition: all 0.2s;
+  }
+
+  .custom-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(0,0,0,0.5);
+  }
+
+  .btn-action {
+      margin-top: 1rem;
+      background: #fff;
+      color: #000;
+      border: none;
+      padding: 1.2rem;
+      border-radius: 14px;
+      font-weight: 800;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s;
+  }
+
+  .btn-action:disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
+  .btn-action:not(:disabled):hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(255,255,255,0.15); }
+
+  /* Log Card */
+  .log-card { flex: 1; display: flex; flex-direction: column; padding: 1rem; }
+  .log-header { 
+      display: flex; 
+      align-items: center; 
+      gap: 1rem; 
+      margin-bottom: 1rem; 
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 0.8rem;
+  }
+  
+  .terminal-dots { display: flex; gap: 4px; }
+  .terminal-dots span { width: 8px; height: 8px; border-radius: 50%; opacity: 0.5; }
+  .terminal-dots span:nth-child(1) { background: #ff5f56; }
+  .terminal-dots span:nth-child(2) { background: #ffbd2e; }
+  .terminal-dots span:nth-child(3) { background: #27c93f; }
+  
+  .log-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+
+  .log-entries {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      max-height: 200px;
+      overflow-y: auto;
+  }
+
+  .log-t { color: var(--accent); font-weight: 700; opacity: 0.6; }
+  .log-entry.error { color: var(--error); }
+  .log-entry.success { color: var(--success); }
+
+  /* Animations */
+  @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+      70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+
+  .hidden { display: none !important; }
+  .text-gradient {
+      background: linear-gradient(to right, #fff, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-fill-color: transparent;
+  }
+
+  @media (max-width: 968px) {
+      .content-layout { grid-template-columns: 1fr; }
+  }
+</style>
