@@ -21,560 +21,361 @@ if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'owner
   return Astro.redirect('/404'); 
 }
 
-const N8N_WEBHOOK_URL = "https://n8n.broslunas.com/webhook-test/clips-upload-vfm";
+const N8N_WEBHOOK_URL = "https://n8n.broslunas.com/webhook/clips-upload-vfm";
 const WEBHOOK_SECRET = import.meta.env.CONTACT_WEBHOOK_SECRET;
 const DRIVE_FOLDER_ID = "1Bbc-VKX-k5ndMGKp2X05wdDQNk5I5LE7";
 ---
 
 <Layout title="Social Clips Manager" robots="noindex, nofollow">
-  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="grid-overlay"></div>
+  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-slate-950">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-violet-600/20 rounded-full blur-[120px]"></div>
+    <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-fuchsia-600/20 rounded-full blur-[120px]"></div>
+    <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
   </div>
 
-  <div class="admin-container fade-in-up">
+  <div class="max-w-6xl mx-auto px-4 py-8">
     <AdminNav />
 
-    <div class="layout-wrapper">
-        <!-- Header Section -->
-        <header class="page-hero card glass-panel">
-            <div class="hero-text">
-                <h1>Social Clips</h1>
-                <p>Centro de carga rápida para la carpeta compartida de Veredillas FM.</p>
-            </div>
-            <div id="status-badge" class="status-badge">
-                <span class="dot pulse"></span>
-                Automatización: ON
-            </div>
-        </header>
+    <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+            <h1 class="text-5xl font-black tracking-tight text-white mb-2 italic">SOCIAL <span class="text-violet-500">CLIPS</span></h1>
+            <p class="text-slate-400 text-lg font-medium">Asistente de carga secuencial inteligente.</p>
+        </div>
+        <div class="flex items-center gap-3 bg-slate-900/50 backdrop-blur-xl border border-white/5 px-6 py-3 rounded-2xl shadow-2xl">
+            <span class="flex h-3 w-3 relative">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </span>
+            <span class="text-emerald-400 font-bold text-sm tracking-widest uppercase">Drive Conectado</span>
+        </div>
+    </header>
 
-        <main class="content-layout">
-            <!-- Upload Section (Main Area) -->
-            <section class="upload-section">
-                <div class="card glass-panel drop-area-container" id="drop-zone">
-                    <div class="drop-content">
-                        <div class="icon-circle">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                        </div>
-                        <div class="text-group">
-                            <p class="primary-text">Arrastra el clip de video</p>
-                            <p class="secondary-text">o haz clic para buscar en tu equipo</p>
-                        </div>
-                        <span class="file-limits">MP4, MOV • Hasta 500MB</span>
+    <main id="main-container" class="min-h-[500px]">
+        <!-- Step 1: Initial Multi-Selection -->
+        <div id="step-selection" class="fade-in">
+            <div 
+                id="drop-zone" 
+                class="group relative h-[450px] flex flex-col items-center justify-center border-2 border-dashed border-white/10 hover:border-violet-500/50 rounded-[3rem] bg-white/[0.02] hover:bg-violet-500/[0.03] transition-all duration-700 cursor-pointer overflow-hidden backdrop-blur-sm"
+            >
+                <div class="absolute inset-0 bg-gradient-to-br from-violet-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                
+                <div class="relative flex flex-col items-center text-center px-6">
+                    <div class="w-24 h-24 mb-8 rounded-3xl bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 border border-white/10 group-hover:bg-violet-500/20 group-hover:border-violet-500/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-violet-400 group-hover:text-white transition-colors"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                     </div>
-                    <input type="file" id="file-input" accept="video/*" hidden />
+                    <h2 class="text-3xl font-bold text-white mb-4">Selecciona tus videos</h2>
+                    <p class="text-slate-400 mb-2 max-w-sm">Arrastra múltiples archivos para empezar a procesar secuencialmente.</p>
+                    <span class="text-slate-600 text-xs font-mono uppercase tracking-[0.2em] bg-white/5 px-4 py-2 rounded-full border border-white/5 group-hover:border-violet-500/20 transition-all">Formatos: MP4, MOV, WEBM</span>
+                </div>
+                <input type="file" id="file-input" accept="video/*" multiple hidden />
+            </div>
+        </div>
+
+        <!-- Step 2: Individual Processing (Wizard) -->
+        <div id="step-wizard" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-10 fade-in">
+            <!-- Left: Current Video Preview & Progress -->
+            <div class="lg:col-span-12 xl:col-span-8 flex flex-col gap-6">
+                <!-- Current File Status Banner -->
+                <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-4 flex items-center justify-between px-8">
+                   <div class="flex items-center gap-4">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] uppercase tracking-widest text-violet-400 font-bold">Procesando</span>
+                            <h3 id="wizard-file-name" class="text-white font-bold text-lg truncate max-w-[300px]">video_archivo.mp4</h3>
+                        </div>
+                   </div>
+                   <div class="flex items-center gap-3">
+                        <span id="wizard-counter" class="bg-violet-600 text-white font-black px-4 py-1 rounded-xl text-sm">1 / 5</span>
+                   </div>
                 </div>
 
-                <!-- Active Upload Card (Hidden until file selected) -->
-                <div id="upload-status-card" class="card glass-panel active-upload hidden">
-                    <div class="preview-container">
-                        <video id="video-preview" controls class="video-preview-player"></video>
+                <!-- Video Preview -->
+                <div class="relative bg-black rounded-[3rem] overflow-hidden border border-white/10 aspect-video shadow-2xl group">
+                    <video id="wizard-preview" controls class="w-full h-full object-contain"></video>
+                    <!-- Progress Overlay during upload -->
+                    <div id="upload-overlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center hidden z-20">
+                        <div class="w-full max-w-md px-8 text-center">
+                            <h4 id="overlay-status" class="text-2xl font-black italic text-white mb-8 tracking-tight">SUBIENDO ARCHIVO...</h4>
+                            <div class="h-4 w-full bg-white/5 rounded-full overflow-hidden border border-white/10 relative">
+                                <div id="overlay-bar" class="absolute left-0 top-0 h-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-indigo-500 rounded-full transition-all duration-300 transform-gpu" style="width: 0%">
+                                    <div class="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.2)_75%,transparent_75%,transparent)] bg-[length:24px_24px] animate-[slide_1s_linear_infinite]"></div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between mt-4 text-sm font-mono text-slate-400 italic">
+                                <span id="overlay-bytes">0 MB / 15 MB</span>
+                                <span id="overlay-percent">0%</span>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="file-summary">
-                        <div class="file-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 15V9a2 2 0 0 0-2-2h-3.32a2 2 0 0 1-1.42-.59l-1.52-1.52A2 2 0 0 0 12.32 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1.5"></path></svg>
+                </div>
+            </div>
+
+            <!-- Right: Metadata & Form -->
+            <div class="lg:col-span-12 xl:col-span-4 flex flex-col gap-6">
+                <div class="bg-white/5 backdrop-blur-3xl border border-white/10 p-8 rounded-[2.5rem] flex flex-col gap-8 shadow-2xl relative overflow-hidden group">
+                    <div class="absolute -top-24 -right-24 w-48 h-48 bg-violet-600/10 rounded-full blur-3xl group-hover:bg-violet-600/20 transition-all duration-700"></div>
+
+                    <div>
+                        <h4 class="text-xs uppercase tracking-[0.2em] font-black text-slate-500 mb-6">Detalles del Video</h4>
+                        
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-bold text-slate-300 ml-1">Título del Clip</label>
+                            <input 
+                                type="text" 
+                                id="wizard-title" 
+                                placeholder="Escribe un título descriptivo..." 
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all placeholder:text-slate-600 font-medium"
+                            />
                         </div>
-                        <div class="file-details">
-                            <span id="display-filename" class="filename text-gradient">video.mp4</span>
-                            <span id="progress-status" class="status-label">Listo para subir</span>
-                        </div>
-                        <button id="remove-file" class="close-btn" title="Quitar archivo">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </div>
+
+                    <div class="mt-4 flex flex-col gap-4">
+                        <button 
+                            id="wizard-next-btn" 
+                            class="w-full bg-white hover:bg-violet-50 text-slate-950 font-black py-5 rounded-2xl flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed group"
+                            disabled
+                        >
+                            <span>SUBIR Y SIGUIENTE</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:translate-x-1 transition-transform"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
                         </button>
-                    </div>
-
-                    <div class="premium-progress">
-                        <div class="progress-track">
-                            <div id="progress-bar" class="progress-fill shadow-glow"></div>
-                        </div>
-                        <div class="progress-info">
-                            <span id="progress-percent">0%</span>
-                            <span id="progress-bytes">0 MB / 0 MB</span>
-                        </div>
+                        
+                        <button id="wizard-cancel" class="text-slate-500 hover:text-rose-400 font-bold text-xs uppercase tracking-widest transition-colors py-2">Cancelar proceso</button>
                     </div>
                 </div>
-            </section>
 
-            <!-- Metadata Section -->
-            <section class="meta-section">
-                <div class="card glass-panel meta-card">
-                    <h2 class="card-title">Información</h2>
-                    <div class="input-field">
-                        <label for="clip-title">Título del Clip</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="clip-title" placeholder="Ej: Entrevista Entropia Parte 1" class="custom-input" />
-                            <div class="input-focus-line"></div>
-                        </div>
-                    </div>
-                    
-                    <button id="upload-btn" class="btn-action pulse-on-hover" disabled>
-                        <span>Cargar a Google Drive</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                    </button>
-                </div>
-
-                <!-- Live Log Sidebar -->
-                <div class="card glass-panel log-card">
-                    <div class="log-header">
-                        <span class="terminal-dots"><span></span><span></span><span></span></span>
-                        <span class="log-title">Actividad</span>
-                    </div>
-                    <div id="log-container" class="log-entries">
-                        <div class="log-entry"><span class="log-t">[*]</span> Sistema preparado.</div>
+                <!-- Small Activity Log -->
+                <div class="bg-slate-950/40 border border-white/5 rounded-[2rem] p-6 flex-1 overflow-hidden flex flex-col gap-4">
+                    <h5 class="text-[10px] font-black text-slate-600 uppercase tracking-widest border-b border-white/5 pb-2">Actividad en tiempo real</h5>
+                    <div id="wizard-log" class="flex flex-col gap-2 overflow-y-auto font-mono text-[11px] max-h-[150px]">
+                        <div class="text-slate-500"><span class="text-violet-500">[*]</span> Sesión iniciada. Esperando datos...</div>
                     </div>
                 </div>
-            </section>
-        </main>
-    </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Global Success -->
+        <div id="step-success" class="hidden flex flex-col items-center justify-center text-center fade-in py-20">
+            <div class="w-32 h-32 bg-emerald-500/20 rounded-full border border-emerald-500/30 flex items-center justify-center mb-8 animate-bounce">
+                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <h2 class="text-5xl font-black text-white italic mb-4">¡TODO LISTO!</h2>
+            <p class="text-slate-400 text-lg mb-10 max-w-md">Todos los clips se han subido a Drive y n8n ha sido notificado.</p>
+            <button onclick="location.reload()" class="bg-violet-600 hover:bg-violet-500 text-white font-black px-12 py-5 rounded-[2rem] shadow-2xl shadow-violet-500/20 transition-all hover:scale-105 active:scale-95 uppercase tracking-widest">Nueva carga</button>
+        </div>
+    </main>
   </div>
 </Layout>
 
 <script define:vars={{ WEBHOOK_URL: N8N_WEBHOOK_URL, WEBHOOK_SECRET: WEBHOOK_SECRET, FOLDER_ID: DRIVE_FOLDER_ID }}>
-    let selectedFile = null;
+    let queue = [];
+    let currentIndex = 0;
 
-    const uploadBtn = document.getElementById('upload-btn');
+    // UI Elements
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
-    const uploadStatusCard = document.getElementById('upload-status-card');
-    const displayFilename = document.getElementById('display-filename');
-    const removeFileBtn = document.getElementById('remove-file');
-    const progressBar = document.getElementById('progress-bar');
-    const progressPercent = document.getElementById('progress-percent');
-    const progressStatus = document.getElementById('progress-status');
-    const progressBytes = document.getElementById('progress-bytes');
-    const logContainer = document.getElementById('log-container');
-    const titleInput = document.getElementById('clip-title');
+    const stepSelection = document.getElementById('step-selection');
+    const stepWizard = document.getElementById('step-wizard');
+    const stepSuccess = document.getElementById('step-success');
+    
+    // Wizard Control
+    const wizardPreview = document.getElementById('wizard-preview');
+    const wizardFileName = document.getElementById('wizard-file-name');
+    const wizardCounter = document.getElementById('wizard-counter');
+    const wizardTitle = document.getElementById('wizard-title');
+    const wizardNextBtn = document.getElementById('wizard-next-btn');
+    const wizardLog = document.getElementById('wizard-log');
+    const wizardCancel = document.getElementById('wizard-cancel');
 
-    function checkReadiness() {
-        const hasTitle = titleInput.value.trim().length > 0;
-        uploadBtn.disabled = !(selectedFile && hasTitle);
-    }
+    // Upload Elements
+    const uploadOverlay = document.getElementById('upload-overlay');
+    const overlayBar = document.getElementById('overlay-bar');
+    const overlayPercent = document.getElementById('overlay-percent');
+    const overlayBytes = document.getElementById('overlay-bytes');
+    const overlayStatus = document.getElementById('overlay-status');
 
-    titleInput.addEventListener('input', checkReadiness);
+    // Initialization
+    dropZone.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => startWizard(e.target.files);
 
-    function addLog(message, type = 'info') {
+    function addLog(msg, color = 'text-slate-400') {
         const div = document.createElement('div');
-        div.className = `log-entry ${type}`;
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        div.innerHTML = `<span class="log-t">${time}</span> ${message}`;
-        logContainer.prepend(div);
+        div.className = `${color}`;
+        div.innerHTML = `<span class="text-violet-500">[*]</span> ${msg}`;
+        wizardLog.prepend(div);
     }
 
     function formatBytes(bytes) {
         if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const dm = 1;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        const k = 1024, sizes = ['Bytes', 'KB', 'MB', 'GB'], i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     }
 
-    dropZone.onclick = () => fileInput.click();
-    fileInput.onchange = (e) => handleFile(e.target.files[0]);
-    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('drag-active'); };
-    dropZone.ondragleave = () => dropZone.classList.remove('drag-active');
-    dropZone.ondrop = (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('drag-active');
-        handleFile(e.dataTransfer.files[0]);
-    };
+    // Step 1 -> Step 2
+    function startWizard(files) {
+        queue = Array.from(files).filter(f => f.type.startsWith('video/')).map(f => ({
+            file: f,
+            title: f.name.replace(/\.[^/.]+$/, ""),
+            url: URL.createObjectURL(f)
+        }));
 
-    function handleFile(file) {
-        if (!file || !file.type.startsWith('video/')) {
-            addLog('Solo archivos de video.', 'error');
-            return;
+        if (queue.length === 0) return;
+
+        stepSelection.classList.add('hidden');
+        stepWizard.classList.remove('hidden');
+        loadCurrentStep();
+    }
+
+    function loadCurrentStep() {
+        const item = queue[currentIndex];
+        wizardPreview.src = item.url;
+        wizardFileName.innerText = item.file.name;
+        wizardCounter.innerText = `${currentIndex + 1} / ${queue.length}`;
+        wizardTitle.value = item.title;
+        wizardPreview.load();
+        
+        checkValidation();
+        addLog(`Preparando clip ${currentIndex + 1}: ${item.file.name}`);
+    }
+
+    wizardTitle.oninput = checkValidation;
+
+    function checkValidation() {
+        wizardNextBtn.disabled = wizardTitle.value.trim().length === 0;
+    }
+
+    wizardCancel.onclick = () => {
+        if (confirm('¿Seguro que quieres cancelar? Perderás el progreso actual.')) {
+            location.reload();
         }
-        selectedFile = file;
-        displayFilename.innerText = file.name;
-        dropZone.classList.add('hidden');
-        uploadStatusCard.classList.remove('hidden');
-        progressBytes.innerText = `0 MB / ${formatBytes(file.size)}`;
-        checkReadiness();
-        addLog(`Clip cargado: ${file.name}`);
-    }
-
-    removeFileBtn.onclick = () => {
-        selectedFile = null;
-        fileInput.value = '';
-        dropZone.classList.remove('hidden');
-        uploadStatusCard.classList.add('hidden');
-        progressBar.style.width = '0%';
-        progressPercent.innerText = '0%';
-        checkReadiness();
     };
 
-    uploadBtn.onclick = async () => {
-        const title = titleInput.value.trim();
-        if (!selectedFile || !title) return;
-
-        uploadBtn.disabled = true;
-        progressStatus.innerText = 'Autorizando...';
-        addLog('Estableciendo conexión segura...');
+    // Processing Logic
+    wizardNextBtn.onclick = async () => {
+        const item = queue[currentIndex];
+        const currentTitle = wizardTitle.value.trim();
+        
+        wizardNextBtn.disabled = true;
+        uploadOverlay.classList.remove('hidden');
+        overlayStatus.innerText = 'OBTENIENDO LLAVE...';
+        overlayBar.style.width = '0%';
+        overlayPercent.innerText = '0%';
+        
+        addLog('Generando token de acceso...');
 
         try {
+            // 1. Refresh Token Internal API
             const tokenRes = await fetch('/api/admin/drive-token');
-            if (!tokenRes.ok) throw new Error('Error de token.');
+            if (!tokenRes.ok) throw new Error('Error de seguridad interno.');
             const { access_token } = await tokenRes.json();
-            
-            addLog('Conexión establecida. Subiendo video...');
 
-            const metadata = { name: selectedFile.name, mimeType: selectedFile.type, parents: [FOLDER_ID] };
-            const initResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
+            addLog('Conexión con Drive abierta.');
+            overlayStatus.innerText = 'INICIANDO SESIÓN...';
+
+            // 2. Drive Resumable Session
+            const metadata = { name: item.file.name, mimeType: item.file.type, parents: [FOLDER_ID] };
+            const initRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${access_token}`,
-                    'X-Upload-Content-Type': selectedFile.type,
-                    'X-Upload-Content-Length': selectedFile.size.toString(),
+                    'X-Upload-Content-Type': item.file.type,
+                    'X-Upload-Content-Length': item.file.size.toString(),
                     'Content-Type': 'application/json; charset=UTF-8',
                 },
                 body: JSON.stringify(metadata),
             });
+            if (!initRes.ok) throw new Error('Drive rechazó la petición.');
+            const uploadUrl = initRes.headers.get('Location');
 
-            if (!initResponse.ok) throw new Error('Error en Google Drive.');
-            const uploadUrl = initResponse.headers.get('Location');
+            overlayStatus.innerText = 'SUBIENDO DATOS...';
+            addLog(`Subiendo ${formatBytes(item.file.size)} directamente a Google...`);
 
-            const fileId = await performUpload(uploadUrl);
-            addLog('Subida a Drive completada.', 'success');
-            
-            await notifyN8n(fileId, title);
+            // 3. Real PUT with Progress
+            const fileId = await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('PUT', uploadUrl, true);
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const p = Math.round((e.loaded / e.total) * 100);
+                        overlayBar.style.width = p + '%';
+                        overlayPercent.innerText = p + '%';
+                        overlayBytes.innerText = `${formatBytes(e.loaded)} / ${formatBytes(item.file.size)}`;
+                    }
+                };
+                xhr.onload = () => (xhr.status === 200 || xhr.status === 201) ? resolve(JSON.parse(xhr.response).id) : reject(new Error('Drive upload failed'));
+                xhr.onerror = () => reject(new Error('Conexión perdida.'));
+                xhr.send(item.file);
+            });
 
-        } catch (error) {
-            addLog(`Fallo: ${error.message}`, 'error');
-            progressStatus.innerText = 'Error';
-            uploadBtn.disabled = false;
-        }
-    };
+            addLog('Carga en Drive exitosa. Sincronizando n8n...', 'text-emerald-400');
+            overlayStatus.innerText = 'NOTIFICANDO FLUJO...';
 
-    async function performUpload(url) {
-        return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.open('PUT', url, true);
-            xhr.upload.onprogress = (e) => {
-                if (e.lengthComputable) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    progressBar.style.width = percent + '%';
-                    progressPercent.innerText = percent + '%';
-                    progressBytes.innerText = `${formatBytes(e.loaded)} / ${formatBytes(e.total)}`;
-                    progressStatus.innerText = 'Subiendo archivo...';
-                }
-            };
-            xhr.onload = () => (xhr.status === 200 || xhr.status === 201) ? resolve(JSON.parse(xhr.response).id) : reject(new Error('Fallo HTTP'));
-            xhr.onerror = () => reject(new Error('Red interrumpida.'));
-            xhr.send(selectedFile);
-        });
-    }
-
-    async function notifyN8n(fileId, title) {
-        progressStatus.innerText = 'Notificando flujo...';
-        addLog('Sincronizando con n8n...');
-        try {
-            const res = await fetch(WEBHOOK_URL, {
+            // 4. Notify n8n
+            const n8nRes = await fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${WEBHOOK_SECRET}` },
-                body: JSON.stringify({ fileId, title, fileName: selectedFile.name, timestamp: new Date().toISOString() })
+                body: JSON.stringify({
+                    fileId,
+                    title: currentTitle,
+                    fileName: item.file.name,
+                    timestamp: new Date().toISOString()
+                })
             });
-            if (res.ok) {
-                addLog('¡Proceso finalizado con éxito!', 'success');
-                progressStatus.innerText = 'Completado';
-                setTimeout(() => location.reload(), 3000);
-            } else throw new Error(`n8n (${res.status})`);
+            
+            if (!n8nRes.ok) throw new Error('n8n no respondió correctamente.');
+
+            addLog(`¡Sincronizado! ${currentTitle} terminado.`, 'text-emerald-500');
+
+            // --- MOVE NEXT ---
+            currentIndex++;
+            
+            if (currentIndex < queue.length) {
+                // Siguiente archivo
+                setTimeout(() => {
+                    uploadOverlay.classList.add('hidden');
+                    loadCurrentStep();
+                }, 1000);
+            } else {
+                // Finalizar todo
+                setTimeout(() => {
+                    stepWizard.classList.add('hidden');
+                    stepSuccess.classList.remove('hidden');
+                }, 1000);
+            }
+
         } catch (error) {
-            addLog(error.message, 'error');
-            uploadBtn.disabled = false;
+            addLog(`ERROR: ${error.message}`, 'text-rose-500');
+            overlayStatus.innerText = 'ERROR EN PROCESO';
+            setTimeout(() => {
+                uploadOverlay.classList.add('hidden');
+                wizardNextBtn.disabled = false;
+            }, 3000);
         }
-    }
+    };
 </script>
 
 <style>
-  /* Base & Variables */
-  :root {
-      --card-bg: rgba(13, 14, 18, 0.7);
-      --accent: #8b5cf6;
-      --accent-glow: rgba(139, 92, 246, 0.4);
-      --success: #10b981;
-      --error: #ef4444;
-  }
+    @keyframes slide {
+        from { background-position: 0 0; }
+        to { background-position: 24px 0; }
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
 
-  .admin-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
 
-  .layout-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      margin-top: 1rem;
-  }
-
-  /* Cards */
-  .card {
-      border-radius: 1.25rem;
-      padding: 1.5rem;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      position: relative;
-      overflow: hidden;
-  }
-
-  /* Hero Section */
-  .page-hero {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(0,0,0,0));
-      border-left: 4px solid var(--accent);
-  }
-
-  .hero-text h1 {
-      font-size: 2.2rem;
-      font-weight: 800;
-      letter-spacing: -1px;
-      margin-bottom: 0.2rem;
-      color: #fff;
-  }
-
-  .hero-text p {
-      color: rgba(255,255,255,0.5);
-      font-size: 0.95rem;
-  }
-
-  .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.6rem 1.2rem;
-      background: rgba(0,0,0,0.4);
-      border-radius: 99px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: var(--success);
-      border: 1px solid rgba(16, 185, 129, 0.2);
-  }
-
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
-  .pulse { animation: pulse 2s infinite; }
-
-  /* Content Layout */
-  .content-layout {
-      display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 1.5rem;
-  }
-
-  /* Upload Section */
-  .upload-section {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-  }
-
-  .drop-area-container {
-      flex: 1;
-      min-height: 300px;
-      border: 2px dashed rgba(255,255,255,0.1);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .drop-area-container:hover, .drag-active {
-      border-color: var(--accent);
-      background: rgba(139, 92, 246, 0.05);
-  }
-
-  .drop-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.5rem;
-      text-align: center;
-  }
-
-  .icon-circle {
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.03);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: var(--accent);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  .primary-text { font-size: 1.2rem; font-weight: 600; color: #fff; margin: 0; }
-  .secondary-text { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin: 0; }
-  .file-limits { font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 0.3rem 0.8rem; border-radius: 6px; color: rgba(255,255,255,0.3); }
-
-  /* Premium Progress Card */
-  .active-upload {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0));
-  }
-
-  .file-summary {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-  }
-
-  .file-icon { color: var(--accent); }
-  .file-details { flex: 1; display: flex; flex-direction: column; }
-  .filename { font-weight: 700; font-size: 1rem; }
-  .status-label { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
-
-  .close-btn { 
-      background: rgba(255, 255, 255, 0.03); 
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--error);
-      padding: 0.5rem;
-      border-radius: 10px;
-      cursor: pointer;
-  }
-
-  /* Barra de Carga Mejorada */
-  .premium-progress {
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-  }
-
-  .progress-track {
-      height: 12px;
-      background: rgba(0, 0, 0, 0.4);
-      border-radius: 20px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.05);
-      position: relative;
-  }
-
-  .progress-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--accent), #c084fc);
-      border-radius: 20px;
-      transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-  }
-
-  .shadow-glow {
-      box-shadow: 0 0 20px var(--accent-glow);
-  }
-
-  .progress-info {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: rgba(255,255,255,0.6);
-  }
-
-  #progress-percent { color: #fff; font-size: 1rem; }
-
-  /* Metadata Section */
-  .meta-section {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-  }
-
-  .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.5); }
-
-  .input-field { display: flex; flex-direction: column; gap: 0.6rem; }
-  .input-field label { font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.4); }
-
-  .input-wrapper { position: relative; }
-  .custom-input {
-      width: 100%;
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 1rem;
-      color: #fff;
-      font-family: inherit;
-      transition: all 0.2s;
-  }
-
-  .custom-input:focus {
-      outline: none;
-      border-color: var(--accent);
-      background: rgba(0,0,0,0.5);
-  }
-
-  .btn-action {
-      margin-top: 1rem;
-      background: #fff;
-      color: #000;
-      border: none;
-      padding: 1.2rem;
-      border-radius: 14px;
-      font-weight: 800;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.8rem;
-      cursor: pointer;
-      transition: all 0.3s;
-  }
-
-  .btn-action:disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
-  .btn-action:not(:disabled):hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(255,255,255,0.15); }
-
-  /* Log Card */
-  .log-card { flex: 1; display: flex; flex-direction: column; padding: 1rem; }
-  .log-header { 
-      display: flex; 
-      align-items: center; 
-      gap: 1rem; 
-      margin-bottom: 1rem; 
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      padding-bottom: 0.8rem;
-  }
-  
-  .terminal-dots { display: flex; gap: 4px; }
-  .terminal-dots span { width: 8px; height: 8px; border-radius: 50%; opacity: 0.5; }
-  .terminal-dots span:nth-child(1) { background: #ff5f56; }
-  .terminal-dots span:nth-child(2) { background: #ffbd2e; }
-  .terminal-dots span:nth-child(3) { background: #27c93f; }
-  
-  .log-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: rgba(255,255,255,0.3); }
-
-  .log-entries {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-      max-height: 200px;
-      overflow-y: auto;
-  }
-
-  .log-t { color: var(--accent); font-weight: 700; opacity: 0.6; }
-  .log-entry.error { color: var(--error); }
-  .log-entry.success { color: var(--success); }
-
-  /* Animations */
-  @keyframes pulse {
-      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-      70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-  }
-
-  .hidden { display: none !important; }
-  .text-gradient {
-      background: linear-gradient(to right, #fff, var(--accent));
-      -webkit-background-clip: text;
-      -webkit-fill-color: transparent;
-  }
-
-  @media (max-width: 968px) {
-      .content-layout { grid-template-columns: 1fr; }
-  }
+    /* Custom scrollbar for log */
+    #wizard-log::-webkit-scrollbar {
+        width: 4px;
+    }
+    #wizard-log::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    #wizard-log::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.05);
+        border-radius: 10px;
+    }
 </style>
