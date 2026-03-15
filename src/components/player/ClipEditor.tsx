@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './ClipEditorStyles.css';
+import { getProxiedAudioUrl } from '../../utils/audioProxy';
 
 // Helpers for TimeInput
 function formatTime(seconds: number) {
@@ -98,10 +99,8 @@ export default function ClipEditor({ audioUrl, title, author, cover, duration: t
                 const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
                 audioCtxRef.current = ctx;
 
-                const isExternal = audioUrl.startsWith('http');
-                const fetchUrl = isExternal 
-                    ? `/api/proxy-audio?url=${encodeURIComponent(audioUrl)}` 
-                    : audioUrl;
+                // Use the HF proxy for volume boost and to avoid CORS issues
+                const fetchUrl = getProxiedAudioUrl(audioUrl);
 
                 const response = await fetch(fetchUrl);
                 if (!response.ok) throw new Error('Fetch failed');
